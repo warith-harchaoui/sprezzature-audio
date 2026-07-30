@@ -86,7 +86,7 @@ python scripts/translate_captions.py talk.vtt --lang fr
 
 ## License
 
-BSD 3-Clause. See [LICENSE](LICENSE).
+BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/LICENSE).
 
 ## Author
 
