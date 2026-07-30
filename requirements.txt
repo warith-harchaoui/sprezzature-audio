@@ -1,0 +1,3 @@
+# Base runtime (no ML).
+click>=8.1
+langdetect>=1.0.9
