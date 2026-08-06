@@ -30,7 +30,7 @@ pip install "sprezzature-audio[captions]"
 pip install torch  # choisir la version CUDA / MPS / CPU adaptée à votre machine
 pip install "sprezzature-audio[diarize]"
 
-# Avec la traduction LLM (sprezzature-local + ollama)
+# Avec la traduction LLM (best-engine-ai-helper + ollama)
 pip install "sprezzature-audio[translate]"
 
 # Tout
@@ -72,7 +72,7 @@ python scripts/translate_captions.py conf.vtt --lang en
 | ASR | `large-v3-turbo` (défaut) ou tout alias GGML | vocal-helper / pywhispercpp |
 | Diarisation | `nvidia/diar_sortformer_4spk-v1` | NeMo |
 | Identification | `nvidia/speakerverification_en_titanet_large` | NeMo |
-| Traduction | Configuré via les variables `SPREZZATURE_LLM_*` | sprezzature-local |
+| Traduction | Configuré via les variables `SPREZZATURE_LLM_*` | best-engine-ai-helper |
 
 ## Variables d'environnement
 
@@ -82,7 +82,7 @@ python scripts/translate_captions.py conf.vtt --lang en
 | `SPREZZATURE_CACHE_DIR` | Répertoire de cache pour les poids et les transcriptions |
 | `SPREZZATURE_NO_CACHE` | Désactiver le cache de transcriptions |
 | `NEMO_DIAR_MODEL` | Remplacer le checkpoint NeMo |
-| `SPREZZATURE_LLM_*` | Configuration du backend LLM (voir sprezzature-local) |
+| `SPREZZATURE_LLM_*` | Configuration du backend LLM (voir best-engine-ai-helper) |
 
 ## Licence
 
