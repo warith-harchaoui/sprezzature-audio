@@ -98,11 +98,17 @@ from typing import Any
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
 import click
 from _click import run_command, sprezzature_command  # noqa: E402
+
+# Every LLM/VLM call across sprezzature-* routes through this one function —
+# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
+# the backend and model tag from the SPREZZATURE_LLM_* environment variables
+# (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
+# at each call site below is a per-call override on top of that.
+from best_engine_ai_helper.llm import chat as _llm_chat
 from caption_diarize import (  # noqa: E402
     attribute_speakers,
     parse_caption_cues,
 )
-from sprezzature_local.llm import chat as _llm_chat
 
 # ── Configuration ──────────────────────────────────────────────────────────
 

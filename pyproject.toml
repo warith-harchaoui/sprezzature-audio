@@ -44,7 +44,7 @@ diarize = [
     "video-helper>=1.7.0",
 ]
 translate = [
-    "sprezzature-local>=0.1",
+    "best-engine-ai-helper>=0.4.0",
 ]
 dev = [
     "pytest>=8.0",
