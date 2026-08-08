@@ -59,16 +59,18 @@ Homepage = "https://harchaoui.org/warith/sprezzature/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
-sprezzature-audio-captions = "scripts.captions_from_whisper:main"
-sprezzature-audio-diarize = "scripts.diarize_from_nemo:main"
-sprezzature-audio-identify = "scripts.identify_from_titanet:main"
-sprezzature-audio-pipeline = "scripts.caption_diarize:main"
-sprezzature-audio-name = "scripts.name_from_transcript:main"
-sprezzature-audio-translate = "scripts.translate_captions:main"
+sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"
+sprezzature-audio-diarize = "sprezzature_audio_scripts.diarize_from_nemo:main"
+sprezzature-audio-identify = "sprezzature_audio_scripts.identify_from_titanet:main"
+sprezzature-audio-pipeline = "sprezzature_audio_scripts.caption_diarize:main"
+sprezzature-audio-name = "sprezzature_audio_scripts.name_from_transcript:main"
+sprezzature-audio-translate = "sprezzature_audio_scripts.translate_captions:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["sprezzature_audio*", "scripts*"]
+[tool.setuptools]
+packages = ["sprezzature_audio", "sprezzature_audio_scripts"]
+
+[tool.setuptools.package-dir]
+"sprezzature_audio_scripts" = "scripts"
 
 [tool.ruff]
 target-version = "py310"
