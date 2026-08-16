@@ -2,23 +2,39 @@
 _lang
 =====
 
-Shared, stdlib-first helper for **content-based language handling**: extract the
-visible body text from HTML / Markdown / plain content, then detect its language
-with `langdetect`_. One canonical implementation, duplicated (intentionally)
-across every sprezzature-* skill so each stays self-contained — **keep every copy
-byte-identical** (a test, ``tests/test_bodytext.py``, enforces it).
+A shared helper that answers one question: what human language is this
+piece of text written in? It works in two steps: pull the readable body
+text out of HTML, Markdown, or plain content (stripping tags and markup
+noise a language detector should not see), then hand that text to
+`langdetect`_ to name the language. It leans on Python's own standard
+library wherever it can, reaching for the third-party `langdetect`_
+package only for the one thing the standard library cannot do: guess a
+language from raw text. This one implementation is duplicated on purpose
+across every sprezzature-* repository, so each stays self-contained; a
+test, ``tests/test_bodytext.py``, checks that every copy stays
+byte-for-byte identical to this one, so fix a bug here and copy the fix
+everywhere else too.
 
-There is **no configured default language** anywhere in the suite: callers pass
-the content they actually process (surrounding text, page HTML, the input to
-rewrite, a transcript, chart labels) and the language is detected from it.
+This project never hard-codes a default language anywhere. Every caller
+passes the actual content it is working with, whether that is the text
+surrounding an image, a page's HTML, a transcript, or a chart's labels,
+and the language is detected from that content itself.
 
-``langdetect`` is opt-in — it lives under each Ollama tool's own
-``requirements-*.txt``. When it is absent, detection degrades to the caller's
-explicit fallback; ``extract_body_text`` itself is pure stdlib.
+The `langdetect`_ dependency is optional: it is declared only in the
+``requirements-*.txt`` files of the tools that call an Ollama model
+(where getting the language right matters most). When it is missing,
+detection falls back to whatever the caller explicitly passes as a
+default; the text-extraction half of this module, ``extract_body_text``,
+needs nothing beyond the standard library and always works.
 
-Determinism note: ``langdetect`` seeds its RNG from the input by default; we pin
-``DetectorFactory.seed`` once at import so the same text always maps to the same
-tag.
+Determinism note. `langdetect`_'s algorithm is randomized: unless told
+otherwise, it starts from a "seed," a fixed starting number fed into its
+random-number generator so the sequence of "random" choices it makes is
+actually the same every time. Left unset, that seed would itself be
+derived from unpredictable state, so the same sentence could occasionally
+be classified as two different languages on two different runs. This
+module pins ``DetectorFactory.seed`` to a fixed value once, the moment it
+is imported, so the same text always maps to the same language tag.
 
 .. _langdetect: https://github.com/Mimino666/langdetect
 

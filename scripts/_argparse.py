@@ -1,19 +1,25 @@
 """
-_argparse — shared argparse parser factory for a sprezzature-* skill's scripts.
+_argparse — one factory function for every script's command-line parser.
 
-``make_parser(prog, description, epilog=None)`` returns an
-``ArgumentParser`` pre-configured the way every script in this skill
-expects:
+Python's standard library builds a command-line interface around an
+``argparse.ArgumentParser`` object: you create one, register each flag
+(``--lang``, ``--out``, and so on) on it, then call ``.parse_args()`` to
+turn the words the user typed into a plain object with one attribute per
+flag. Every script in this project needs the same handful of small
+conveniences on top of that (a clean program name in ``--help``, instead
+of a long file path; multi-line help text kept exactly as written instead
+of being auto-reflowed; a ``-V``/``--version`` flag). Rather than
+repeating that setup in every script, ``make_parser(prog, description,
+epilog=None)`` builds one parser already configured that way, and each
+script starts from it.
 
-- ``prog`` set explicitly so ``--help`` shows a clean name (no path).
-- ``RawDescriptionHelpFormatter`` so multi-line descriptions and the
-  optional ``epilog`` are not reflowed.
-- A standard ``-V`` / ``--version`` option.
-
-Duplicated (intentionally) across every sprezzature-* skill so each stays
-self-contained; keep this file in sync with the copies in
-sprezzature-colors/scripts/_argparse.py etc. Bump ``SKILL_VERSION`` in every
-copy at release time (release.sh checks the drift).
+This file is duplicated on purpose across every sprezzature-* skill
+(sprezzature-colors, sprezzature-figures, and so on), one copy per
+repository, so each repository stays self-contained and installable on
+its own. When you change this file, change the matching copy in the
+other repositories too, and bump ``SKILL_VERSION`` in every copy at
+release time; ``release.sh`` checks that the copies have not drifted
+apart.
 
 Author
 ------

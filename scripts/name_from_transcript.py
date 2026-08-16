@@ -3,9 +3,16 @@
 name_from_transcript
 ====================
 
-Guess **who is who** from a speaker-diarized transcript. Two passes:
+A diarized transcript already knows that "speaker 0" and "speaker 1" took
+turns, but that is not the same as knowing their names. People tend to
+say each other's names out loud in a conversation anyway ("Hi, I'm
+Alice," "Thanks, John"), so this script listens for exactly that and
+guesses **who is who** from the words alone. It runs two passes over the
+transcript:
 
-1. **Rule pass** — regex over the transcript picks up two well-studied
+1. **Rule pass**: a regex, short for "regular expression," a compact
+   pattern for matching pieces of text (here, sentence shapes like "I'm
+   ___" or "Hey ___,"), scans the transcript for two well-studied
    patterns:
 
    * **Self-introduction** — the current speaker names themselves
@@ -25,7 +32,9 @@ Guess **who is who** from a speaker-diarized transcript. Two passes:
    Ollama daemon and expects a JSON mapping in return. Same fixed
    model / URL as :mod:`alt_from_ollama` (``qwen3-vl:8b``, the one
    authorized LLM, + ``http://localhost:11434``). The model is not
-   selectable; ``OLLAMA_MODEL`` remains only as a test seam.
+   selectable by a normal user; the ``OLLAMA_MODEL`` environment variable
+   exists only to let the test suite substitute a fake model, a "test
+   seam," and is not meant to be set otherwise.
 
 Whichever pass returns the higher-confidence label per speaker wins.
 
@@ -40,9 +49,11 @@ Speaker-naming from dialogue text is a small but real subfield:
 * Nagrani, Cole, Zisserman — *"From Benedict Cumberbatch to Sherlock
   Holmes": Character identification in TV series without a script*
   (BMVC 2017).
-* Vocative detection is a first-class task in modern dialogue NLP —
-  see e.g. Zhang et al. 2022, *Vocative case prediction in conversational
-  agents*.
+* Vocative detection (spotting when a sentence directly addresses someone
+  by name) is a first-class task in modern dialogue NLP, natural-language
+  processing, the broader field of getting computers to work with human
+  language; see e.g. Zhang et al. 2022, *Vocative case prediction in
+  conversational agents*.
 
 The pipeline here is the same idea, minus faces and any hosted call.
 

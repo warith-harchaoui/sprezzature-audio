@@ -3,27 +3,39 @@
 diarize_from_nemo
 =================
 
-Speaker diarization ("who spoke when") via NVIDIA NeMo's **Sortformer**
-end-to-end diarization transformer. Loads a pretrained checkpoint from
-Hugging Face on first use, runs in-process on CPU / CUDA / Apple-silicon
-MPS, and emits an RTTM file plus a JSON turn list.
+Speaker diarization answers one question about a recording: "who spoke
+when," without yet knowing anyone's name. This script answers it using
+NVIDIA NeMo's **Sortformer**, a neural network trained specifically for
+that task; "end-to-end" means it goes straight from raw audio to a list
+of speaker turns in a single model, rather than chaining several
+separate models together the way older diarization systems did. The
+first time it runs, it downloads a pretrained "checkpoint" (a file
+holding the model's already-learned parameters, so it does not need to
+be trained from scratch) from Hugging Face, a public repository of
+machine-learning models; after that it runs entirely on the local
+machine, whether that machine has a plain CPU, an NVIDIA graphics card
+(CUDA), or Apple silicon's own way of using the graphics chip (MPS).
+Output goes to two files: an RTTM file (a plain-text format from the
+speech-research world, one line per speaker turn) and a JSON list of the
+same turns, easier for other scripts in this project to read.
 
 Default model
 -------------
 
-``nvidia/diar_sortformer_4spk-v1`` — Sortformer trained end-to-end on up
-to **4 concurrent speakers**. Override with ``--model`` or the
-``NEMO_DIAR_MODEL`` env var. Multi-speaker (up to 8) checkpoints exist
-under the same family; the default is the reference small-conversation
-model.
+``nvidia/diar_sortformer_4spk-v1``: a Sortformer checkpoint trained end
+to end to handle up to **4 concurrent speakers**. Override it with
+``--model`` or the ``NEMO_DIAR_MODEL`` environment variable. Checkpoints
+for larger meetings (up to 8 speakers) exist in the same model family;
+the default here is the one built for small, everyday conversations.
 
 Output
 ------
 
 For an input ``interview.wav`` the script writes, next to the source:
 
-* ``interview.rttm`` — the canonical RTTM (`SPEAKER` lines).
-* ``interview.diarization.json`` — a small JSON turn list:
+* ``interview.rttm``: the canonical RTTM file (a series of `SPEAKER`
+  lines, RTTM's standard record format).
+* ``interview.diarization.json``: the same turns as a small JSON list:
 
   .. code-block:: json
 

@@ -3,31 +3,52 @@
 identify_from_titanet
 =====================
 
-Attach **names** to Sortformer-generated speaker labels using TitaNet
-speaker embeddings.
+`diarize_from_nemo.py` can tell you that "speaker 0" and "speaker 1" took
+turns talking, but not who they actually are. This script fills that
+gap, attaching a real **name** to each anonymous label, using NVIDIA
+NeMo's TitaNet model.
+
+TitaNet turns a short clip of someone's voice into a list of 192 numbers,
+called an embedding: think of it as a fingerprint, positioned in a
+192-dimensional space, where two clips from the same person land close
+together and two clips from different people land far apart. Comparing
+two voices then becomes comparing two lists of numbers, which is exactly
+what a computer is good at.
 
 Pipeline
 --------
 
-1. Load a Sortformer turn list (``*.diarization.json`` from
-   :mod:`diarize_from_nemo`).
-2. For each anonymous speaker id, average the TitaNet embeddings of a
-   few of that speaker's own turns → one 192-D centroid per speaker.
-3. Load a directory of reference clips (one WAV per known speaker,
-   filename ≙ speaker name) and compute a centroid per reference.
-4. Cosine-match every anonymous centroid to the closest reference above
-   ``--threshold`` (default 0.55). Unmatched speakers keep their
-   anonymous id.
-5. Emit a small ``speakers.json`` mapping ``{"0": "Alice", "1": "Bob",
-   "2": "2"}`` that ``caption_diarize.py`` picks up.
+1. Load a Sortformer turn list (the ``*.diarization.json`` file written
+   by :mod:`diarize_from_nemo`).
+2. For each anonymous speaker id, run TitaNet on a few of that speaker's
+   own turns and average the resulting embeddings into one "centroid," a
+   single 192-number fingerprint standing in for that speaker as a whole.
+   Averaging several turns rather than trusting just one makes the
+   fingerprint more stable: any one turn might be noisy or too short.
+3. Do the same for a directory of reference clips, one WAV file per known
+   speaker, where the file's name (without the ``.wav`` extension) is
+   that speaker's name: one centroid per reference.
+4. Compare every anonymous centroid to every reference centroid using
+   cosine similarity, a standard way to measure how closely two lists of
+   numbers point in the same direction, on a scale from -1 (opposite) to
+   1 (identical direction). Assign the anonymous speaker to the closest
+   reference, but only if that similarity clears ``--threshold`` (0.55 by
+   default); a weaker match leaves the speaker under their anonymous id
+   rather than risk a wrong name.
+5. Write a small ``speakers.json`` file mapping each id to a name, for
+   example ``{"0": "Alice", "1": "Bob", "2": "2"}`` (speaker "2" here was
+   never matched, so it keeps its anonymous id). ``caption_diarize.py``
+   reads this file to label its own output.
 
 Default model
 -------------
 
-``nvidia/speakerverification_en_titanet_large`` — TitaNet-Large trained
-for speaker verification. English-first but usable cross-lingually for
-short-form conversational audio. Override with ``--model`` or the
-``NEMO_TITANET_MODEL`` env var.
+``nvidia/speakerverification_en_titanet_large``: the large TitaNet
+checkpoint, trained for speaker verification (telling voices apart, as
+opposed to transcribing what they say). It was trained primarily on
+English but works reasonably well on other languages too, for short,
+everyday conversational clips. Override it with ``--model`` or the
+``NEMO_TITANET_MODEL`` environment variable.
 
 Reference-clip layout
 ---------------------

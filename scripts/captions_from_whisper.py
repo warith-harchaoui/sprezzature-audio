@@ -3,25 +3,38 @@
 captions_from_whisper
 =====================
 
-Generate captions / transcripts for an audio or video file through
-``vocal-helper`` — the project author's whisper.cpp over-layer (which wraps
-the ``pywhispercpp`` binding, owns the model defaults, the word-timestamp
-wiring, the hallucination guard, and the vocabulary-biasing prompt lever).
+Generate captions or a plain transcript for an audio or video file, using
+OpenAI's Whisper speech-recognition model. The actual model runs through
+``vocal-helper``, this project author's own wrapper around
+``whisper.cpp`` (a fast, dependency-light C++ rewrite of Whisper) and its
+Python binding ``pywhispercpp``. ``vocal-helper`` is where the model
+defaults, the per-word timing, a filter against Whisper's known
+hallucination failure mode (inventing text during silence), and the
+vocabulary-biasing prompt (see `_vocab.py`) all live, so every script in
+this project that touches Whisper behaves the same way.
 
-The companion installer (``install_captions.py``) pre-downloads the GGML
-weights into the shared cache; ``vocal-helper`` (and its transitive
-``pywhispercpp``) is declared in ``requirements-captions.txt``.
+The companion installer, ``install_captions.py``, pre-downloads the model
+weights (in GGML format, the compact file format whisper.cpp reads) into
+a shared cache directory, so this script never blocks on a download mid-run.
+``vocal-helper`` itself, and the ``pywhispercpp`` package it pulls in, are
+declared in ``requirements-captions.txt``.
 
-The script accepts any common container (mp4, mov, mp3, wav, m4a, …),
-extracts a 16 kHz mono WAV stream (which whisper.cpp expects), decodes it
-to a float32 buffer via ``audio-helper``, drives it through
-``vocal-helper``'s ``WhisperStage`` as a single whole-file segment (no VAD,
-no diarization — that lives in the ``diarize`` tier), then formats the
-segments as WebVTT (default), SRT, or plain text.
+The script accepts any common container format (mp4, mov, mp3, wav, m4a,
+and others), extracts a 16 kHz mono WAV audio stream (the exact format
+whisper.cpp expects), decodes it into an array of floating-point numbers
+via ``audio-helper``, and runs the whole file through ``vocal-helper``'s
+``WhisperStage`` in one pass: no voice-activity detection (skipping
+silent stretches before transcribing) and no diarization at this stage,
+since that is a separate step handled by the ``diarize`` tier of scripts.
+The resulting segments are then written out as WebVTT (the default), SRT,
+or plain text.
 
-Cache shape mirrors :mod:`alt_from_ollama`: SHA-256 of (extracted-audio
-bytes + model + lang + format), short hex name, stored under
-``~/.cache/sprezzature-skill/captions/``.
+Repeated runs on the same file are cheap: the cache key is a SHA-256
+hash, a short fixed-length fingerprint computed from the extracted audio
+bytes together with the model, language, and output format, so the same
+input and settings always map to the same cache file. That cache lives
+under ``~/.cache/sprezzature-skill/captions/``, and the same scheme is used
+by a sibling repository's ``alt_from_ollama`` script.
 
 Usage
 -----

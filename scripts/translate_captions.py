@@ -3,28 +3,40 @@
 translate_captions
 ==================
 
-Translate an existing caption file (``.vtt`` / ``.srt``) into a second
-language and emit a **two-track** ``<video>`` / ``<audio>`` snippet — the
-native transcription plus a translated subtitle track.
+Takes an existing caption file (``.vtt`` or ``.srt``) and translates it
+into a second language, then emits a ready-to-embed **two-track**
+``<video>``/``<audio>`` HTML snippet holding both: the original,
+same-language transcription, and a translated subtitle track alongside
+it.
 
-The design mirrors the alt-text language logic in :mod:`alt_from_ollama`:
-the *native* captions stay in the audio's own language (what
-:mod:`captions_from_whisper` produced), and the *translation* is written in
-the language of the **surrounding text** — the prose around the media on
-the page — detected the same way, then translated by the one authorized
-LLM (``qwen3-vl:8b`` via Ollama). W3C-correct track kinds are used:
+The design mirrors the alt-text language logic in a sibling repository's
+:mod:`alt_from_ollama` script: the *native* captions stay in whatever
+language the audio itself is in (what :mod:`captions_from_whisper`
+already produced), while the *translation*'s target language is decided
+by the surrounding text, meaning the prose around the media on the page
+that will embed it, detected the same way, then translated by the one
+LLM this project is authorized to call (``qwen3-vl:8b``, through Ollama).
+The two tracks are labelled the way the W3C, the organization that sets
+web standards, specifies for a `<track>` element:
 
-* ``kind="captions"``  — same-language transcription (may carry sound cues);
-* ``kind="subtitles"`` — dialogue translation into another language.
+* ``kind="captions"``: a same-language transcription, which may also
+  note non-speech sound cues (``[applause]``, for instance);
+* ``kind="subtitles"``: a translation of the dialogue into another
+  language, with no sound cues.
 
-The translation runs on the *already-produced* ``.vtt``/``.srt``, so this
-step is decoupled from the caption backend (``vocal-helper``): it never
-touches audio. Cues are translated in **batched windows** (several cues per
-Ollama call) so the small model sees cross-cue context and sentences that
-straddle a cue boundary translate coherently; each translated segment is
-re-attached to its original cue's timestamps 1:1, so timing is preserved.
+The translation step only ever reads the already-produced ``.vtt``/
+``.srt`` file; it never touches audio, which keeps it decoupled from
+whichever engine produced the captions in the first place
+(``vocal-helper``, in this project's case). Cues are sent to the model
+in **batched windows**, several consecutive cues in a single Ollama call,
+so the model can see the sentences around each one and keep a sentence
+that spans two cues coherent, rather than translating each cue in total
+isolation. Each translated line is then matched back one-to-one to its
+original cue's timestamps, so the subtitle timing itself never shifts.
 
-Like alt-text, the translated track is a **draft** — verify before shipping.
+As with alt-text, treat the translated track as a **draft**: an LLM
+translation can misread context or idiom, so a person should read it over
+before it ships to a real audience.
 
 Usage
 -----
@@ -42,11 +54,13 @@ Usage
 Notes
 -----
 * Python 3.10+. Needs a reachable local Ollama daemon
-  (``http://localhost:11434``) serving ``qwen3-vl:8b`` — the one authorized
-  model, not user-selectable. ``langdetect`` (declared in
-  ``requirements-captions.txt``) sharpens language detection but the script
-  degrades gracefully without it.
-* No audio dependency — parses / re-emits captions only.
+  (``http://localhost:11434``) serving ``qwen3-vl:8b``, the one model this
+  project authorizes for this task (it is not user-selectable).
+  ``langdetect`` (declared in ``requirements-captions.txt``) sharpens
+  language detection, but the script still works, a little less
+  precisely, without it.
+* No audio dependency at all: this script only parses and re-emits
+  caption files.
 
 Author
 ------

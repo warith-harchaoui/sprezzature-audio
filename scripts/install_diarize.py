@@ -5,18 +5,25 @@ install_diarize
 
 Cross-platform installer for the speaker-diarization / speaker-ID tier.
 
-Installs (or verifies) the ``nemo_toolkit[asr]`` PyPI package and
-pre-downloads the two NVIDIA NeMo checkpoints used by the skill:
+Installs (or verifies) the ``nemo_toolkit[asr]`` package from PyPI and
+downloads ahead of time the two NVIDIA NeMo checkpoints this project
+uses:
 
-* ``nvidia/diar_sortformer_4spk-v1`` — Sortformer, end-to-end speaker
-  diarization for up to 4 concurrent speakers.
-* ``nvidia/speakerverification_en_titanet_large`` — TitaNet-Large
-  speaker-verification embeddings (192-D).
+* ``nvidia/diar_sortformer_4spk-v1``: Sortformer, described in
+  `diarize_from_nemo.py`'s own docstring, for speaker diarization up to
+  4 concurrent speakers.
+* ``nvidia/speakerverification_en_titanet_large``: TitaNet-Large,
+  described in `identify_from_titanet.py`'s own docstring, which turns a
+  voice sample into a 192-number fingerprint for speaker verification.
 
-Torch is intentionally **not** pinned here — CPU / CUDA / Apple-silicon
-MPS builds all differ; installing NeMo pulls a sensible default. If you
-need a specific torch build (CUDA 12.x, ROCm, …), install it *before*
-running this script.
+PyTorch, the machine-learning library NeMo itself is built on, is
+deliberately left unpinned by this installer. The right build to install
+depends on the machine (plain CPU, an NVIDIA graphics card through CUDA,
+Apple silicon's own MPS), and installing NeMo alone already pulls in a
+sensible default for a typical machine. If a specific build is needed
+instead (a particular CUDA version, or AMD's equivalent to CUDA, ROCm),
+install PyTorch by hand *before* running this script, and this installer
+will leave that choice untouched.
 
 Usage
 -----

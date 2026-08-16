@@ -2,26 +2,40 @@
 _vocab
 ======
 
-Shared vocabulary-extraction helpers for the local AI helpers.
+A speech or vision model transcribes an unfamiliar name more reliably if
+it is warned about that name in advance. This module reads whatever
+"vocabulary" the user supplies (a list of proper nouns, product names, or
+technical terms likely to appear) and turns it into a clean list of
+strings, so the calling script can fold that list into the hint it sends
+its model.
 
-Both :mod:`captions_from_whisper` (whisper.cpp / pywhispercpp) and
-:mod:`alt_from_ollama` (Qwen3-VL vision via Ollama) accept an optional
-vocabulary biasing input. The user supplies it in one of four shapes:
+Two scripts in the wider sprezzature-* suite use it this way: this
+repository's own :mod:`captions_from_whisper` (which runs Whisper, through
+whisper.cpp / pywhispercpp), and a sibling repository's
+:mod:`alt_from_ollama` (which runs a vision model, Qwen3-VL, through
+Ollama). Both accept the vocabulary in any of four shapes, and it is this
+module's job to figure out which shape was given and turn it into a plain
+list of terms:
 
-1. ``--prompt "<text>"``           — verbatim prompt text.
-2. ``--vocab path/to/glossary.txt`` — one term per line.
-3. ``--vocab-from path``            — single file *or* directory.
-4. ``--auto-project``               — walk upward from the source file
-                                      to find a project root, then collect
-                                      vocabulary from the whole tree.
+1. ``--prompt "<text>"``: the exact prompt text, used verbatim.
+2. ``--vocab path/to/glossary.txt``: a file with one term per line.
+3. ``--vocab-from path``: a single file, or an entire directory to read
+   terms from.
+4. ``--auto-project``: starting at the source file, walk up the directory
+   tree to find the project's root folder, then collect vocabulary from
+   everything under it.
 
-This module owns the input-shape resolution and the term-extraction logic;
-prompt-template composition is left to the consuming script because the
-right wording differs (whisper's ``initial_prompt`` vs Qwen3-VL's instruction).
+This module stops at that plain list of terms; each calling script builds
+its own final prompt text from the list, because the two models expect
+different wording (Whisper's ``initial_prompt`` field reads naturally as a
+sentence, while Qwen3-VL expects an instruction).
 
-The extractor recognizes three pattern classes likely to carry meaningful
-names: backtick code spans, CamelCase / snake_case identifiers, and
-capitalized multi-word phrases.
+When no explicit list is given, the extractor scans a source file for text
+that is *likely* to be a meaningful name, based on three patterns: text
+inside backtick code spans, identifiers written in CamelCase or
+snake_case (a capital mid-word, like ``myVariableName``, or underscores
+between words, like ``my_variable_name``), and capitalized multi-word
+phrases (like "Golden Gate Bridge").
 
 Author
 ------

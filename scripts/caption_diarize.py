@@ -3,8 +3,12 @@
 caption_diarize
 ===============
 
-Merge Whisper caption segments with Sortformer speaker turns to emit a
-**speaker-labelled** WebVTT / SRT / plain-text transcript.
+Whisper's output knows *what* was said, cut into short time-stamped
+segments called cues; Sortformer's output knows *who* was speaking at
+each moment, cut into speaker turns. Neither file alone answers "who said
+this line." This script lines the two up: for every caption cue, it finds
+the speaker turn that overlaps it the most, and writes out a single
+**speaker-labelled** transcript, as WebVTT, SRT, or plain text.
 
 Inputs
 ------

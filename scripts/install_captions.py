@@ -3,23 +3,33 @@
 install_captions
 ================
 
-Cross-platform installer for the local caption / transcript generator.
+A one-command installer, working the same way on macOS, Linux, and
+Windows, that gets everything `captions_from_whisper.py` needs ready
+*before* the first real transcription is attempted, so that first run is
+not slowed down by an unexpected download.
 
-Uses **vocal-helper** — the project author's whisper.cpp over-layer, which
-pulls **pywhispercpp** (pre-compiled wheels for macOS / Linux / Windows)
-transitively. ``captions_from_whisper`` drives ``vocal-helper``'s
-``WhisperStage``; this installer makes that engine present and warms the
-model cache.
+It relies on **vocal-helper** (this project author's own wrapper around
+whisper.cpp, described in `captions_from_whisper.py`'s own docstring),
+which in turn pulls in **pywhispercpp**: that package ships as "wheels,"
+Python's name for a pre-built, ready-to-install package file, with
+separate wheels already compiled for macOS, Linux, and Windows, so
+nothing needs to compile from source on the user's machine.
+`captions_from_whisper.py` drives ``vocal-helper``'s ``WhisperStage`` to
+do the actual transcription; this installer's job is only to make sure
+that engine, and its model weights, are already in place beforehand.
 
-The script:
+The script does two things:
 
-1. Verifies (or installs) the ``vocal-helper`` package (pinned PyPI
-   release). If ``import vocal_helper`` fails, it is installed in the
-   active interpreter; ``pywhispercpp`` comes along as a dependency.
-2. Pre-downloads the requested GGML weights into
-   ``~/.cache/sprezzature-skill/whisper/`` (via ``pywhispercpp.utils``) so the
-   first real transcription is not gated on a model download. Default
-   model: ``large-v3-turbo``.
+1. Checks whether the ``vocal-helper`` package (a specific, pinned
+   version from PyPI, Python's public package index) is already
+   installed. If ``import vocal_helper`` fails, it installs the package
+   into the current Python environment; ``pywhispercpp`` comes along
+   automatically as one of its dependencies.
+2. Downloads the requested model weights ahead of time, in GGML format
+   (the compact file format whisper.cpp reads), into
+   ``~/.cache/sprezzature-skill/whisper/``, using ``pywhispercpp.utils``.
+   Doing this now means the first real transcription later does not have
+   to wait on a model download. The default model is ``large-v3-turbo``.
 
 Usage
 -----
