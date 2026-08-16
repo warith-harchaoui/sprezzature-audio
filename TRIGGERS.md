@@ -1,6 +1,6 @@
-# Triggers -- sprezzature-audio
+# Triggers: sprezzature-audio
 
-These phrases activate the audio content skill.
+This file lists the phrases an AI coding assistant watches for in a request. When a user's message contains one of them, the assistant knows to reach for this package's scripts instead of inventing its own audio-processing code. Grouped by which script the phrase points to.
 
 ## Transcription / captions
 

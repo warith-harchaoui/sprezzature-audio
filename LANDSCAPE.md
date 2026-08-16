@@ -1,6 +1,6 @@
-# Landscape -- sprezzature-audio in context
+# Landscape: sprezzature-audio in context
 
-The table below compares tools for speech-to-text, diarization, speaker identification, and caption translation. Stars rate each axis from 1 (weak) to 5 (excellent). Blank cells mean the tool does not address that axis.
+The table below scores seven tools for speech-to-text, diarization, speaker identification, and caption translation, one star column per axis. A star rating runs from 1 (weak) to 5 (excellent); a cell marked `--` means the tool does not attempt that axis at all, so scoring it would be meaningless.
 
 | Tool | Local-first | ASR | Diarization | Speaker ID | Multilingual translation | pip installable |
 |---|---|---|---|---|---|---|
@@ -13,20 +13,22 @@ The table below compares tools for speech-to-text, diarization, speaker identifi
 | AssemblyAI | 1 | 5 | 5 | 4 | 4 | 5 |
 | Amazon Transcribe | 1 | 5 | 5 | 3 | 3 | 4 |
 
+Three columns name a task rather than a familiar word: **ASR** (automatic speech recognition) is speech-to-text; **diarization** is figuring out who spoke when, without yet knowing anyone's name; **speaker ID** goes one step further and matches a voice against a known reference sample to put an actual name on it. "Local-first" scores how well a tool runs entirely on your own machine, with no cloud call required for its core function.
+
 ## Notes
 
-**whisper (OpenAI CLI)** transcribes but does not know who spoke. No diarization, no speaker ID.
+**whisper (OpenAI CLI)** transcribes speech to text but has no notion of who is speaking: no diarization, no speaker ID.
 
-**WhisperX** adds word-level alignment and pyannote-backed diarization. No speaker ID from a reference sample.
+**WhisperX** adds word-level timing alignment and diarization borrowed from pyannote. It has no way to attach a real name to a speaker from a reference sample.
 
-**pyannote.audio** is the benchmark for diarization. It does not transcribe.
+**pyannote.audio** is the reference tool for diarization; researchers benchmark new diarization methods against it. It does not transcribe at all.
 
-**Speechbrain** covers many audio tasks. The API requires more setup than a one-liner pip install for production use.
+**Speechbrain** covers a wide range of audio tasks in one library. Its API asks for more setup than a one-line `pip install` before it is production-ready.
 
-**NeMo (raw)** provides the Sortformer and TitaNet models that `sprezzature-audio` wraps. Direct NeMo use requires more boilerplate; this package provides the ready-made scripts.
+**NeMo (raw)** is the toolkit that actually contains the Sortformer and TitaNet models `sprezzature-audio` wraps. Calling NeMo directly demands more boilerplate; this package trades a little of NeMo's flexibility for ready-to-run scripts.
 
-**AssemblyAI / Amazon Transcribe** are cloud services. Data leaves the machine. Pricing per minute of audio.
+**AssemblyAI and Amazon Transcribe** are cloud services: every clip is sent to a remote server, billed per minute of audio. Convenient, but the recording leaves your machine, which rules them out for anything that must stay local.
 
 ## Where sprezzature-audio fits
 
-The unique selling point is the **local-first full stack**: transcription (Whisper via vocal-helper), diarization (NeMo Sortformer), speaker ID (TitaNet), and LLM-based translation (sprezzature-local with ollama), all runnable offline on a laptop or server. No cloud required at any step.
+Its distinguishing feature is being a **complete local-first stack**: transcription (Whisper, through vocal-helper), diarization (NeMo's Sortformer), speaker identification (TitaNet), and LLM-based translation (through sprezzature-local's Ollama connection), all runnable offline on a laptop or a server. No step requires reaching a cloud service.

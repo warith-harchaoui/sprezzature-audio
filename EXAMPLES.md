@@ -1,4 +1,6 @@
-# Examples -- sprezzature-audio
+# Examples: sprezzature-audio
+
+Each block below is a complete, runnable command followed by what it writes to disk or prints to the terminal. Read [README.md](README.md) first for what each script does in one line; this file is for copying a working invocation rather than reading a full explanation.
 
 ## Generate captions for a video
 
