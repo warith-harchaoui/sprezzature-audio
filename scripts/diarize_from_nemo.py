@@ -102,14 +102,24 @@ from _click import run_command, sprezzature_command  # noqa: E402
 # ── Module-level configuration ──────────────────────────────────────────────
 
 #: Cache directory shared with the rest of the skill.
-CACHE_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "diarize"
+CACHE_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "diarize"
+)
 
 #: Where install_diarize.py caches NeMo checkpoints.
-NEMO_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "nemo"
+NEMO_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "nemo"
+)
 
 #: Cache toggle, mirroring the captions helper.
 NO_CACHE: bool = bool(os.environ.get("SPREZZATURE_NO_CACHE") or os.environ.get("FRONT_NO_CACHE"))
@@ -122,6 +132,7 @@ VIDEO_EXTS: frozenset[str] = frozenset({".mp4", ".mov", ".mkv", ".avi", ".webm",
 
 
 # ── Audio extraction ────────────────────────────────────────────────────────
+
 
 def extract_audio(src: Path, dst: Path) -> None:
     """Re-encode ``src`` to a 16 kHz mono WAV at ``dst``.
@@ -148,6 +159,7 @@ def extract_audio(src: Path, dst: Path) -> None:
 
     try:
         from video_helper import extract_audio_track  # type: ignore
+
         if src.suffix.lower() in VIDEO_EXTS:
             extract_audio_track(str(src), str(dst), sample_rate=16000, channels=1)
             return
@@ -155,6 +167,7 @@ def extract_audio(src: Path, dst: Path) -> None:
         pass
     try:
         from audio_helper import sound_converter  # type: ignore
+
         sound_converter(str(src), str(dst), freq=16000, channels=1)
         return
     except ImportError:
@@ -166,13 +179,12 @@ def extract_audio(src: Path, dst: Path) -> None:
             "Install one of:\n"
             "    pip install audio-helper   (PyPI)\n"
             "    pip install video-helper   (PyPI)\n"
-            "    brew install ffmpeg   (macOS / Homebrew — https://brew.sh)\n"
+            "    brew install ffmpeg   (macOS / Homebrew: https://brew.sh)\n"
             "    apt install ffmpeg    (Debian / Ubuntu)\n"
             "    winget install Gyan.FFmpeg   (Windows)\n"
         )
     subprocess.run(
-        ["ffmpeg", "-y", "-i", str(src),
-         "-ac", "1", "-ar", "16000", str(dst)],
+        ["ffmpeg", "-y", "-i", str(src), "-ac", "1", "-ar", "16000", str(dst)],
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -180,6 +192,7 @@ def extract_audio(src: Path, dst: Path) -> None:
 
 
 # ── Cache helpers ───────────────────────────────────────────────────────────
+
 
 def _cache_key(audio: bytes, model: str, max_speakers: int) -> str:
     """Return a 32-char SHA-256 hex key for the inputs that affect diarization.
@@ -209,7 +222,7 @@ def _cache_get(key: str) -> list[dict[str, Any]] | None:
         return None
     try:
         return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 — cache miss on any parse error
+    except Exception:  # noqa: BLE001 (cache miss on any parse error)
         return None
 
 
@@ -227,6 +240,7 @@ def _cache_set(key: str, turns: list[dict[str, Any]]) -> None:
 
 
 # ── NeMo Sortformer runner ──────────────────────────────────────────────────
+
 
 def pick_device(explicit: str = "") -> str:
     """Pick the torch device the way NeMo would internally.
@@ -275,11 +289,7 @@ def _sortformer_model(model_tag: str, device: str) -> Any:
     try:
         from nemo.collections.asr.models import SortformerEncLabelModel  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        sys.exit(
-            "NeMo is not installed. Run:\n"
-            "    python scripts/install_diarize.py\n"
-            f"({exc})"
-        )
+        sys.exit(f"NeMo is not installed. Run:\n    python scripts/install_diarize.py\n({exc})")
     # NeMo caches downloaded checkpoints under ~/.cache/torch/NeMo/ by
     # default; set NEMO_CACHE_DIR to redirect that if desired.
     os.environ.setdefault("NEMO_CACHE_DIR", str(NEMO_DIR))
@@ -287,7 +297,7 @@ def _sortformer_model(model_tag: str, device: str) -> Any:
     model.eval()
     try:
         model = model.to(device)
-    except Exception:  # noqa: BLE001 — fall back to CPU
+    except Exception:  # noqa: BLE001 (fall back to CPU)
         pass
     return model
 
@@ -428,6 +438,7 @@ def _cap_speakers(turns: list[dict[str, Any]], cap: int) -> list[dict[str, Any]]
 
 # ── Output formats ──────────────────────────────────────────────────────────
 
+
 def turns_to_rttm(turns: list[dict[str, Any]], file_id: str = "file") -> str:
     """Render a turn list as an RTTM document.
 
@@ -449,9 +460,7 @@ def turns_to_rttm(turns: list[dict[str, Any]], file_id: str = "file") -> str:
         start = float(t["start"])
         dur = max(0.0, float(t["end"]) - start)
         spk = str(t["speaker"])
-        lines.append(
-            f"SPEAKER {file_id} 1 {start:.3f} {dur:.3f} <NA> <NA> speaker_{spk} <NA> <NA>"
-        )
+        lines.append(f"SPEAKER {file_id} 1 {start:.3f} {dur:.3f} <NA> <NA> speaker_{spk} <NA> <NA>")
     return "\n".join(lines) + "\n"
 
 
@@ -461,6 +470,7 @@ def turns_to_json(turns: list[dict[str, Any]]) -> str:
 
 
 # ── CLI ─────────────────────────────────────────────────────────────────────
+
 
 @sprezzature_command(
     "sprezzature-audio-diarize",
@@ -476,17 +486,41 @@ def turns_to_json(turns: list[dict[str, Any]]) -> str:
     ),
 )
 @click.argument("source", type=click.Path(path_type=Path))
-@click.option("--model", default=DEFAULT_MODEL, show_default=True,
-              help="Sortformer checkpoint (HF id or NeMo alias).")
-@click.option("--max-speakers", "max_speakers", type=int, default=0,
-              help="Cap on predicted speakers (0 = data-driven).")
+@click.option(
+    "--model",
+    default=DEFAULT_MODEL,
+    show_default=True,
+    help="Sortformer checkpoint (HF id or NeMo alias).",
+)
+@click.option(
+    "--max-speakers",
+    "max_speakers",
+    type=int,
+    default=0,
+    help="Cap on predicted speakers (0 = data-driven).",
+)
 @click.option("--device", default="", help="Torch device: cuda / mps / cpu. Auto by default.")
-@click.option("--format", "fmt", type=click.Choice(["both", "rttm", "json"]), default="both",
-              show_default=True, help="What to write next to the source.")
-@click.option("--out", type=click.Path(path_type=Path), default=None,
-              help="Output stem. Default: sibling of the source.")
-@click.option("--no-cache", "no_cache", is_flag=True, default=False,
-              help="Bypass the on-disk cache for this run.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["both", "rttm", "json"]),
+    default="both",
+    show_default=True,
+    help="What to write next to the source.",
+)
+@click.option(
+    "--out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output stem. Default: sibling of the source.",
+)
+@click.option(
+    "--no-cache",
+    "no_cache",
+    is_flag=True,
+    default=False,
+    help="Bypass the on-disk cache for this run.",
+)
 def _cli(
     source: Path,
     model: str,

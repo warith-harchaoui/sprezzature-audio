@@ -70,17 +70,29 @@ from _argparse import make_parser  # noqa: E402
 #: Where the GGML weights are cached. Override the parent dir via
 #: ``SPREZZATURE_CACHE_DIR``; the trailing ``whisper`` subfolder is fixed so
 #: every helper agrees on the lookup path.
-WHISPER_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "whisper"
+WHISPER_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "whisper"
+)
 
 #: Aliases that pywhispercpp understands directly via the model registry.
 SUPPORTED_MODELS: tuple[str, ...] = (
-    "tiny", "tiny.en",
-    "base", "base.en",
-    "small", "small.en",
-    "medium", "medium.en",
-    "large-v1", "large-v2", "large-v3", "large-v3-turbo",
+    "tiny",
+    "tiny.en",
+    "base",
+    "base.en",
+    "small",
+    "small.en",
+    "medium",
+    "medium.en",
+    "large-v1",
+    "large-v2",
+    "large-v3",
+    "large-v3-turbo",
 )
 
 #: Default when no ``--model`` flag is provided.
@@ -91,12 +103,13 @@ DEFAULT_MODEL: str = "large-v3-turbo"
 #: ``vocal-helper`` is published on PyPI; its base install declares
 #: ``pywhispercpp`` (+ ``silero-vad`` / ``audio-helper`` / ``os-helper``) as
 #: dependencies, so this one install provides both the engine and the
-#: ``pywhispercpp.utils.download_model`` used below — no extras needed.
+#: ``pywhispercpp.utils.download_model`` used below, with no extras needed.
 CAPTIONS_ENGINE_IMPORT: str = "vocal_helper"
 CAPTIONS_ENGINE_SPEC: str = "vocal-helper>=0.6.0"
 
 
 # ── captions engine install (vocal-helper → pywhispercpp) ─────────────────
+
 
 def _is_installed(pkg: str) -> bool:
     """
@@ -149,7 +162,7 @@ def ensure_captions_engine() -> None:
             "Make sure pip and git are available in this Python environment "
             "and try again."
         )
-    # Post-install probe — fail fast if pip reported success but the
+    # Post-install probe: fail fast if pip reported success but the
     # package is not on the active import path.
     if not _is_installed(CAPTIONS_ENGINE_IMPORT):
         sys.exit(
@@ -159,6 +172,7 @@ def ensure_captions_engine() -> None:
 
 
 # ── Model download ───────────────────────────────────────────────────────
+
 
 def download_model(name: str) -> Path:
     """
@@ -183,9 +197,7 @@ def download_model(name: str) -> Path:
         On unknown model or download failure.
     """
     if name not in SUPPORTED_MODELS:
-        sys.exit(
-            f"Unknown model: {name}. Known: {', '.join(SUPPORTED_MODELS)}."
-        )
+        sys.exit(f"Unknown model: {name}. Known: {', '.join(SUPPORTED_MODELS)}.")
 
     WHISPER_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -207,16 +219,19 @@ def download_model(name: str) -> Path:
 
 # ── CLI entry point ─────────────────────────────────────────────────────
 
+
 def main() -> int:
     """Run the pip-install + model-prefetch pipeline."""
     p = make_parser(
         prog="sprezzature-audio-install",
         description="Install vocal-helper (whisper.cpp over-layer) and "
-                    "pre-download a GGML caption model so `sprezzature-audio-captions` "
-                    "runs offline.",
+        "pre-download a GGML caption model so `sprezzature-audio-captions` "
+        "runs offline.",
     )
     p.add_argument(
-        "--model", default=DEFAULT_MODEL, choices=list(SUPPORTED_MODELS),
+        "--model",
+        default=DEFAULT_MODEL,
+        choices=list(SUPPORTED_MODELS),
         help=f"Model alias to pre-download (default: {DEFAULT_MODEL}).",
     )
     args = p.parse_args()

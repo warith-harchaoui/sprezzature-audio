@@ -107,9 +107,14 @@ from _click import run_command, sprezzature_command  # noqa: E402
 from diarize_from_nemo import extract_audio, pick_device  # noqa: E402
 
 #: Where install_diarize.py caches NeMo checkpoints.
-NEMO_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "nemo"
+NEMO_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "nemo"
+)
 
 #: Default TitaNet checkpoint.
 DEFAULT_MODEL: str = "nvidia/speakerverification_en_titanet_large"
@@ -121,6 +126,7 @@ DEFAULT_THRESHOLD: float = 0.55
 
 
 # ── NeMo TitaNet runner ────────────────────────────────────────────────────
+
 
 def _titanet_model(model_tag: str, device: str) -> Any:
     """Load a TitaNet checkpoint via NeMo.
@@ -142,11 +148,7 @@ def _titanet_model(model_tag: str, device: str) -> Any:
     try:
         from nemo.collections.asr.models import EncDecSpeakerLabelModel  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        sys.exit(
-            "NeMo is not installed. Run:\n"
-            "    python scripts/install_diarize.py\n"
-            f"({exc})"
-        )
+        sys.exit(f"NeMo is not installed. Run:\n    python scripts/install_diarize.py\n({exc})")
     os.environ.setdefault("NEMO_CACHE_DIR", str(NEMO_DIR))
     model = EncDecSpeakerLabelModel.from_pretrained(model_tag)
     model.eval()
@@ -158,6 +160,7 @@ def _titanet_model(model_tag: str, device: str) -> Any:
 
 
 # ── Embedding helpers ──────────────────────────────────────────────────────
+
 
 def embed_clip(model: Any, wav_path: Path) -> numpy.ndarray:
     """Return the TitaNet embedding of a WAV clip.
@@ -175,18 +178,19 @@ def embed_clip(model: Any, wav_path: Path) -> numpy.ndarray:
         L2-normalised 192-D speaker embedding.
     """
     import numpy as np
+
     emb = model.get_embedding(str(wav_path))
     if hasattr(emb, "cpu"):
         emb = emb.cpu().numpy()
     emb = np.asarray(emb).squeeze()
-    norm = float((emb ** 2).sum() ** 0.5) or 1.0
+    norm = float((emb**2).sum() ** 0.5) or 1.0
     return emb / norm
 
 
 def slice_wav(src_wav: Path, dst_wav: Path, start: float, end: float) -> None:
     """Cut ``[start, end]`` (seconds) from ``src_wav`` into ``dst_wav``.
 
-    Uses stdlib ``wave`` — no ffmpeg needed at this point (the caller
+    Uses stdlib ``wave``, so no ffmpeg is needed at this point (the caller
     already produced 16 kHz mono PCM via :func:`extract_audio`).
 
     Parameters
@@ -201,6 +205,7 @@ def slice_wav(src_wav: Path, dst_wav: Path, start: float, end: float) -> None:
         Slice end in seconds (clipped to file length).
     """
     import wave
+
     with wave.open(str(src_wav), "rb") as fin:
         fr = fin.getframerate()
         nch = fin.getnchannels()
@@ -268,7 +273,7 @@ def build_speaker_centroids(
             if embs:
                 stacked = np.stack(embs, axis=0)
                 mean = stacked.mean(axis=0)
-                norm = float((mean ** 2).sum() ** 0.5) or 1.0
+                norm = float((mean**2).sum() ** 0.5) or 1.0
                 centroids[spk] = mean / norm
     return centroids
 
@@ -326,6 +331,7 @@ def match_speakers(
         the raw name for downstream renderers.
     """
     import numpy as np
+
     labels: dict[str, str] = {}
     for spk, c in centroids.items():
         if not refs:
@@ -344,6 +350,7 @@ def match_speakers(
 
 # ── CLI ────────────────────────────────────────────────────────────────────
 
+
 @sprezzature_command(
     "sprezzature-audio-identify",
     help=(
@@ -357,17 +364,35 @@ def match_speakers(
     ),
 )
 @click.argument("diarization_json", type=click.Path(path_type=Path))
-@click.option("--audio", "audio_path", type=click.Path(path_type=Path), required=True,
-              help="Source audio / video the diarization was computed on.")
-@click.option("--refs", "refs_dir", type=click.Path(path_type=Path), default=None,
-              help="Directory of reference WAVs (filename stem = speaker name).")
-@click.option("--model", default=DEFAULT_MODEL, show_default=True,
-              help="TitaNet checkpoint.")
-@click.option("--threshold", type=float, default=DEFAULT_THRESHOLD, show_default=True,
-              help="Cosine threshold for accepting a reference match.")
+@click.option(
+    "--audio",
+    "audio_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Source audio / video the diarization was computed on.",
+)
+@click.option(
+    "--refs",
+    "refs_dir",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Directory of reference WAVs (filename stem = speaker name).",
+)
+@click.option("--model", default=DEFAULT_MODEL, show_default=True, help="TitaNet checkpoint.")
+@click.option(
+    "--threshold",
+    type=float,
+    default=DEFAULT_THRESHOLD,
+    show_default=True,
+    help="Cosine threshold for accepting a reference match.",
+)
 @click.option("--device", default="", help="Torch device: cuda / mps / cpu. Auto by default.")
-@click.option("--out", type=click.Path(path_type=Path), default=None,
-              help="Output JSON. Default: sibling '<stem>.speakers.json'.")
+@click.option(
+    "--out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output JSON. Default: sibling '<stem>.speakers.json'.",
+)
 def _cli(
     diarization_json: Path,
     audio_path: Path,
@@ -405,7 +430,11 @@ def _cli(
 
         labels = match_speakers(speaker_centroids, refs, threshold=threshold)
 
-    out_path = out or (diarization_json.with_name(diarization_json.stem.replace(".diarization", "") + ".speakers.json"))
+    out_path = out or (
+        diarization_json.with_name(
+            diarization_json.stem.replace(".diarization", "") + ".speakers.json"
+        )
+    )
     out_path.write_text(json.dumps(labels, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     click.echo(f"→ Wrote {out_path}")
     for spk, name in labels.items():

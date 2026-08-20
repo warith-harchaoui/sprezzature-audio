@@ -1,4 +1,5 @@
 """Tests for sprezzature_audio package and core script helpers."""
+
 from __future__ import annotations
 
 import sys

@@ -32,7 +32,7 @@ Usage
     # Full install (nemo + both checkpoints)
     python install_diarize.py
 
-    # Skip the model prefetch — download at first use instead
+    # Skip the model prefetch; download at first use instead
     python install_diarize.py --no-download
 
     # Only download the checkpoints (nemo already installed)
@@ -57,9 +57,14 @@ from _argparse import make_parser  # noqa: E402
 
 #: Where NeMo caches downloaded checkpoints; the diarize scripts export
 #: the same env var so the two agree on the location.
-NEMO_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "nemo"
+NEMO_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "nemo"
+)
 
 
 #: Hugging Face id for the diarization model.
@@ -73,7 +78,7 @@ TITANET_MODEL: str = "nvidia/speakerverification_en_titanet_large"
 def _is_installed(pkg: str) -> bool:
     """Return True when ``pkg`` is importable in the active interpreter.
 
-    Uses :func:`importlib.util.find_spec` — no side effects.
+    Uses :func:`importlib.util.find_spec`, which has no side effects.
 
     Parameters
     ----------
@@ -108,7 +113,7 @@ def ensure_nemo() -> None:
         sys.exit(
             f"pip install nemo_toolkit[asr] failed (exit {proc.returncode}).\n"
             "Common causes:\n"
-            "  * python < 3.10 — NeMo dropped 3.9 in a recent release; upgrade Python.\n"
+            "  * python < 3.10: NeMo dropped 3.9 in a recent release; upgrade Python.\n"
             "  * torch already pinned to a non-matching CUDA build; install torch first.\n"
             "  * A very old pip; run `python -m pip install --upgrade pip` and retry."
         )
@@ -144,12 +149,14 @@ def prefetch_models(models: list[str]) -> None:
         try:
             if tag == SORTFORMER_MODEL:
                 from nemo.collections.asr.models import SortformerEncLabelModel  # type: ignore
+
                 SortformerEncLabelModel.from_pretrained(tag)
             elif tag == TITANET_MODEL:
                 from nemo.collections.asr.models import EncDecSpeakerLabelModel  # type: ignore
+
                 EncDecSpeakerLabelModel.from_pretrained(tag)
             else:
-                print(f"[warn] unknown model tag '{tag}' — skipping.", file=sys.stderr)
+                print(f"[warn] unknown model tag '{tag}': skipping.", file=sys.stderr)
         except Exception as exc:  # noqa: BLE001
             sys.exit(f"Download failed for {tag}: {exc}")
 
@@ -168,8 +175,12 @@ def main() -> int:
     )
     p.add_argument("--no-install", action="store_true", help="Skip the pip install step.")
     p.add_argument("--no-download", action="store_true", help="Skip the model prefetch step.")
-    p.add_argument("--only", choices=("sortformer", "titanet"), default=None,
-                   help="Prefetch just one of the two checkpoints.")
+    p.add_argument(
+        "--only",
+        choices=("sortformer", "titanet"),
+        default=None,
+        help="Prefetch just one of the two checkpoints.",
+    )
     args = p.parse_args()
 
     if not args.no_install:
@@ -186,7 +197,9 @@ def main() -> int:
     print()
     print("→ Ready. Try:")
     print("    python scripts/diarize_from_nemo.py path/to/interview.mp4")
-    print("    python scripts/identify_from_titanet.py <diar.json> --audio <audio> --refs ./voices/")
+    print(
+        "    python scripts/identify_from_titanet.py <diar.json> --audio <audio> --refs ./voices/"
+    )
     return 0
 
 

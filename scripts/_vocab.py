@@ -52,7 +52,11 @@ from pathlib import Path
 #: Filenames probed first when auto-detecting a vocab source next to the
 #: media file. The first sibling found wins.
 AUTO_VOCAB_SOURCES: tuple[str, ...] = (
-    "README.md", "index.html", "transcript.md", "PRODUCT.md", "ABOUT.md",
+    "README.md",
+    "index.html",
+    "transcript.md",
+    "PRODUCT.md",
+    "ABOUT.md",
 )
 
 #: Marker files that indicate the root of a project tree, in priority order.
@@ -68,15 +72,29 @@ PROJECT_ROOT_MARKERS: tuple[str, ...] = (
 )
 
 #: Top-level filenames scanned when collecting project vocabulary.
-PROJECT_VOCAB_NAMES: frozenset[str] = frozenset({
-    "README.md", "SKILL.md", "LISEZMOI.md", "MANIFEST.md",
-    "manifest.json", "package.json", "pyproject.toml",
-})
+PROJECT_VOCAB_NAMES: frozenset[str] = frozenset(
+    {
+        "README.md",
+        "SKILL.md",
+        "LISEZMOI.md",
+        "MANIFEST.md",
+        "manifest.json",
+        "package.json",
+        "pyproject.toml",
+    }
+)
 
 #: Folders walked recursively for ``.md`` files inside a project.
-PROJECT_VOCAB_DIRS: frozenset[str] = frozenset({
-    "docs", "doc", "site", "content", "src", "references",
-})
+PROJECT_VOCAB_DIRS: frozenset[str] = frozenset(
+    {
+        "docs",
+        "doc",
+        "site",
+        "content",
+        "src",
+        "references",
+    }
+)
 
 #: Hard cap on total source bytes read from a project tree.
 PROJECT_READ_BUDGET: int = 512 * 1024
@@ -90,11 +108,12 @@ SURROUNDING_WINDOW: int = 400
 
 # ── Term extraction ─────────────────────────────────────────────────────────
 
+
 def extract_vocabulary(text: str) -> list[str]:
     """
     Extract a list of likely proper-noun and technical terms from prose.
 
-    The extraction is intentionally cheap — no NLP, just three pattern
+    The extraction is intentionally cheap: no NLP, just three pattern
     classes that catch the bulk of high-value names:
 
     1. Backtick-delimited identifiers (Markdown code spans).
@@ -156,7 +175,7 @@ def surrounding_text(doc: Path, image: Path, window: int = SURROUNDING_WINDOW) -
     Extract the text around every reference to ``image`` inside ``doc``.
 
     Both Markdown image references (``![alt](path)``) and HTML
-    ``<img src="path">`` syntaxes are recognized by basename match — the
+    ``<img src="path">`` syntaxes are recognized by basename match; the
     caller's ``image`` argument can be a full path or just the filename
     as it appears in ``doc``.
 
@@ -249,6 +268,7 @@ def read_vocab_file(path: Path) -> list[str]:
 
 # ── Project walking ────────────────────────────────────────────────────────
 
+
 def find_project_root(start: Path) -> Path | None:
     """
     Walk upward from ``start`` looking for the nearest project root.
@@ -337,6 +357,7 @@ def collect_project_text(root: Path, budget: int = PROJECT_READ_BUDGET) -> str:
 
 # ── Source-shape resolution ────────────────────────────────────────────────
 
+
 def resolve_vocab_terms(
     source: Path,
     *,
@@ -350,14 +371,14 @@ def resolve_vocab_terms(
 
     Resolution order (first non-empty result wins):
 
-    1. ``in_doc`` — extract surrounding text from the document the source
+    1. ``in_doc``: extract surrounding text from the document the source
        lives in. Highest signal for image alt text (page-level context).
-    2. ``vocab_file`` — explicit glossary file.
-    3. ``vocab_from`` — single file *or* directory (walked as a project).
-    4. ``auto_project`` — walk upward from ``source`` to find a project
+    2. ``vocab_file``: explicit glossary file.
+    3. ``vocab_from``: single file *or* directory (walked as a project).
+    4. ``auto_project``: walk upward from ``source`` to find a project
        root, then collect text from the whole tree.
     5. Auto-detect a sibling source matching :data:`AUTO_VOCAB_SOURCES`.
-    6. Empty list — no vocabulary available.
+    6. Empty list: no vocabulary available.
 
     Parameters
     ----------
@@ -393,7 +414,7 @@ def resolve_vocab_terms(
             text = vocab_from.read_text(encoding="utf-8")
         return extract_vocabulary(text)
 
-    # Subtitle siblings — for audio / video sources, a prior transcript or
+    # Subtitle siblings: for audio / video sources, a prior transcript or
     # caption file (``.vtt`` / ``.srt`` / ``.txt``) sharing the source's
     # stem is the highest-signal vocabulary available.
     for ext in (".vtt", ".srt", ".txt"):

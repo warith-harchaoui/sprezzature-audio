@@ -1,5 +1,5 @@
 """
-_argparse — one factory function for every script's command-line parser.
+_argparse: one factory function for every script's command-line parser.
 
 Python's standard library builds a command-line interface around an
 ``argparse.ArgumentParser`` object: you create one, register each flag
@@ -47,7 +47,7 @@ def make_parser(
     description : str
         One-paragraph description shown above the options table.
     epilog : str or None, optional
-        Text shown below the options table — usually usage examples.
+        Text shown below the options table, usually usage examples.
 
     Returns
     -------
@@ -61,7 +61,8 @@ def make_parser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "-V", "--version",
+        "-V",
+        "--version",
         action="version",
         version=f"%(prog)s {SKILL_VERSION}",
     )

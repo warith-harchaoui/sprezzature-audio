@@ -15,10 +15,10 @@ transcript:
    ___" or "Hey ___,"), scans the transcript for two well-studied
    patterns:
 
-   * **Self-introduction** — the current speaker names themselves
+   * **Self-introduction**: the current speaker names themselves
      ("I'm Alice", "my name is Bob", "this is Charlie speaking",
      "je suis Alice", "je m'appelle Bob").
-   * **Vocative addressing** — the current speaker addresses the
+   * **Vocative addressing**: the current speaker addresses the
      *other* speaker by name at the beginning or end of a turn
      ("Hey Mary, …", "Thanks, John.", "…, don't you think, Sam?").
 
@@ -27,7 +27,7 @@ transcript:
    evidence within one conversation are all resolved by picking the
    highest-confidence attribution per speaker id.
 
-2. **LLM pass** — optional; runs only when ``--ollama`` is passed or
+2. **LLM pass**: optional; runs only when ``--ollama`` is passed or
    ``OLLAMA_URL`` is reachable. Sends a compact JSON prompt to a local
    Ollama daemon and expects a JSON mapping in return. Same fixed
    model / URL as :mod:`alt_from_ollama` (``qwen3-vl:8b``, the one
@@ -43,10 +43,10 @@ Prior art
 
 Speaker-naming from dialogue text is a small but real subfield:
 
-* Bäuml, Tapaswi, & Stiefelhagen — *Person naming with automatically
+* Bäuml, Tapaswi, & Stiefelhagen, *Person naming with automatically
   discovered contextual clues* (CVPR 2013). Combines face, audio,
   and subtitle patterns very similar to the rule pass here.
-* Nagrani, Cole, Zisserman — *"From Benedict Cumberbatch to Sherlock
+* Nagrani, Cole, Zisserman, *"From Benedict Cumberbatch to Sherlock
   Holmes": Character identification in TV series without a script*
   (BMVC 2017).
 * Vocative detection (spotting when a sentence directly addresses someone
@@ -70,7 +70,7 @@ Inputs
 Output
 ------
 
-* ``*.speakers.json`` — the same shape :mod:`identify_from_titanet`
+* ``*.speakers.json``: the same shape :mod:`identify_from_titanet`
   writes, so :mod:`caption_diarize` picks it up unchanged.
 
 Usage
@@ -109,17 +109,22 @@ from typing import Any
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
 import click
 from _click import run_command, sprezzature_command  # noqa: E402
-
-# Every LLM/VLM call across sprezzature-* routes through this one function —
-# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
-# the backend and model tag from the SPREZZATURE_LLM_* environment variables
-# (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
-# at each call site below is a per-call override on top of that.
-from best_engine_ai_helper.llm import chat as _llm_chat
 from caption_diarize import (  # noqa: E402
     attribute_speakers,
     parse_caption_cues,
 )
+
+# Every LLM/VLM call across sprezzature-* routes through this one function,
+# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
+# the backend and model tag from the SPREZZATURE_LLM_* environment variables
+# (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
+# at each call site below is a per-call override on top of that.
+#
+# ``best-engine-ai-helper`` is an optional extra (the ``[translate]`` extra
+# in pyproject.toml), so the import is deferred to inside ``_llm_pass``,
+# the same policy CODING.md sets for NeMo / pywhispercpp / numpy, rather
+# than done here at module scope, so this module (and its rule-pass-only
+# functions) stay importable on a base install with no extras.
 
 # ── Configuration ──────────────────────────────────────────────────────────
 
@@ -131,24 +136,82 @@ DEFAULT_OLLAMA_URL: str = os.environ.get("OLLAMA_URL", "http://localhost:11434")
 DEFAULT_OLLAMA_MODEL: str = "qwen3-vl:8b"
 
 #: Names shorter than this are usually stopwords (Al, Ed, Jo). Not banned
-#: outright — the rule pass just requires stronger evidence.
+#: outright; the rule pass just requires stronger evidence.
 SHORT_NAME_LEN: int = 3
 
 #: Explicit stoplist of frequent capitalised English + French non-names
 #: that trip the vocative regex.
-STOPWORDS: frozenset[str] = frozenset({
-    "I", "You", "He", "She", "We", "They", "It",
-    "The", "A", "An", "Yes", "No", "OK", "Okay", "So", "Well", "Now",
-    "Hi", "Hey", "Hello", "Thanks", "Thank", "Sorry", "Please",
-    "God", "Jesus", "Christ", "Lord",
-    "January", "February", "March", "April", "May", "June", "July",
-    "August", "September", "October", "November", "December",
-    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
-    "Saturday", "Sunday",
-    # French leakage
-    "Je", "Tu", "Il", "Elle", "Nous", "Vous", "Ils", "Elles", "On",
-    "Le", "La", "Les", "Un", "Une", "Des", "Bonjour", "Merci", "Oui", "Non",
-})
+STOPWORDS: frozenset[str] = frozenset(
+    {
+        "I",
+        "You",
+        "He",
+        "She",
+        "We",
+        "They",
+        "It",
+        "The",
+        "A",
+        "An",
+        "Yes",
+        "No",
+        "OK",
+        "Okay",
+        "So",
+        "Well",
+        "Now",
+        "Hi",
+        "Hey",
+        "Hello",
+        "Thanks",
+        "Thank",
+        "Sorry",
+        "Please",
+        "God",
+        "Jesus",
+        "Christ",
+        "Lord",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        # French leakage
+        "Je",
+        "Tu",
+        "Il",
+        "Elle",
+        "Nous",
+        "Vous",
+        "Ils",
+        "Elles",
+        "On",
+        "Le",
+        "La",
+        "Les",
+        "Un",
+        "Une",
+        "Des",
+        "Bonjour",
+        "Merci",
+        "Oui",
+        "Non",
+    }
+)
 
 # Confidence buckets (larger = stronger evidence).
 CONF_SELF_INTRO: float = 0.95
@@ -304,6 +367,7 @@ def _pick_best(candidates: dict[str, list[tuple[str, float]]]) -> dict[str, tupl
 
 # ── LLM pass (local Ollama, optional) ──────────────────────────────────────
 
+
 def _reachable(url: str) -> bool:
     """Return True when the Ollama daemon responds to ``/api/tags``."""
     try:
@@ -317,7 +381,7 @@ def _resolve_ollama_model(base: str) -> str:
     """Return the model tag to send: the ``OLLAMA_MODEL`` override, else ``base``.
 
     ``base`` defaults to the registry-standard ``qwen3-vl:8b`` (pullable on any
-    box). No ``-mlx`` auto-suffix — that only named a maintainer-local build.
+    box). No ``-mlx`` auto-suffix: that only named a maintainer-local build.
     """
     return os.environ.get("OLLAMA_MODEL", "").strip() or base
 
@@ -375,14 +439,16 @@ def _llm_pass(
     dict of str to (str, float)
         LLM-derived candidates.
     """
+    from best_engine_ai_helper.llm import chat as _llm_chat
+
     speaker_ids = sorted({str(c.get("speaker_id", c.get("speaker"))) for c in cues})
     transcript = _build_transcript_excerpt(cues)
 
     system = (
         "You infer speaker names from a diarized conversation transcript. "
-        "Look for self-introductions (\"I'm Alice\", \"my name is Bob\", "
-        "\"je m'appelle Sam\") and vocatives (\"Hey Mary, ...\", "
-        "\"Thanks, John\"). Return STRICT JSON only — no prose, no markdown. "
+        'Look for self-introductions ("I\'m Alice", "my name is Bob", '
+        '"je m\'appelle Sam") and vocatives ("Hey Mary, ...", '
+        '"Thanks, John"). Return STRICT JSON only, no prose, no markdown. '
         "Return an object where each key is a speaker id from the input and "
         "each value is either the inferred human first name (title-cased) "
         "or the speaker id verbatim when the transcript has no clear "
@@ -394,11 +460,13 @@ def _llm_pass(
         "transcript": transcript,
     }
     try:
-        raw = str(_llm_chat(
-            json.dumps(user_payload, ensure_ascii=False),
-            system=system,
-            model=model,
-        )).strip()
+        raw = str(
+            _llm_chat(
+                json.dumps(user_payload, ensure_ascii=False),
+                system=system,
+                model=model,
+            )
+        ).strip()
     except Exception as exc:  # noqa: BLE001
         print(f"[warn] Ollama call failed: {exc}", file=sys.stderr)
         return {}
@@ -429,6 +497,7 @@ def _llm_pass(
 
 
 # ── Merge passes ───────────────────────────────────────────────────────────
+
 
 def _merge(*passes: dict[str, tuple[str, float]]) -> dict[str, str]:
     """Pick the highest-confidence name per speaker across passes.
@@ -464,6 +533,7 @@ def _merge(*passes: dict[str, tuple[str, float]]) -> dict[str, str]:
 
 # ── CLI ────────────────────────────────────────────────────────────────────
 
+
 @sprezzature_command(
     "sprezzature-audio-name",
     help=(
@@ -479,15 +549,34 @@ def _merge(*passes: dict[str, tuple[str, float]]) -> dict[str, str]:
     ),
 )
 @click.argument("transcript", type=click.Path(path_type=Path))
-@click.option("--diarization", "diarization_path", type=click.Path(path_type=Path), default=None,
-              help="Diarization JSON. Only needed when the transcript is not already "
-                   "speaker-attributed (i.e. not a *.speakers.vtt from caption_diarize).")
-@click.option("--out", type=click.Path(path_type=Path), default=None,
-              help="Output speakers.json. Default: sibling '<stem>.speakers.json'.")
-@click.option("--ollama", "use_ollama", is_flag=True, default=False,
-              help="Run the LLM refinement pass via local Ollama.")
-@click.option("--url", "ollama_url", default=DEFAULT_OLLAMA_URL, show_default=True,
-              help="Ollama endpoint URL.")
+@click.option(
+    "--diarization",
+    "diarization_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Diarization JSON. Only needed when the transcript is not already "
+    "speaker-attributed (i.e. not a *.speakers.vtt from caption_diarize).",
+)
+@click.option(
+    "--out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output speakers.json. Default: sibling '<stem>.speakers.json'.",
+)
+@click.option(
+    "--ollama",
+    "use_ollama",
+    is_flag=True,
+    default=False,
+    help="Run the LLM refinement pass via local Ollama.",
+)
+@click.option(
+    "--url",
+    "ollama_url",
+    default=DEFAULT_OLLAMA_URL,
+    show_default=True,
+    help="Ollama endpoint URL.",
+)
 def _cli(
     transcript: Path,
     diarization_path: Path | None,
@@ -511,7 +600,7 @@ def _cli(
     else:
         # If the caller passed an already-speaker-attributed VTT
         # (from caption_diarize) the ``<v Name>`` tag has been stripped
-        # by parse_caption_cues — we need to re-attach it as speaker_id.
+        # by parse_caption_cues, so we need to re-attach it as speaker_id.
         # The lightweight assumption: whatever was in the <v ...> tag
         # in the original text is the speaker.
         raw = transcript.read_text(encoding="utf-8")
@@ -558,7 +647,7 @@ def _repopulate_speaker_ids(cues: list[dict[str, Any]], raw_text: str) -> list[d
         Parsed cues (voice tags already stripped by
         :func:`caption_diarize.parse_caption_cues`).
     raw_text : str
-        The original VTT text — we scan it for the ``<v ...>`` tags in
+        The original VTT text: we scan it for the ``<v ...>`` tags in
         cue order and re-attach the name as both ``speaker`` and
         ``speaker_id``.
 
@@ -584,7 +673,7 @@ def _repopulate_speaker_ids(cues: list[dict[str, Any]], raw_text: str) -> list[d
     if len(cues) > len(out):
         last_id = out[-1]["speaker_id"] if out else "0"
         last_name = out[-1]["speaker"] if out else "0"
-        for cue in cues[len(out):]:
+        for cue in cues[len(out) :]:
             out.append({**cue, "speaker_id": last_id, "speaker": last_name})
     return out
 

@@ -30,6 +30,7 @@ Author
 ------
 Warith Harchaoui <warith.harchaoui@gmail.com>
 """
+
 from __future__ import annotations
 
 __version__ = "1.0.0"

@@ -80,14 +80,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import click  # noqa: E402
 from _click import run_command, sprezzature_command  # noqa: E402
 from _lang import detect_text_language, extract_body_text, language_name  # noqa: E402
+from caption_diarize import parse_caption_cues  # noqa: E402
 
-# Every LLM/VLM call across sprezzature-* routes through this one function —
+# Every LLM/VLM call across sprezzature-* routes through this one function,
 # no script imports an Ollama/OpenAI/LangChain client directly. It resolves
 # the backend and model tag from the SPREZZATURE_LLM_* environment variables
 # (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
 # at each call site below is a per-call override on top of that.
-from best_engine_ai_helper.llm import chat as _llm_chat  # noqa: E402
-from caption_diarize import parse_caption_cues  # noqa: E402
+#
+# ``best-engine-ai-helper`` is an optional extra (the ``[translate]`` extra
+# in pyproject.toml), so the import is deferred to inside the translator
+# closure built by ``make_ollama_translator``, the same policy CODING.md
+# sets for NeMo / pywhispercpp / numpy, rather than done here at module
+# scope, so this module (and its pure cue-handling functions) stay
+# importable on a base install with no extras.
 
 # ── Module-level configuration ────────────────────────────────────────────────
 
@@ -104,6 +110,7 @@ DEFAULT_OLLAMA_MODEL: str = "qwen3-vl:8b"
 #: small enough to keep the strict-JSON reply reliable on an 8B model.
 DEFAULT_BATCH_SIZE: int = 8
 
+
 class TranslationError(RuntimeError):
     """Raised when the model reply cannot be aligned back to the cues.
 
@@ -114,6 +121,7 @@ class TranslationError(RuntimeError):
 
 
 # ── Language resolution ───────────────────────────────────────────────────────
+
 
 def detect_source_language(cues: list[dict[str, object]], fallback: str = "en") -> str:
     """
@@ -132,7 +140,7 @@ def detect_source_language(cues: list[dict[str, object]], fallback: str = "en") 
     str
         Lower-case two-letter language code.
     """
-    # Concatenate a generous slice of cue text — langdetect wants ≥20
+    # Concatenate a generous slice of cue text: langdetect wants ≥20
     # non-whitespace characters to commit, and a few cues rarely suffice.
     joined: str = " ".join(str(c.get("text", "")) for c in cues)
     return detect_text_language(joined, fallback=fallback)
@@ -173,6 +181,7 @@ def resolve_target_language(
 
 
 # ── VTT emission ──────────────────────────────────────────────────────────────
+
 
 def _format_timestamp(seconds: float) -> str:
     """
@@ -228,7 +237,8 @@ def render_vtt(cues: list[dict[str, object]]) -> str:
     return "\n".join(lines)
 
 
-# ── Translation core (pure — Ollama injected as a seam) ────────────────────────
+# ── Translation core (pure; Ollama injected as a seam) ────────────────────────
+
 
 def translate_cues(
     cues: list[dict[str, object]],
@@ -242,7 +252,7 @@ def translate_cues(
     Each window of ``batch_size`` cues is handed to ``translate_batch`` in
     one call so the model sees cross-cue context. When a window comes back
     with the wrong number of segments (the small model merged or split
-    lines), the window is retried **one cue at a time** — which cannot
+    lines), the window is retried **one cue at a time**, which cannot
     misalign. If even a single-cue call fails to return exactly one
     segment, the function raises rather than emit misaligned subtitles.
 
@@ -276,7 +286,7 @@ def translate_cues(
         try:
             translated: list[str] = translate_batch(window)
             if len(translated) != len(window):
-                # Count mismatch — the model merged/split lines. Fall
+                # Count mismatch: the model merged/split lines. Fall
                 # through to the per-cue path, which cannot misalign.
                 raise TranslationError("window count mismatch")
         except TranslationError:
@@ -285,7 +295,7 @@ def translate_cues(
                 single: list[str] = translate_batch([one_text])
                 if len(single) != 1:
                     # A single cue must map to exactly one segment. If not,
-                    # abort loudly — never silently drop or shift cues.
+                    # abort loudly; never silently drop or shift cues.
                     raise TranslationError(
                         "single-cue translation did not return exactly one "
                         "segment; aborting to avoid misaligned subtitles"
@@ -299,6 +309,7 @@ def translate_cues(
 
 
 # ── Ollama plumbing (the one authorized LLM: qwen3-vl:8b) ────────────────────────
+
 
 def _reachable(url: str) -> bool:
     """
@@ -317,7 +328,7 @@ def _reachable(url: str) -> bool:
     try:
         with urllib.request.urlopen(url.rstrip("/") + "/api/tags", timeout=1.5) as fh:
             return fh.status == 200
-    except Exception:  # noqa: BLE001 — any failure means "not reachable".
+    except Exception:  # noqa: BLE001 (any failure means "not reachable")
         return False
 
 
@@ -377,21 +388,25 @@ def make_ollama_translator(
         f"You are a professional subtitle translator. Translate each "
         f"numbered caption line from {source_name} into {target_name}. "
         f"Keep the meaning and register; keep each line concise enough to "
-        f"read on screen. Return STRICT JSON only — no prose, no markdown: "
+        f"read on screen. Return STRICT JSON only, no prose, no markdown: "
         f"an object whose keys are exactly the input keys and whose values "
         f"are the translations. Do not merge, split, add, or drop keys."
     )
 
     def translate(window: list[str]) -> list[str]:
         """Translate one window of cue texts via Ollama, preserving order."""
+        from best_engine_ai_helper.llm import chat as _llm_chat
+
         # Number the lines 1..K so we can map the reply back positionally.
         payload: dict[str, str] = {str(n + 1): text for n, text in enumerate(window)}
         try:
-            raw: str = str(_llm_chat(
-                json.dumps(payload, ensure_ascii=False),
-                system=system,
-                model=model,
-            )).strip()
+            raw: str = str(
+                _llm_chat(
+                    json.dumps(payload, ensure_ascii=False),
+                    system=system,
+                    model=model,
+                )
+            ).strip()
         except Exception as exc:  # noqa: BLE001
             raise TranslationError(f"Ollama call failed: {exc}") from exc
         try:
@@ -415,6 +430,7 @@ def make_ollama_translator(
 
 
 # ── Two-track snippet ──────────────────────────────────────────────────────────
+
 
 def two_track_snippet(
     *,
@@ -460,12 +476,13 @@ def two_track_snippet(
 
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
+
 @sprezzature_command(
     "sprezzature-audio-translate",
     help=(
         "Translate an existing .vtt/.srt into the surrounding-text language "
         "via the local Ollama model and emit a two-track <video> snippet "
-        "(native captions + translated subtitles). Runs on captions only — "
+        "(native captions + translated subtitles). Runs on captions only, "
         "no audio, decoupled from the caption backend."
     ),
     epilog=(
@@ -475,25 +492,53 @@ def two_track_snippet(
     ),
 )
 @click.argument("captions", type=click.Path(path_type=Path))
-@click.option("--lang", "-l", "target_lang", default=None,
-              help="Target language code (e.g. fr, es). Default: detect from "
-                   "the surrounding text (--in / --context).")
-@click.option("--in", "in_doc", type=click.Path(path_type=Path), default=None,
-              help="Document embedding the media; its body text is the "
-                   "surrounding-text signal for language detection.")
-@click.option("--context", "-c", default="",
-              help="Free-form surrounding text used to detect the target "
-                   "language when --lang is omitted.")
-@click.option("--media", default=None,
-              help="Media file name for the emitted <source>. "
-                   "Default: derived from the captions file name.")
-@click.option("--out", type=click.Path(path_type=Path), default=None,
-              help="Output translated .vtt. Default: sibling "
-                   "'<stem>.<lang>.vtt'.")
-@click.option("--url", "ollama_url", default=DEFAULT_OLLAMA_URL, show_default=True,
-              help="Ollama endpoint URL.")
-@click.option("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, show_default=True,
-              help="Cues translated per model call.")
+@click.option(
+    "--lang",
+    "-l",
+    "target_lang",
+    default=None,
+    help="Target language code (e.g. fr, es). Default: detect from "
+    "the surrounding text (--in / --context).",
+)
+@click.option(
+    "--in",
+    "in_doc",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Document embedding the media; its body text is the "
+    "surrounding-text signal for language detection.",
+)
+@click.option(
+    "--context",
+    "-c",
+    default="",
+    help="Free-form surrounding text used to detect the target language when --lang is omitted.",
+)
+@click.option(
+    "--media",
+    default=None,
+    help="Media file name for the emitted <source>. Default: derived from the captions file name.",
+)
+@click.option(
+    "--out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output translated .vtt. Default: sibling '<stem>.<lang>.vtt'.",
+)
+@click.option(
+    "--url",
+    "ollama_url",
+    default=DEFAULT_OLLAMA_URL,
+    show_default=True,
+    help="Ollama endpoint URL.",
+)
+@click.option(
+    "--batch-size",
+    type=int,
+    default=DEFAULT_BATCH_SIZE,
+    show_default=True,
+    help="Cues translated per model call.",
+)
 def _cli(
     captions: Path,
     target_lang: str | None,
@@ -528,16 +573,15 @@ def _cli(
     resolved_target: str = resolve_target_language(target_lang, context_text)
 
     # Nothing to translate when the surrounding text is already the audio's
-    # language — emit a note and stop (the native captions stand alone).
+    # language: emit a note and stop (the native captions stand alone).
     if resolved_target == source_lang:
         click.echo(
-            f"Source and target language match ({source_lang}); "
-            "no translation track needed.",
+            f"Source and target language match ({source_lang}); no translation track needed.",
             err=True,
         )
         return 0
 
-    # Translation requires the model — fail loud if the daemon is absent,
+    # Translation requires the model; fail loud if the daemon is absent,
     # unlike the optional LLM refinement in name_from_transcript.
     if not _reachable(ollama_url):
         click.echo(
@@ -572,15 +616,19 @@ def _cli(
 
     # Print the two-track snippet so the user can paste both tracks at once.
     media_name: str = media or (captions.stem + ".mp4")
-    click.echo("\n" + two_track_snippet(
-        media=media_name,
-        native_vtt=captions.name,
-        translated_vtt=out_path.name,
-        audio_lang=source_lang,
-        target_lang=resolved_target,
-    ))
     click.echo(
-        "\n(Draft translation — verify before shipping.)", err=True,
+        "\n"
+        + two_track_snippet(
+            media=media_name,
+            native_vtt=captions.name,
+            translated_vtt=out_path.name,
+            audio_lang=source_lang,
+            target_lang=resolved_target,
+        )
+    )
+    click.echo(
+        "\n(Draft translation: verify before shipping.)",
+        err=True,
     )
     return 0
 

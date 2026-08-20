@@ -1,5 +1,5 @@
 """
-_click — the same command-line conveniences as `_argparse.py`, for scripts
+_click: the same command-line conveniences as `_argparse.py`, for scripts
 built with Click instead of argparse.
 
 Click is a third-party library for building command-line interfaces: instead
@@ -82,7 +82,7 @@ def sprezzature_command(
     help : str
         One-paragraph description shown above the options table.
     epilog : str or None, optional
-        Text shown below the options table — usually usage examples.
+        Text shown below the options table, usually usage examples.
 
     Returns
     -------
@@ -103,10 +103,13 @@ def sprezzature_command(
         # Version flag mirrors the argparse-era ``-V`` / ``--version`` pair
         # and the ``%(prog)s 0.2.0`` payload so test_cli_help keeps passing.
         cmd = click.version_option(
-            SKILL_VERSION, "-V", "--version", prog_name=name,
+            SKILL_VERSION,
+            "-V",
+            "--version",
+            prog_name=name,
         )(cmd)
         # Stash the canonical prog name so :func:`run_command` can pass it
-        # to Click's ``main(prog_name=...)`` — otherwise the usage line
+        # to Click's ``main(prog_name=...)``; otherwise the usage line
         # shows the raw script filename (``meta_from_ollama.py``) instead
         # of the kebab-cased name the user sees in docs.
         cmd._sprezzature_prog_name = name  # type: ignore[attr-defined]
@@ -118,7 +121,7 @@ def sprezzature_command(
 def run_command(cmd: click.Command, argv: Sequence[str] | None = None) -> int:
     """Invoke a sprezzature Click command and return its integer exit code.
 
-    Bridges the argparse-era contract — ``main(argv=None) -> int`` — to
+    Bridges the argparse-era contract (``main(argv=None) -> int``) to
     Click's standalone-mode default of exiting via :class:`SystemExit`.
 
     The helper:

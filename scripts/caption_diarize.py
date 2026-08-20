@@ -145,6 +145,7 @@ def parse_caption_cues(text: str) -> list[dict[str, Any]]:
 
 # ── Merger ─────────────────────────────────────────────────────────────────
 
+
 def _overlap(a0: float, a1: float, b0: float, b1: float) -> float:
     """Return the overlap length in seconds of ``[a0, a1]`` and ``[b0, b1]``."""
     return max(0.0, min(a1, b1) - max(a0, b0))
@@ -193,12 +194,15 @@ def attribute_speakers(
         if best_spk is None:
             best_spk = last_spk if last_spk is not None else "0"
         last_spk = best_spk
-        display = names.get(best_spk, f"Speaker {int(best_spk) + 1}" if best_spk.isdigit() else best_spk)
+        display = names.get(
+            best_spk, f"Speaker {int(best_spk) + 1}" if best_spk.isdigit() else best_spk
+        )
         out.append({**cue, "speaker_id": best_spk, "speaker": display})
     return out
 
 
 # ── Renderers ──────────────────────────────────────────────────────────────
+
 
 def render_vtt(cues: list[dict[str, Any]]) -> str:
     """Render speaker-attributed cues as a WebVTT document."""
@@ -256,6 +260,7 @@ def render_text(cues: list[dict[str, Any]]) -> str:
 
 # ── CLI ────────────────────────────────────────────────────────────────────
 
+
 @sprezzature_command(
     "sprezzature-audio-caption-diarize",
     help=(
@@ -269,16 +274,41 @@ def render_text(cues: list[dict[str, Any]]) -> str:
         "      --speakers t.speakers.json --format srt --out t.speakers.srt\n"
     ),
 )
-@click.option("--captions", "captions_path", type=click.Path(path_type=Path), required=True,
-              help="Path to a .vtt or .srt file from captions_from_whisper.")
-@click.option("--diarization", "diarization_path", type=click.Path(path_type=Path), required=True,
-              help="Path to a .diarization.json from diarize_from_nemo.")
-@click.option("--speakers", "speakers_path", type=click.Path(path_type=Path), default=None,
-              help="Optional .speakers.json from identify_from_titanet.")
-@click.option("--format", "fmt", type=click.Choice(["vtt", "srt", "text"]), default="vtt",
-              show_default=True, help="Output format.")
-@click.option("--out", type=click.Path(path_type=Path), default=None,
-              help="Output path. Default: sibling '<captions-stem>.speakers.<ext>'.")
+@click.option(
+    "--captions",
+    "captions_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to a .vtt or .srt file from captions_from_whisper.",
+)
+@click.option(
+    "--diarization",
+    "diarization_path",
+    type=click.Path(path_type=Path),
+    required=True,
+    help="Path to a .diarization.json from diarize_from_nemo.",
+)
+@click.option(
+    "--speakers",
+    "speakers_path",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Optional .speakers.json from identify_from_titanet.",
+)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["vtt", "srt", "text"]),
+    default="vtt",
+    show_default=True,
+    help="Output format.",
+)
+@click.option(
+    "--out",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output path. Default: sibling '<captions-stem>.speakers.<ext>'.",
+)
 def _cli(
     captions_path: Path,
     diarization_path: Path,

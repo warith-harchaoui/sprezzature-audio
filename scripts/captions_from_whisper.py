@@ -90,7 +90,7 @@ from _click import run_command, sprezzature_command  # noqa: E402
 if TYPE_CHECKING:
     import numpy
 
-# Vocabulary + language helpers — shared with the other Ollama-backed scripts.
+# Vocabulary + language helpers, shared with the other Ollama-backed scripts.
 sys.path.insert(0, str(Path(__file__).parent))
 from _lang import detect_text_language  # noqa: E402
 from _vocab import resolve_vocab_terms  # noqa: E402
@@ -98,15 +98,25 @@ from _vocab import resolve_vocab_terms  # noqa: E402
 # ── Module-level configuration ────────────────────────────────────────────────
 
 #: Cache directory shared with the rest of the skill's helpers.
-CACHE_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "captions"
+CACHE_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "captions"
+)
 
 #: Where install_captions.py pre-downloads GGML weights. The model loader
 #: reads from this directory, falling back to ``pywhispercpp``'s own download.
-WHISPER_DIR: Path = Path(
-    os.environ.get("SPREZZATURE_CACHE_DIR") or os.environ.get("FRONT_CACHE_DIR") or Path.home() / ".cache" / "sprezzature-skill"
-) / "whisper"
+WHISPER_DIR: Path = (
+    Path(
+        os.environ.get("SPREZZATURE_CACHE_DIR")
+        or os.environ.get("FRONT_CACHE_DIR")
+        or Path.home() / ".cache" / "sprezzature-skill"
+    )
+    / "whisper"
+)
 
 #: Cache toggle, mirroring the other helpers.
 NO_CACHE: bool = bool(os.environ.get("SPREZZATURE_NO_CACHE") or os.environ.get("FRONT_NO_CACHE"))
@@ -119,6 +129,7 @@ VIDEO_EXTS: frozenset[str] = frozenset({".mp4", ".mov", ".mkv", ".avi", ".webm",
 
 
 # ── Audio extraction (helper libs first, ffmpeg fallback) ───────────────────
+
 
 def extract_audio(src: Path, dst: Path) -> None:
     """
@@ -145,9 +156,10 @@ def extract_audio(src: Path, dst: Path) -> None:
     """
     dst.parent.mkdir(parents=True, exist_ok=True)
 
-    # Optimistic import — the helpers are not required.
+    # Optimistic import: the helpers are not required.
     try:
         from video_helper import extract_audio_track  # type: ignore
+
         if src.suffix.lower() in VIDEO_EXTS:
             extract_audio_track(str(src), str(dst), sample_rate=16000, channels=1)
             return
@@ -155,6 +167,7 @@ def extract_audio(src: Path, dst: Path) -> None:
         pass
     try:
         from audio_helper import sound_converter  # type: ignore
+
         sound_converter(str(src), str(dst), freq=16000, channels=1)
         return
     except ImportError:
@@ -167,13 +180,12 @@ def extract_audio(src: Path, dst: Path) -> None:
             "Install one of:\n"
             "    pip install audio-helper   (PyPI)\n"
             "    pip install video-helper   (PyPI)\n"
-            "    brew install ffmpeg   (macOS / Homebrew — https://brew.sh)\n"
+            "    brew install ffmpeg   (macOS / Homebrew: https://brew.sh)\n"
             "    apt install ffmpeg    (Debian / Ubuntu)\n"
             "    winget install Gyan.FFmpeg   (Windows)\n"
         )
     subprocess.run(
-        ["ffmpeg", "-y", "-i", str(src),
-         "-ac", "1", "-ar", "16000", str(dst)],
+        ["ffmpeg", "-y", "-i", str(src), "-ac", "1", "-ar", "16000", str(dst)],
         check=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -190,7 +202,7 @@ def extract_audio(src: Path, dst: Path) -> None:
 MAX_PROMPT_WORDS: int = 150
 
 #: Per-language opening sentence for the composed prompt. The natural prose
-#: pattern beats a bare comma-separated list — whisper.cpp was trained on
+#: pattern beats a bare comma-separated list, since whisper.cpp was trained on
 #: continuous text.
 PROMPT_OPENERS: dict[str, str] = {
     "en": "The following terms may appear in the audio:",
@@ -212,7 +224,7 @@ def compose_prompt(vocab: list[str], lang: str) -> str:
 
     The output is a single sentence in ``lang`` listing the terms,
     truncated so the whole prompt stays under :data:`MAX_PROMPT_WORDS`
-    words. Whisper's prompt encoder caps around 224 tokens — staying
+    words. Whisper's prompt encoder caps around 224 tokens; staying
     under ~150 words leaves headroom across every supported language.
 
     Parameters
@@ -231,7 +243,7 @@ def compose_prompt(vocab: list[str], lang: str) -> str:
         return ""
     opener: str = PROMPT_OPENERS.get(lang, PROMPT_OPENERS["en"])
     # Truncate the term list so the full sentence stays under the cap.
-    # ``opener`` is short — well under 10 words; the rest of the budget
+    # ``opener`` is short, well under 10 words; the rest of the budget
     # belongs to the terms themselves.
     budget: int = MAX_PROMPT_WORDS - len(opener.split())
     kept: list[str] = []
@@ -261,7 +273,7 @@ def resolve_vocab(
     """
     Resolve the final ``initial_prompt`` from the available inputs.
 
-    Thin adapter on top of :func:`_vocab.resolve_vocab_terms` — adds the
+    Thin adapter on top of :func:`_vocab.resolve_vocab_terms`; adds the
     explicit-prompt shortcut and runs the captions-specific
     :func:`compose_prompt` over the extracted terms.
 
@@ -297,6 +309,7 @@ def resolve_vocab(
 
 
 # ── Cache helpers ───────────────────────────────────────────────────────────
+
 
 def _cache_key(audio: bytes, model_name: str, lang: str, fmt: str, prompt: str) -> str:
     """
@@ -353,6 +366,7 @@ def _cache_set(key: str, text: str, fmt: str) -> None:
 
 # ── Time formatting ─────────────────────────────────────────────────────────
 
+
 def _format_timestamp(centiseconds: int, *, srt: bool = False) -> str:
     """
     Format a timestamp expressed in 10-ms units as ``HH:MM:SS.mmm`` (VTT)
@@ -379,6 +393,7 @@ def _format_timestamp(centiseconds: int, *, srt: bool = False) -> str:
 
 
 # ── Segment → output format ─────────────────────────────────────────────────
+
 
 def segments_to_vtt(segments: list) -> str:
     """
@@ -474,6 +489,7 @@ def segments_to_text(segments: list) -> str:
 
 # ── Model loading + transcription ───────────────────────────────────────────
 
+
 def _resolve_model_arg(model: str) -> str:
     """
     Resolve the ``--model`` argument to whatever ``pywhispercpp.Model``
@@ -495,7 +511,9 @@ def _resolve_model_arg(model: str) -> str:
     str
         Either an absolute filesystem path or the bare alias.
     """
-    if override := (os.environ.get("SPREZZATURE_WHISPER_MODEL") or os.environ.get("FRONT_WHISPER_MODEL")):
+    if override := (
+        os.environ.get("SPREZZATURE_WHISPER_MODEL") or os.environ.get("FRONT_WHISPER_MODEL")
+    ):
         return override
     cached: Path = WHISPER_DIR / f"ggml-{model}.bin"
     if cached.is_file():
@@ -520,7 +538,7 @@ def _pcm_from_wav(wav_path: Path) -> tuple[numpy.ndarray, int]:  # noqa: F821
     Returns
     -------
     tuple[numpy.ndarray, int]
-        ``(pcm, sample_rate)`` — ``pcm`` is 1-D ``float32`` in [-1, 1].
+        ``(pcm, sample_rate)``, where ``pcm`` is 1-D ``float32`` in [-1, 1].
     """
     import numpy as np
     from audio_helper import load_audio  # type: ignore
@@ -548,8 +566,8 @@ def _run_whisper_stage(
     model defaults (``large-v3-turbo-q5_0``), the ``token_timestamps``
     wiring, the ``min_segment_ms`` hallucination guard, and the
     ``initial_prompt`` vocabulary-biasing lever. The captions tier drives
-    it as a single whole-file segment — no VAD, no diarization (that
-    lives in the separate ``diarize`` tier) — so this stays the light,
+    it as a single whole-file segment: no VAD, no diarization (that
+    lives in the separate ``diarize`` tier), so this stays the light,
     offline caption path while delegating the actual STT to the helper.
 
     The stage's public contract is the ``run(inbox, outbox)`` coroutine
@@ -575,7 +593,7 @@ def _run_whisper_stage(
     -------
     list
         ``SimpleNamespace`` items with ``t0`` / ``t1`` (10-ms units) and
-        ``text`` — the shape :func:`segments_to_vtt` and friends consume.
+        ``text``, the shape :func:`segments_to_vtt` and friends consume.
     """
     import asyncio
     from types import SimpleNamespace
@@ -614,7 +632,7 @@ def _run_whisper_stage(
 
     utterances = asyncio.run(_drive())
 
-    # ``Utterance.words`` is a list of ``(t0_sec, t1_sec, text)`` triplets —
+    # ``Utterance.words`` is a list of ``(t0_sec, t1_sec, text)`` triplets:
     # whisper's segment-level cues when driven on a whole file. Convert the
     # seconds back to the centisecond units the renderers were written for.
     segments: list = []
@@ -813,7 +831,7 @@ def _cli(
         return 1
 
     # Language for the opener: explicit --lang wins. Otherwise ALWAYS detect
-    # by sniffing the vocabulary sources via langdetect — no configured
+    # by sniffing the vocabulary sources via langdetect, with no configured
     # default; "en" is only the no-signal floor.
     vocab_lang: str = lang
     if not vocab_lang:

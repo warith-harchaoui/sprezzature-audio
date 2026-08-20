@@ -51,6 +51,7 @@ from html.parser import HTMLParser
 
 # ── Body-text extraction (stdlib only) ──────────────────────────────────────
 
+
 class _VisibleTextParser(HTMLParser):
     """Collect an HTML document's visible text, skipping ``<script>``,
     ``<style>``, ``<svg>`` and ``<noscript>`` (code / graphics / boilerplate,
@@ -84,7 +85,7 @@ def _strip_html(content: str) -> str:
     parser = _VisibleTextParser()
     try:
         parser.feed(content)
-    except Exception:  # noqa: BLE001 — malformed HTML must never crash a caller
+    except Exception:  # noqa: BLE001 (malformed HTML must never crash a caller)
         # Fall back to a crude tag strip so we still return *some* text.
         return re.sub(r"<[^>]+>", " ", content)
     return " ".join(parser.chunks)
@@ -93,17 +94,17 @@ def _strip_html(content: str) -> str:
 #: Ordered Markdown cleanups: each (pattern, replacement) drops syntax while
 #: keeping the human-readable text (link/image *labels*, list *items*, …).
 _MD_SUBS: tuple[tuple[re.Pattern[str], str], ...] = (
-    (re.compile(r"```.*?```", re.S), " "),        # fenced code blocks
-    (re.compile(r"~~~.*?~~~", re.S), " "),         # fenced code blocks (~)
-    (re.compile(r"`[^`]*`"), " "),                  # inline code
-    (re.compile(r"!\[[^\]]*\]\([^)]*\)"), " "),     # images (drop alt + url)
+    (re.compile(r"```.*?```", re.S), " "),  # fenced code blocks
+    (re.compile(r"~~~.*?~~~", re.S), " "),  # fenced code blocks (~)
+    (re.compile(r"`[^`]*`"), " "),  # inline code
+    (re.compile(r"!\[[^\]]*\]\([^)]*\)"), " "),  # images (drop alt + url)
     (re.compile(r"\[([^\]]*)\]\([^)]*\)"), r"\1"),  # links -> label text
-    (re.compile(r"^\s{0,3}#{1,6}\s*", re.M), ""),   # ATX heading markers
-    (re.compile(r"^\s{0,3}>\s?", re.M), ""),         # blockquote markers
+    (re.compile(r"^\s{0,3}#{1,6}\s*", re.M), ""),  # ATX heading markers
+    (re.compile(r"^\s{0,3}>\s?", re.M), ""),  # blockquote markers
     (re.compile(r"^\s{0,3}([*+-]|\d+\.)\s+", re.M), ""),  # list markers
     (re.compile(r"^\s*([-*_]\s*){3,}$", re.M), " "),  # horizontal rules
-    (re.compile(r"[*_~]{1,3}"), ""),                 # emphasis / strikethrough
-    (re.compile(r"<[^>]+>"), " "),                    # inline HTML tags
+    (re.compile(r"[*_~]{1,3}"), ""),  # emphasis / strikethrough
+    (re.compile(r"<[^>]+>"), " "),  # inline HTML tags
 )
 
 
@@ -121,9 +122,12 @@ def _sniff_format(content: str) -> str:
     if "<html" in head or "<body" in head or re.search(r"</[a-z][a-z0-9]*>", head):
         return "html"
     # Markdown signals: fenced code, ATX heading, or a link/image.
-    if re.search(r"(^|\n)\s{0,3}#{1,6}\s", content) or "```" in content \
-            or re.search(r"!\?\[[^\]]*\]\([^)]*\)", content) \
-            or re.search(r"\[[^\]]+\]\([^)]+\)", content):
+    if (
+        re.search(r"(^|\n)\s{0,3}#{1,6}\s", content)
+        or "```" in content
+        or re.search(r"!\?\[[^\]]*\]\([^)]*\)", content)
+        or re.search(r"\[[^\]]+\]\([^)]+\)", content)
+    ):
         return "markdown"
     return "text"
 
@@ -138,7 +142,7 @@ def extract_body_text(content: str, fmt: str = "auto") -> str:
     Parameters
     ----------
     content : str
-        Raw source — an HTML document/fragment, a Markdown document, or plain
+        Raw source: an HTML document/fragment, a Markdown document, or plain
         text.
     fmt : str, optional
         ``"html"`` / ``"htm"``, ``"markdown"`` / ``"md"``, ``"text"`` /
@@ -169,6 +173,7 @@ def extract_body_text(content: str, fmt: str = "auto") -> str:
 
 # ── Language detection ──────────────────────────────────────────────────────
 
+
 def _have_langdetect() -> bool:
     """Return ``True`` when ``langdetect`` is importable."""
     return importlib.util.find_spec("langdetect") is not None
@@ -178,6 +183,7 @@ def _have_langdetect() -> bool:
 # importable on lightweight (stdlib-only) installs.
 if _have_langdetect():
     from langdetect import DetectorFactory  # type: ignore[import-not-found]
+
     DetectorFactory.seed = 0
 
 
@@ -218,6 +224,7 @@ def detect_text_language(text: str, fallback: str = "en") -> str:
         from langdetect.lang_detect_exception import (
             LangDetectException,  # type: ignore[import-not-found]
         )
+
         return detect(text).split("-")[0].lower()[:2]
     except LangDetectException:
         return fallback
@@ -228,7 +235,7 @@ def detect_language(content: str, fmt: str = "auto", fallback: str = "en") -> st
 
     Convenience wrapper: ``detect_text_language(extract_body_text(content,
     fmt), fallback)``. This is the one call every skill should use when it has
-    raw HTML / Markdown / text and wants the language — no configured default,
+    raw HTML / Markdown / text and wants the language, with no configured default,
     always detected from the content.
 
     Parameters
@@ -250,17 +257,38 @@ def detect_language(content: str, fmt: str = "auto", fallback: str = "en") -> st
 
 #: English names for the languages we can name to an LLM in a prompt. Lets ANY
 #: detected language be requested by name ("Write ... in Korean.") instead of
-#: silently collapsing to a hardcoded set — a language whose two-letter code is
+#: silently collapsing to a hardcoded set. A language whose two-letter code is
 #: here gets output in that language even when a skill has no curated,
 #: written-in-the-target-language instruction for it.
 LANGUAGE_NAMES: dict[str, str] = {
-    "en": "English", "fr": "French", "es": "Spanish", "de": "German",
-    "it": "Italian", "pt": "Portuguese", "nl": "Dutch", "ru": "Russian",
-    "zh": "Chinese", "ja": "Japanese", "ko": "Korean", "ar": "Arabic",
-    "hi": "Hindi", "tr": "Turkish", "pl": "Polish", "sv": "Swedish",
-    "no": "Norwegian", "da": "Danish", "fi": "Finnish", "cs": "Czech",
-    "el": "Greek", "he": "Hebrew", "id": "Indonesian", "uk": "Ukrainian",
-    "ro": "Romanian", "hu": "Hungarian", "vi": "Vietnamese", "th": "Thai",
+    "en": "English",
+    "fr": "French",
+    "es": "Spanish",
+    "de": "German",
+    "it": "Italian",
+    "pt": "Portuguese",
+    "nl": "Dutch",
+    "ru": "Russian",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "tr": "Turkish",
+    "pl": "Polish",
+    "sv": "Swedish",
+    "no": "Norwegian",
+    "da": "Danish",
+    "fi": "Finnish",
+    "cs": "Czech",
+    "el": "Greek",
+    "he": "Hebrew",
+    "id": "Indonesian",
+    "uk": "Ukrainian",
+    "ro": "Romanian",
+    "hu": "Hungarian",
+    "vi": "Vietnamese",
+    "th": "Thai",
 }
 
 
