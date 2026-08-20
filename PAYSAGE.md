@@ -31,4 +31,4 @@ Trois colonnes désignent une tâche plutôt qu'un mot familier : **ASR** (recon
 
 ## Positionnement de sprezzature-audio
 
-Son atout distinctif est d'être une **pile locale complète** : transcription (Whisper, via vocal-helper), diarisation (Sortformer de NeMo), identification (TitaNet) et traduction par LLM (via la connexion Ollama de sprezzature-local), le tout exécutable hors ligne sur un ordinateur portable ou un serveur. Aucune étape n'exige de joindre un service cloud.
+Son atout distinctif est d'être une **pile locale complète** : transcription (Whisper, via vocal-helper), diarisation (Sortformer de NeMo), identification (TitaNet) et traduction par LLM (via la connexion Ollama de best-engine-ai-helper), le tout exécutable hors ligne sur un ordinateur portable ou un serveur. Aucune étape n'exige de joindre un service cloud.

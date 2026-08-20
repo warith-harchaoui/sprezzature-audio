@@ -51,14 +51,16 @@ python scripts/caption_diarize.py meeting.mp4
 
 ```sh
 python scripts/name_from_transcript.py meeting.speakers.vtt
-# Prints: {"SPEAKER_00": "Alice", "SPEAKER_01": "Bob"}
+# Writes: meeting.speakers.json  {"0": "Alice", "1": "Bob"}
 ```
 
-## Identify a speaker from a reference sample
+## Identify a speaker from reference clips
 
 ```sh
-python scripts/identify_from_titanet.py --reference alice_sample.wav unknown.wav
-# Prints: match=True  score=0.94
+python scripts/identify_from_titanet.py meeting.diarization.json \
+    --audio meeting.wav --refs ./voices/
+# Writes: meeting.speakers.json  {"0": "Alice", "1": "Bob", "2": "2"}
+# (speaker "2" stayed anonymous: no reference clip cleared the similarity threshold)
 ```
 
 ## Translate captions

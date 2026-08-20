@@ -31,4 +31,4 @@ Three columns name a task rather than a familiar word: **ASR** (automatic speech
 
 ## Where sprezzature-audio fits
 
-Its distinguishing feature is being a **complete local-first stack**: transcription (Whisper, through vocal-helper), diarization (NeMo's Sortformer), speaker identification (TitaNet), and LLM-based translation (through sprezzature-local's Ollama connection), all runnable offline on a laptop or a server. No step requires reaching a cloud service.
+Its distinguishing feature is being a **complete local-first stack**: transcription (Whisper, through vocal-helper), diarization (NeMo's Sortformer), speaker identification (TitaNet), and LLM-based translation (through best-engine-ai-helper's local Ollama connection), all runnable offline on a laptop or a server. No step requires reaching a cloud service.
