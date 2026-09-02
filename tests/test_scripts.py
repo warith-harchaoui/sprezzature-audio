@@ -151,6 +151,27 @@ def test_normalise_predictions_empty() -> None:
     assert dn._normalise_predictions(None) == []
 
 
+def test_normalise_predictions_compact_string_form() -> None:
+    """_normalise_predictions reads nemo_toolkit 2.4.0's actual output shape.
+
+    Confirmed live against ``SortformerEncLabelModel.diarize`` on a real
+    two-speaker recording: it returns
+    ``[["0.000 5.840 speaker_0", "6.560 13.920 speaker_1", ...]]``, three
+    whitespace-separated fields with no leading ``SPEAKER`` token, distinct
+    from both the RTTM-line shape and the nested-tuple shape this function
+    already handled. Before this branch was added, every turn in that
+    shape was silently dropped and the script reported zero speakers.
+    """
+    import diarize_from_nemo as dn
+
+    raw = [["0.000 5.840 speaker_0", "6.560 13.920 speaker_1"]]
+    turns = dn._normalise_predictions(raw)
+    assert turns == [
+        {"start": 0.0, "end": 5.84, "speaker": "0"},
+        {"start": 6.56, "end": 13.92, "speaker": "1"},
+    ]
+
+
 def test_cap_speakers_keeps_top_by_duration() -> None:
     """_cap_speakers keeps the most-active speakers and reassigns the rest."""
     import diarize_from_nemo as dn
@@ -475,3 +496,370 @@ def test_cache_key_is_deterministic_and_input_sensitive() -> None:
     assert k1 == k2
     assert k1 != k3
     assert len(k1) == 32
+
+
+def test_resolve_model_arg_env_override_wins(monkeypatch: pytest.MonkeyPatch) -> None:
+    """SPREZZATURE_WHISPER_MODEL takes precedence over a pre-downloaded file."""
+    import captions_from_whisper as cfw
+
+    monkeypatch.setenv("SPREZZATURE_WHISPER_MODEL", "/explicit/model.bin")
+    assert cfw._resolve_model_arg("large-v3-turbo") == "/explicit/model.bin"
+
+
+def test_resolve_model_arg_prefers_predownloaded_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With no env override, a pre-downloaded ggml file wins over the bare alias."""
+    import captions_from_whisper as cfw
+
+    monkeypatch.delenv("SPREZZATURE_WHISPER_MODEL", raising=False)
+    monkeypatch.delenv("FRONT_WHISPER_MODEL", raising=False)
+    monkeypatch.setattr(cfw, "WHISPER_DIR", tmp_path)
+    cached = tmp_path / "ggml-tiny.bin"
+    cached.write_bytes(b"fake weights")
+    assert cfw._resolve_model_arg("tiny") == str(cached)
+
+
+def test_resolve_model_arg_falls_back_to_bare_alias(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With no override and no cached file, the bare alias is returned as-is."""
+    import captions_from_whisper as cfw
+
+    monkeypatch.delenv("SPREZZATURE_WHISPER_MODEL", raising=False)
+    monkeypatch.delenv("FRONT_WHISPER_MODEL", raising=False)
+    monkeypatch.setattr(cfw, "WHISPER_DIR", tmp_path)
+    assert cfw._resolve_model_arg("tiny") == "tiny"
+
+
+def test_resolve_vocab_explicit_prompt_short_circuits() -> None:
+    """resolve_vocab returns the explicit --prompt untouched, skipping vocab lookup."""
+    import captions_from_whisper as cfw
+
+    result = cfw.resolve_vocab(
+        Path("audio.wav"),
+        prompt="Use exactly this prompt.",
+        vocab_file=None,
+        vocab_from=None,
+        auto_project=False,
+        lang="en",
+    )
+    assert result == "Use exactly this prompt."
+
+
+def test_resolve_vocab_composes_prompt_from_vocab_file(tmp_path: Path) -> None:
+    """resolve_vocab feeds --vocab terms through compose_prompt when no --prompt is given."""
+    import captions_from_whisper as cfw
+
+    glossary = tmp_path / "glossary.txt"
+    glossary.write_text("Alice\nBob\n", encoding="utf-8")
+    result = cfw.resolve_vocab(
+        tmp_path / "audio.wav",
+        prompt="",
+        vocab_file=glossary,
+        vocab_from=None,
+        auto_project=False,
+        lang="en",
+    )
+    assert result == "The following terms may appear in the audio: Alice, Bob."
+
+
+# ── caption_diarize timestamp helpers ───────────────────────────────────────
+
+
+def test_parse_timestamp_field_group_to_seconds() -> None:
+    """_parse_timestamp converts an HH:MM:SS.mmm field group to seconds."""
+    import caption_diarize as cd
+
+    assert cd._parse_timestamp("00", "01", "01", "500") == 61.5
+    assert cd._parse_timestamp("01", "00", "00", "000") == 3600.0
+
+
+def test_caption_diarize_format_timestamp_vtt_and_srt() -> None:
+    """_format_timestamp renders VTT's dot and SRT's comma decimal separator."""
+    import caption_diarize as cd
+
+    assert cd._format_timestamp(61.5) == "00:01:01.500"
+    assert cd._format_timestamp(61.5, srt=True) == "00:01:01,500"
+    # Negative input clamps to zero rather than raising or going negative.
+    assert cd._format_timestamp(-5.0) == "00:00:00.000"
+
+
+def test_caption_diarize_overlap() -> None:
+    """_overlap returns the shared duration of two intervals, or 0 when disjoint."""
+    import caption_diarize as cd
+
+    assert cd._overlap(0.0, 2.0, 1.0, 3.0) == 1.0
+    assert cd._overlap(0.0, 1.0, 1.0, 2.0) == 0.0  # touching, no overlap
+    assert cd._overlap(0.0, 1.0, 2.0, 3.0) == 0.0  # disjoint
+
+
+# ── translate_captions timestamp helper ─────────────────────────────────────
+
+
+def test_translate_captions_format_timestamp() -> None:
+    """translate_captions._format_timestamp matches the WebVTT dot-decimal form."""
+    import translate_captions as tc
+
+    assert tc._format_timestamp(61.5) == "00:01:01.500"
+    assert tc._format_timestamp(0.0) == "00:00:00.000"
+    assert tc._format_timestamp(-1.0) == "00:00:00.000"
+
+
+# ── diarize_from_nemo cache + device helpers ────────────────────────────────
+
+
+def test_diarize_cache_key_deterministic_and_sensitive() -> None:
+    """_cache_key is stable for identical inputs and changes with any of them."""
+    import diarize_from_nemo as dn
+
+    k1 = dn._cache_key(b"abc", "sortformer", 4)
+    k2 = dn._cache_key(b"abc", "sortformer", 4)
+    k3 = dn._cache_key(b"abc", "sortformer", 2)
+    assert k1 == k2
+    assert k1 != k3
+    assert len(k1) == 32
+
+
+def test_diarize_cache_roundtrip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """_cache_set writes turns to disk that _cache_get reads back unchanged."""
+    import diarize_from_nemo as dn
+
+    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(dn, "NO_CACHE", False)
+    turns = [{"start": 0.0, "end": 1.0, "speaker": "0"}]
+    key = dn._cache_key(b"abc", "sortformer", 0)
+    assert dn._cache_get(key) is None  # miss before any write
+    dn._cache_set(key, turns)
+    assert dn._cache_get(key) == turns
+
+
+def test_diarize_cache_disabled_by_no_cache_flag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """NO_CACHE=True makes both _cache_get and _cache_set no-ops."""
+    import diarize_from_nemo as dn
+
+    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(dn, "NO_CACHE", True)
+    key = dn._cache_key(b"abc", "sortformer", 0)
+    dn._cache_set(key, [{"start": 0.0, "end": 1.0, "speaker": "0"}])
+    assert dn._cache_get(key) is None
+    assert list(tmp_path.iterdir()) == []  # nothing was written to disk
+
+
+def test_diarize_cache_get_survives_corrupt_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A cache file that fails to parse is treated as a miss, not an error."""
+    import diarize_from_nemo as dn
+
+    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
+    monkeypatch.setattr(dn, "NO_CACHE", False)
+    key = "deadbeef"
+    (tmp_path / f"{key}.json").write_text("not json", encoding="utf-8")
+    assert dn._cache_get(key) is None
+
+
+def test_pick_device_explicit_beats_torch_detection(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An explicit --device value is returned without importing torch at all."""
+    import diarize_from_nemo as dn
+
+    assert dn.pick_device("mps") == "mps"
+
+
+# ── name_from_transcript: helpers not exercised via _run_rule_pass ──────────
+
+
+def test_find_other_speaker_looks_forward_then_backward() -> None:
+    """_find_other_speaker prefers the next differing speaker, then the previous one."""
+    import name_from_transcript as nft
+
+    cues = [
+        {"speaker_id": "0"},
+        {"speaker_id": "0"},  # idx=1, current speaker
+        {"speaker_id": "1"},  # next differing speaker: found forward
+    ]
+    assert nft._find_other_speaker(cues, 1, "0") == "1"
+
+    # No differing speaker ahead within the window: falls back to backward scan.
+    cues2 = [{"speaker_id": "1"}, {"speaker_id": "0"}, {"speaker_id": "0"}]
+    assert nft._find_other_speaker(cues2, 1, "0") == "1"
+
+    # No other speaker anywhere nearby: returns the current speaker unchanged.
+    cues3 = [{"speaker_id": "0"}, {"speaker_id": "0"}]
+    assert nft._find_other_speaker(cues3, 0, "0") == "0"
+
+
+def test_pick_best_sums_confidence_across_recurrences() -> None:
+    """_pick_best sums per-(speaker, name) confidence so repeats outrank one-offs."""
+    import name_from_transcript as nft
+
+    candidates = {
+        "0": [("Alice", 0.3), ("Alice", 0.3), ("Bob", 0.5)],
+    }
+    best = nft._pick_best(candidates)
+    # Alice's summed confidence (0.6) beats Bob's single mention (0.5).
+    assert best["0"][0] == "Alice"
+    assert best["0"][1] == pytest.approx(0.6)
+
+
+# ── _vocab.surrounding_text ──────────────────────────────────────────────────
+
+
+def test_surrounding_text_finds_markdown_image_and_nearest_heading(tmp_path: Path) -> None:
+    """surrounding_text extracts context around an image ref, tagged with its heading."""
+    import _vocab as vocab
+
+    doc = tmp_path / "post.md"
+    doc.write_text(
+        "# Intro\n\nSome text.\n\n"
+        "## The Golden Gate\n\n"
+        "Here is a photo ![bridge](images/bridge.png) of the bridge.\n",
+        encoding="utf-8",
+    )
+    ctx = vocab.surrounding_text(doc, tmp_path / "images" / "bridge.png", window=20)
+    assert "The Golden Gate" in ctx
+    assert "bridge.png" in ctx
+
+
+def test_surrounding_text_no_match_returns_empty(tmp_path: Path) -> None:
+    """surrounding_text returns "" when the image is never referenced in the doc."""
+    import _vocab as vocab
+
+    doc = tmp_path / "post.md"
+    doc.write_text("No images here.\n", encoding="utf-8")
+    assert vocab.surrounding_text(doc, tmp_path / "missing.png") == ""
+
+
+# ── install_captions / install_diarize: _is_installed ───────────────────────
+
+
+def test_install_captions_is_installed() -> None:
+    """_is_installed reflects find_spec: a stdlib module is found, a bogus one isn't."""
+    import install_captions as ic
+
+    assert ic._is_installed("os") is True
+    assert ic._is_installed("this_package_does_not_exist_xyz") is False
+
+
+def test_install_diarize_is_installed() -> None:
+    """_is_installed reflects find_spec: a stdlib module is found, a bogus one isn't."""
+    import install_diarize as idz
+
+    assert idz._is_installed("sys") is True
+    assert idz._is_installed("this_package_does_not_exist_xyz") is False
+
+
+# ── _argparse.make_parser ────────────────────────────────────────────────────
+
+
+def test_make_parser_has_prog_description_and_version_flag(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """make_parser wires prog/description through and pre-attaches -V/--version."""
+    import _argparse as ap
+
+    parser = ap.make_parser("my-prog", "Does a thing.", epilog="Example: my-prog --help")
+    assert parser.prog == "my-prog"
+    assert parser.description == "Does a thing."
+    assert parser.epilog == "Example: my-prog --help"
+
+    with pytest.raises(SystemExit) as exc:
+        parser.parse_args(["-V"])
+    assert exc.value.code == 0
+    out = capsys.readouterr().out
+    assert "my-prog" in out and ap.SKILL_VERSION in out
+
+
+def test_make_parser_help_flag_present_in_usage() -> None:
+    """The parser accepts -h/--help without needing it registered explicitly."""
+    import _argparse as ap
+
+    parser = ap.make_parser("my-prog", "Does a thing.")
+    with pytest.raises(SystemExit) as exc:
+        parser.parse_args(["--help"])
+    assert exc.value.code == 0
+
+
+# ── _click: sprezzature_command / run_command ───────────────────────────────
+
+
+def test_sprezzature_command_runs_and_returns_exit_code() -> None:
+    """A command built via sprezzature_command runs and forwards its int return."""
+    import _click as sc
+    import click
+
+    @sc.sprezzature_command("my-tool", help="Does a thing.")
+    @click.option("--fail", is_flag=True)
+    def cmd(fail: bool) -> int:
+        return 1 if fail else 0
+
+    assert sc.run_command(cmd, []) == 0
+    assert sc.run_command(cmd, ["--fail"]) == 1
+
+
+def test_sprezzature_command_none_return_means_success() -> None:
+    """A command body that returns None is treated as exit code 0."""
+    import _click as sc
+    import click
+
+    @sc.sprezzature_command("my-tool", help="Does a thing.")
+    @click.option("--x", default=1)
+    def cmd(x: int) -> None:
+        return None
+
+    assert sc.run_command(cmd, []) == 0
+
+
+def test_run_command_usage_error_exits_2() -> None:
+    """An unknown option raises Click's UsageError, mapped to SystemExit(2)."""
+    import _click as sc
+    import click
+
+    @sc.sprezzature_command("my-tool", help="Does a thing.")
+    @click.option("--known", default="x")
+    def cmd(known: str) -> int:
+        return 0
+
+    with pytest.raises(SystemExit) as exc:
+        sc.run_command(cmd, ["--unknown-flag"])
+    assert exc.value.code == 2
+
+
+def test_run_command_help_and_version_exit_0(capsys: pytest.CaptureFixture[str]) -> None:
+    """--help and --version both print their message and report exit code 0.
+
+    Click's ``standalone_mode=False`` swallows the internal ``Exit(0)`` for
+    these two builtin eager options and returns ``None`` from ``main()``
+    rather than raising, unlike a genuine usage error; ``run_command`` maps
+    that ``None`` to ``0`` (see its "Defensive default" branch).
+    """
+    import _click as sc
+    import click
+
+    @sc.sprezzature_command("my-tool", help="Does a thing.")
+    @click.option("--x", default=1)
+    def cmd(x: int) -> int:
+        return 0
+
+    assert sc.run_command(cmd, ["--help"]) == 0
+    assert "my-tool" in capsys.readouterr().out
+
+    assert sc.run_command(cmd, ["--version"]) == 0
+    assert sc.SKILL_VERSION in capsys.readouterr().out
+
+
+def test_sprezzature_command_usage_line_shows_help_token() -> None:
+    """SprezzatureCommand injects [--help] into the usage line Click renders."""
+    import _click as sc
+    import click.testing
+
+    @sc.sprezzature_command("my-tool", help="Does a thing.")
+    @click.option("--x", default=1)
+    def cmd(x: int) -> int:
+        return 0
+
+    runner = click.testing.CliRunner()
+    result = runner.invoke(cmd, ["--help"])
+    assert "[--help]" in result.output

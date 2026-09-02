@@ -42,8 +42,18 @@ python scripts/diarize_from_nemo.py roundtable.wav
 
 ## Full pipeline: captions + speaker attribution
 
+`caption_diarize.py` merges an existing caption file with an existing
+diarization file; it does not take a media file directly, so run the two
+upstream steps first:
+
 ```sh
-python scripts/caption_diarize.py meeting.mp4
+python scripts/captions_from_whisper.py meeting.mp4
+# Writes: meeting.vtt
+
+python scripts/diarize_from_nemo.py meeting.mp4
+# Writes: meeting.rttm, meeting.diarization.json
+
+python scripts/caption_diarize.py --captions meeting.vtt --diarization meeting.diarization.json
 # Writes: meeting.speakers.vtt
 ```
 

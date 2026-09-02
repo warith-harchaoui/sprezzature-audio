@@ -363,11 +363,18 @@ def diarize(
 def _normalise_predictions(raw: Any) -> list[dict[str, Any]]:
     """Turn Sortformer's raw output into a list of turn dicts.
 
-    Handles the two shapes NeMo has shipped:
+    Handles the three shapes NeMo has shipped, confirmed against
+    ``nemo_toolkit`` 2.4.0's actual ``SortformerEncLabelModel.diarize``
+    return value (a plain end-to-end run surfaced the third one: the
+    RTTM-string branch below never matched it, so every turn was silently
+    dropped and the script reported zero speakers on real speech):
 
     * A list of RTTM-style strings:
       ``"SPEAKER file 1 0.00 3.21 <NA> <NA> speaker_0 <NA> <NA>"``.
     * A nested list ``[[[start, end, speaker], ...]]`` per audio file.
+    * A compact per-file string list ``["0.00 3.21 speaker_0", ...]``
+      (``nemo_toolkit`` 2.4.0), three whitespace-separated fields with no
+      leading ``SPEAKER`` token.
 
     Parameters
     ----------
@@ -398,6 +405,13 @@ def _normalise_predictions(raw: Any) -> list[dict[str, Any]]:
         elif isinstance(item, (list, tuple)) and len(item) >= 3:
             start, end, spk = float(item[0]), float(item[1]), str(item[2])
             turns.append({"start": start, "end": end, "speaker": spk})
+        elif isinstance(item, str):
+            # Compact "start end speaker_N" form, e.g. "0.000 5.840 speaker_0".
+            parts = item.split()
+            if len(parts) == 3 and parts[2].startswith("speaker"):
+                start, end = float(parts[0]), float(parts[1])
+                spk = parts[2].split("_")[-1]
+                turns.append({"start": start, "end": end, "speaker": spk})
 
     turns.sort(key=lambda t: (t["start"], t["end"]))
     return turns
