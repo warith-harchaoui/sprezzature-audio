@@ -262,15 +262,15 @@ def render_text(cues: list[dict[str, Any]]) -> str:
 
 
 @sprezzature_command(
-    "sprezzature-audio-caption-diarize",
+    "sprezzature-audio-pipeline",
     help=(
         "Merge Whisper caption segments with Sortformer speaker turns; "
         "emit a speaker-labelled WebVTT / SRT / plain-text transcript."
     ),
     epilog=(
         "Examples:\n"
-        "  sprezzature-audio-caption-diarize --captions t.vtt --diarization t.diarization.json --out t.speakers.vtt\n"
-        "  sprezzature-audio-caption-diarize --captions t.srt --diarization t.diarization.json \\\n"
+        "  sprezzature-audio-pipeline --captions t.vtt --diarization t.diarization.json --out t.speakers.vtt\n"
+        "  sprezzature-audio-pipeline --captions t.srt --diarization t.diarization.json \\\n"
         "      --speakers t.speakers.json --format srt --out t.speakers.srt\n"
     ),
 )

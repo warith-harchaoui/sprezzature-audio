@@ -863,3 +863,34 @@ def test_sprezzature_command_usage_line_shows_help_token() -> None:
     runner = click.testing.CliRunner()
     result = runner.invoke(cmd, ["--help"])
     assert "[--help]" in result.output
+
+
+# ── console-script prog-name wiring ──────────────────────────────────────────
+
+#: pyproject.toml's ``[project.scripts]`` table, console name -> module.
+#: Kept in sync by hand (six short entries); a mismatch here is exactly the
+#: bug this test exists to catch: caption_diarize.py's own Click command was
+#: hardcoded as "sprezzature-audio-caption-diarize" while pyproject.toml
+#: installs it as "sprezzature-audio-pipeline", so its --help usage line and
+#: every epilog example named a command that did not exist.
+CONSOLE_SCRIPTS: dict[str, str] = {
+    "sprezzature-audio-captions": "captions_from_whisper",
+    "sprezzature-audio-diarize": "diarize_from_nemo",
+    "sprezzature-audio-identify": "identify_from_titanet",
+    "sprezzature-audio-pipeline": "caption_diarize",
+    "sprezzature-audio-name": "name_from_transcript",
+    "sprezzature-audio-translate": "translate_captions",
+}
+
+
+@pytest.mark.parametrize("console_name,module_name", sorted(CONSOLE_SCRIPTS.items()))
+def test_click_command_name_matches_its_installed_console_script(
+    console_name: str, module_name: str
+) -> None:
+    """Each script's own Click command must name itself after the console
+    script pyproject.toml actually installs it as, not some other name.
+    """
+    import importlib
+
+    module = importlib.import_module(module_name)
+    assert module._cli.name == console_name
