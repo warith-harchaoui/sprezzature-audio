@@ -56,8 +56,12 @@ python scripts/captions_from_whisper.py podcast.mp3 --format text
 # Diariser un fichier audio : qui a parlé quand
 python scripts/diarize_from_nemo.py entretien.wav
 
-# Pipeline complet : transcription et étiquettes de locuteurs en un seul passage
-python scripts/caption_diarize.py reunion.mp4
+# Pipeline complet : caption_diarize.py fusionne les fichiers de sous-titres
+# et de diarisation déjà produits par les deux étapes ci-dessus (il ne prend
+# pas de fichier média en entrée)
+python scripts/captions_from_whisper.py reunion.mp4
+python scripts/diarize_from_nemo.py reunion.mp4
+python scripts/caption_diarize.py --captions reunion.vtt --diarization reunion.diarization.json
 
 # Deviner les noms des locuteurs depuis la transcription diarisée
 python scripts/name_from_transcript.py reunion.speakers.vtt

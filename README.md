@@ -55,8 +55,11 @@ python scripts/captions_from_whisper.py podcast.mp3 --format text
 # Diarize an audio file: who spoke when
 python scripts/diarize_from_nemo.py interview.wav
 
-# Full pipeline: transcript and speaker labels in one shot
-python scripts/caption_diarize.py meeting.mp4
+# Full pipeline: caption_diarize.py merges caption + diarization files
+# already produced by the two steps above (it takes no media file itself)
+python scripts/captions_from_whisper.py meeting.mp4
+python scripts/diarize_from_nemo.py meeting.mp4
+python scripts/caption_diarize.py --captions meeting.vtt --diarization meeting.diarization.json
 
 # Guess speaker names from the diarized transcript
 python scripts/name_from_transcript.py meeting.speakers.vtt
