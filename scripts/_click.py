@@ -21,10 +21,15 @@ which does show it by default. The subclass below injects ``[--help]`` into
 Click's usage line too, so that same check still passes now that some
 scripts use Click.
 
-Duplicated on purpose across sprezzature-ui/scripts/, sprezzature-publish/
-scripts/, and sprezzature-accessibility/scripts/, so each repository stays
-self-contained: the same policy as `_argparse.py` follows, for the same
-reason.
+This file is duplicated on purpose into every sprezzature-* repository,
+one copy each, so a skill stays self-contained and runs on its own:
+including from a downloaded zip, with nothing available but Python's
+standard library. The copies are meant to stay byte-for-byte identical
+apart from ``SKILL_VERSION``, which each repository sets to its own
+released version. So edit the canonical copy rather than this one, unless
+this is it: ``scripts/sync_helpers.py``, in the sprezzature monorepo,
+names the canonical copy, reports the ones that have drifted, and
+propagates the change with ``--apply``.
 
 Author
 ------

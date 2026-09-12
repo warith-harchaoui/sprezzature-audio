@@ -37,6 +37,15 @@ snake_case (a capital mid-word, like ``myVariableName``, or underscores
 between words, like ``my_variable_name``), and capitalized multi-word
 phrases (like "Golden Gate Bridge").
 
+This file is duplicated on purpose into every sprezzature-* repository,
+one copy each, so a skill stays self-contained and runs on its own:
+including from a downloaded zip, with nothing available but Python's
+standard library. The copies are meant to stay byte-for-byte identical. So
+edit the canonical copy rather than this one, unless this is it:
+``scripts/sync_helpers.py``, in the sprezzature monorepo, names the
+canonical copy, reports the ones that have drifted, and propagates the
+change with ``--apply``.
+
 Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_

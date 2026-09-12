@@ -13,13 +13,15 @@ repeating that setup in every script, ``make_parser(prog, description,
 epilog=None)`` builds one parser already configured that way, and each
 script starts from it.
 
-This file is duplicated on purpose across every sprezzature-* skill
-(sprezzature-colors, sprezzature-figures, and so on), one copy per
-repository, so each repository stays self-contained and installable on
-its own. When you change this file, change the matching copy in the
-other repositories too, and bump ``SKILL_VERSION`` in every copy at
-release time; ``release.sh`` checks that the copies have not drifted
-apart.
+This file is duplicated on purpose into every sprezzature-* repository,
+one copy each, so a skill stays self-contained and runs on its own:
+including from a downloaded zip, with nothing available but Python's
+standard library. The copies are meant to stay byte-for-byte identical
+apart from ``SKILL_VERSION``, which each repository sets to its own
+released version. So edit the canonical copy rather than this one, unless
+this is it: ``scripts/sync_helpers.py``, in the sprezzature monorepo,
+names the canonical copy, reports the ones that have drifted, and
+propagates the change with ``--apply``.
 
 Author
 ------

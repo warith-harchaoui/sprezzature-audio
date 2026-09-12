@@ -9,11 +9,16 @@ noise a language detector should not see), then hand that text to
 `langdetect`_ to name the language. It leans on Python's own standard
 library wherever it can, reaching for the third-party `langdetect`_
 package only for the one thing the standard library cannot do: guess a
-language from raw text. This one implementation is duplicated on purpose
-across every sprezzature-* repository, so each stays self-contained; a
-test, ``tests/test_bodytext.py``, checks that every copy stays
-byte-for-byte identical to this one, so fix a bug here and copy the fix
-everywhere else too.
+language from raw text.
+
+This file is duplicated on purpose into every sprezzature-* repository,
+one copy each, so a skill stays self-contained and runs on its own:
+including from a downloaded zip, with nothing available but Python's
+standard library. The copies are meant to stay byte-for-byte identical. So
+edit the canonical copy rather than this one, unless this is it:
+``scripts/sync_helpers.py``, in the sprezzature monorepo, names the
+canonical copy, reports the ones that have drifted, and propagates the
+change with ``--apply``.
 
 This project never hard-codes a default language anywhere. Every caller
 passes the actual content it is working with, whether that is the text
