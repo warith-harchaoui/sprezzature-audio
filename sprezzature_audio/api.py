@@ -65,7 +65,17 @@ from pydantic import BaseModel, Field
 
 # The pipeline lives in the scripts package, which is where the command
 # lines reach it too; importing rather than re-implementing is the point.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+# Two layouts, one import. In this checkout the modules sit in scripts/;
+# installed from a wheel they ship as the sprezzature_audio_scripts package.
+# Either way what goes on the path is the directory holding them, because
+# they import each other by bare name — that is the same property that lets
+# each one run on its own out of a downloaded zip.
+_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts"
+if not _SCRIPTS.is_dir():  # pragma: no cover - installed layout
+    import sprezzature_audio_scripts
+
+    _SCRIPTS = Path(sprezzature_audio_scripts.__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPTS))
 from _device import describe as describe_device  # noqa: E402
 from _device import report as device_report  # noqa: E402
 from benchmark_stt import (  # noqa: E402
