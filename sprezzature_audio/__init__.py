@@ -28,11 +28,11 @@ a remote server unless the caller explicitly configures a remote LLM.
 
 Author
 ------
-Warith Harchaoui <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warith.harchaoui@gmail.com>
 """
 
 from __future__ import annotations
 
 __version__ = "1.0.0"
-__author__ = "Warith Harchaoui"
+__author__ = "Warith HARCHAOUI"
 __email__ = "warith.harchaoui@gmail.com"

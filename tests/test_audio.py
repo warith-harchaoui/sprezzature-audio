@@ -13,7 +13,7 @@ def test_package_imports() -> None:
     import sprezzature_audio
 
     assert sprezzature_audio.__version__ == "1.0.0"
-    assert sprezzature_audio.__author__ == "Warith Harchaoui"
+    assert sprezzature_audio.__author__ == "Warith HARCHAOUI"
 
 
 def test_lang_detect_fallback_without_langdetect(monkeypatch: object) -> None:

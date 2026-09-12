@@ -99,4 +99,4 @@ BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-audi
 
 ## Author
 
-Warith Harchaoui: [harchaoui.org/warith](https://harchaoui.org/warith/)
+Warith HARCHAOUI: [harchaoui.org/warith](https://harchaoui.org/warith/)
