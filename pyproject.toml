@@ -54,11 +54,24 @@ all = [
     "sprezzature-audio[captions,diarize,translate]",
 ]
 
+# HTTP surface (sprezzature_audio/api.py): caption conversion, speaker
+# attribution and the WER/DER metrics. Transcription is NOT exposed — it
+# loads gigabytes and runs for minutes, which belongs behind a job queue.
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+]
+# MCP surface: the same routes republished as agent tools, via fastapi-mcp.
+mcp = [
+    "sprezzature-audio[api]",
+    "fastapi-mcp>=0.3",
+]
 [project.urls]
 Homepage = "https://harchaoui.org/warith/sprezzature/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
+sprezzature-audio-mcp = "sprezzature_audio.mcp:main"
 sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"
 sprezzature-audio-diarize = "sprezzature_audio_scripts.diarize_from_nemo:main"
 sprezzature-audio-identify = "sprezzature_audio_scripts.identify_from_titanet:main"

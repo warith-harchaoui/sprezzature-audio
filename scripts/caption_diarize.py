@@ -211,7 +211,14 @@ def render_vtt(cues: list[dict[str, Any]]) -> str:
         if not cue["text"]:
             continue
         lines.append(f"{_format_timestamp(cue['start'])} --> {_format_timestamp(cue['end'])}")
-        lines.append(VTT_VOICE_CUE.format(name=cue["speaker"], text=cue["text"]))
+        # A cue that has not been through attribute_speakers carries no
+        # speaker, and there is nothing wrong with that: converting plain
+        # captions between formats is a legitimate use. Indexing here
+        # raised KeyError and turned a valid request into a 500.
+        speaker = cue.get("speaker")
+        lines.append(
+            VTT_VOICE_CUE.format(name=speaker, text=cue["text"]) if speaker else cue["text"]
+        )
         lines.append("")
     return "\n".join(lines)
 
@@ -227,7 +234,10 @@ def render_srt(cues: list[dict[str, Any]]) -> str:
         lines.append(
             f"{_format_timestamp(cue['start'], srt=True)} --> {_format_timestamp(cue['end'], srt=True)}"
         )
-        lines.append(SRT_SPEAKER_PREFIX.format(name=cue["speaker"], text=cue["text"]))
+        speaker = cue.get("speaker")
+        lines.append(
+            SRT_SPEAKER_PREFIX.format(name=speaker, text=cue["text"]) if speaker else cue["text"]
+        )
         lines.append("")
         idx += 1
     return "\n".join(lines)
@@ -242,7 +252,7 @@ def render_text(cues: list[dict[str, Any]]) -> str:
     for cue in cues:
         if not cue["text"]:
             continue
-        new_speaker = cue["speaker"] != prev_spk
+        new_speaker = cue.get("speaker") != prev_spk
         long_pause = prev_end is not None and cue["start"] - prev_end > LONG_PAUSE_SECONDS
         if new_speaker or long_pause:
             if current:
@@ -251,7 +261,7 @@ def render_text(cues: list[dict[str, Any]]) -> str:
             current = [f"{cue['speaker']}: {cue['text']}"] if new_speaker else [cue["text"]]
         else:
             current.append(cue["text"])
-        prev_spk = cue["speaker"]
+        prev_spk = cue.get("speaker")
         prev_end = cue["end"]
     if current:
         out.append(" ".join(current))

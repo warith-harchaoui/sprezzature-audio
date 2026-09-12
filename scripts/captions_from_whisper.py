@@ -609,10 +609,19 @@ def _run_whisper_stage(
         "speaker": "S0",
         "pcm": pcm,
     }
+    # ``threads`` defaults to 6 inside vocal-helper, which under-uses a large
+    # machine and over-subscribes a small one. ``compute_threads`` counts
+    # *performance* cores: on Apple silicon the efficiency cores run several
+    # times slower and whisper.cpp splits work evenly, so including them
+    # makes every batch wait on the slowest thread. The GPU still does the
+    # decoding (see _device.whisper_backend); this is the mel front-end.
+    from _device import compute_threads  # noqa: E402
+
     stage = WhisperStage(
         model=model_arg,
         language=(lang or "auto"),
         initial_prompt=initial_prompt,
+        threads=compute_threads(),
     )
 
     async def _drive() -> list:
