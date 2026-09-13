@@ -139,9 +139,21 @@ def test_transcription_is_not_exposed() -> None:
     that is a timeout, and behind an unauthenticated one it is a way to make
     somebody else's GPU do your work. It belongs behind a job queue.
     """
-    blob = str(client.get("/openapi.json").json()).lower()
-    for forbidden in ("transcribe", "whisper", "/v1/asr"):
-        assert forbidden not in blob, f"{forbidden!r} appears in the public schema"
+    # The API SURFACE, not the prose. Scanning the whole schema blob used to
+    # work, until the tool descriptions started saying what each tool is NOT
+    # -- `convert_captions` telling an agent it "does not transcribe audio"
+    # is exactly the guidance we want, and it tripped a substring scan.
+    schema = client.get("/openapi.json").json()
+    surface = [p.lower() for p in schema["paths"]]
+    surface += [
+        op.get("operationId", "").lower()
+        for methods in schema["paths"].values()
+        for op in methods.values()
+    ]
+    surface += [name.lower() for name in schema.get("components", {}).get("schemas", {})]
+    for forbidden in ("transcribe", "whisper", "asr"):
+        offenders = [entry for entry in surface if forbidden in entry]
+        assert not offenders, f"{forbidden!r} names a route or schema: {offenders}"
 
 
 def test_openapi_names_every_tool() -> None:
@@ -163,3 +175,51 @@ def test_mcp_mounts_and_publishes_the_tools() -> None:
     names = {t.name for t in mcp.tools}
     for expected in ("measure_wer", "measure_der", "convert_captions"):
         assert expected in names, f"{expected} missing from {sorted(names)}"
+
+
+def _documented_routes(app):
+    """This package's own tools -- fastapi-mcp mounts its transport route on
+    the same app, and that one is not ours to document."""
+    return [
+        route
+        for route in app.routes
+        if getattr(route, "operation_id", None)
+        and not getattr(route, "path", "").startswith("/mcp")
+    ]
+
+
+def test_every_tool_has_a_written_summary() -> None:
+    """The first line an MCP host shows is FastAPI's `summary`, and its
+    default is the function name title-cased: `cvd` became "Cvd", `wer`
+    became "Wer". An agent choosing between tools from several servers reads
+    those headlines and little else, so each has to be a written phrase
+    saying what the tool does -- not a restatement of the Python identifier.
+    """
+    from sprezzature_audio.api import app
+
+    for route in _documented_routes(app):
+        summary = (getattr(route, "summary", "") or "").strip()
+        assert summary, f"{route.operation_id}: no summary, so the headline is a function name"
+        derived = getattr(route, "name", "").replace("_", " ").title()
+        assert summary != derived, (
+            f"{route.operation_id}: summary {summary!r} is FastAPI's default (the "
+            f"function name title-cased). Write one that says what the tool does."
+        )
+        assert " " in summary and len(summary) > 15, (
+            f"{route.operation_id}: summary {summary!r} is too terse to route on."
+        )
+
+
+def test_every_tool_says_when_to_call_it() -> None:
+    """A description that only restates the summary does not help an agent
+    choose. Each route's docstring carries the deciding context: when to
+    reach for it, what it needs first, or what it must not be used for.
+    """
+    from sprezzature_audio.api import app
+
+    for route in _documented_routes(app):
+        description = (getattr(route, "description", "") or "").strip()
+        assert len(description) > 120, (
+            f"{route.operation_id}: description is {len(description)} chars. Say when "
+            f"to call it, not just what it is."
+        )

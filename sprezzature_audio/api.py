@@ -186,10 +186,17 @@ def _cues_or_400(text: str) -> list[dict[str, Any]]:
     return cues
 
 
-@app.get("/health", tags=["meta"], operation_id="health")
+@app.get(
+    "/health",
+    tags=["meta"],
+    operation_id="health",
+    summary="Check that this audio server is up",
+)
 def health() -> dict:
     """
     Liveness probe — no dependency check, just proves the app is up.
+
+    Call this only to diagnose a connection problem.
 
     Returns
     -------
@@ -199,10 +206,21 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-@app.get("/v1/device", tags=["meta"], operation_id="get_device")
+@app.get(
+    "/v1/device",
+    tags=["meta"],
+    operation_id="get_device",
+    summary="Report which accelerator this machine will use",
+)
 def device() -> dict:
     """
     Which accelerator this host will actually use, probed rather than assumed.
+
+    Call this before promising anyone a transcription time, and when someone
+    asks "will this run on my machine", "is the GPU being used", « est-ce que
+    ça tourne sur le GPU ». It probes rather than reading a config, so the
+    answer is what the next run will really do -- CPU-only hosts are where
+    "a few minutes" turns into an hour.
 
     Returns
     -------
@@ -212,11 +230,21 @@ def device() -> dict:
     return {"device": device_report(), "summary": describe_device()}
 
 
-@app.post("/v1/captions/convert", tags=["captions"], operation_id="convert_captions",
-          response_class=PlainTextResponse)
+@app.post(
+    "/v1/captions/convert",
+    tags=["captions"],
+    operation_id="convert_captions",
+    summary="Convert subtitles between VTT, SRT and plain text",
+    response_class=PlainTextResponse,
+)
 def convert(request: ConvertRequest) -> PlainTextResponse:
     """
     Convert captions between WebVTT, SRT and plain text.
+
+    This is the tool for "turn these subtitles into SRT", "give me the plain
+    text of this VTT", "convertis ces sous-titres". Format conversion only --
+    it does not transcribe audio and has no model behind it, so if there is
+    no caption file yet, this is the wrong tool.
 
     Parameters
     ----------
@@ -231,11 +259,21 @@ def convert(request: ConvertRequest) -> PlainTextResponse:
     return PlainTextResponse(_RENDERERS[request.to](_cues_or_400(request.captions)))
 
 
-@app.post("/v1/captions/merge", tags=["captions"], operation_id="merge_speakers",
-          response_class=PlainTextResponse)
+@app.post(
+    "/v1/captions/merge",
+    tags=["captions"],
+    operation_id="merge_speakers",
+    summary="Label each caption line with who was speaking",
+    response_class=PlainTextResponse,
+)
 def merge(request: MergeRequest) -> PlainTextResponse:
     """
     Attach speaker labels to captions, from a set of diarization turns.
+
+    Call this when you hold captions and speaker turns separately and want
+    one readable transcript: "who said what", "label the speakers", « qui
+    parle quand ». It joins on time; it does not work out who spoke, so the
+    turns have to come from a diarizer first.
 
     Parameters
     ----------
@@ -253,10 +291,20 @@ def merge(request: MergeRequest) -> PlainTextResponse:
     return PlainTextResponse(_RENDERERS[request.to](attributed))
 
 
-@app.post("/v1/metrics/wer", tags=["metrics"], operation_id="measure_wer")
+@app.post(
+    "/v1/metrics/wer",
+    tags=["metrics"],
+    operation_id="measure_wer",
+    summary="Score a transcript against a reference (WER)",
+)
 def wer(request: WerRequest) -> dict:
     """
     Word error rate between a reference and a hypothesis transcript.
+
+    Call this to answer "how good is this transcript", "compare these two
+    STT engines", « quel est le taux d'erreur ». It needs a REFERENCE --
+    a transcript known to be right. Without one there is nothing to measure
+    against, and a confident-sounding number would be invented.
 
     Reports the substitution / deletion / insertion split, because the three
     fail differently: deletions mean the decoder gave up on a passage,
@@ -286,10 +334,20 @@ def wer(request: WerRequest) -> dict:
     }
 
 
-@app.post("/v1/metrics/der", tags=["metrics"], operation_id="measure_der")
+@app.post(
+    "/v1/metrics/der",
+    tags=["metrics"],
+    operation_id="measure_der",
+    summary="Score speaker labelling against a reference (DER)",
+)
 def der(request: DerRequest) -> dict:
     """
     Diarization error rate between two sets of speaker segments.
+
+    The speaker-labelling twin of `measure_wer`: it scores WHO SPOKE WHEN,
+    not what was said. Call it for "how good is the diarization", "did it get
+    the speakers right", « est-ce que les locuteurs sont bien séparés ». Also
+    needs a reference.
 
     Speaker labels need not match between the two sets: the best permutation
     is found and reported, because a system that segments perfectly and names

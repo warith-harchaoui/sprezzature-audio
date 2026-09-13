@@ -58,7 +58,7 @@ import os
 import platform
 import subprocess
 from functools import lru_cache
-from typing import Any, Dict
+from typing import Any
 
 
 @lru_cache(maxsize=1)
@@ -184,7 +184,7 @@ def torch_device(explicit: str = "") -> str:
     return "cpu"
 
 
-def report() -> Dict[str, Any]:
+def report() -> dict[str, Any]:
     """
     Everything a benchmark line needs to be reproducible.
 
@@ -203,7 +203,7 @@ def report() -> Dict[str, Any]:
 
 
 #: Human labels for the accelerators, so a console line reads as prose.
-_LABELS: Dict[str, str] = {
+_LABELS: dict[str, str] = {
     "metal": "Metal (Apple GPU)",
     "cuda": "CUDA (NVIDIA GPU)",
     "mps": "MPS (Apple GPU)",

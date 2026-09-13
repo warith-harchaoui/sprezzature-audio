@@ -26,7 +26,12 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
+          # The package editable, with the two light surfaces it advertises.
+          # Without [api,mcp] every test of api.py and mcp.py skipped and CI
+          # was green on code nobody ran. The heavy extras (captions,
+          # diarize, translate) stay out on purpose: they pull torch and
+          # model weights, and none of the deterministic tests need them.
+          pip install -e ".[api,mcp]" -r requirements-dev.txt
       - name: Ruff
         run: ruff check .
       - name: Pytest
