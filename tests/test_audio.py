@@ -2,18 +2,40 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent / "scripts"
 
 
+#: ``version = "1.1.0"`` in pyproject.toml. Read with a regex rather than
+#: ``tomllib``, which is stdlib only from 3.11 while this package supports 3.10.
+_PYPROJECT_VERSION_RE = re.compile(r'^\s*version\s*=\s*["\']([\d.]+)["\']', re.MULTILINE)
+
+
 def test_package_imports() -> None:
     """sprezzature_audio package is importable without heavy ML deps."""
     import sprezzature_audio
 
-    assert sprezzature_audio.__version__ == "1.0.0"
     assert sprezzature_audio.__author__ == "Warith HARCHAOUI"
+
+
+def test_version_matches_pyproject() -> None:
+    """
+    ``__version__`` is what the API hands FastAPI, so it reaches /openapi.json
+    and every MCP host. It used to be asserted here as the literal "1.0.0",
+    which turns a release into a red build for a reason that has nothing to do
+    with the release. The number comes from the thing that declares it now.
+    """
+    import sprezzature_audio
+
+    pyproject = (Path(__file__).resolve().parent.parent / "pyproject.toml").read_text(
+        encoding="utf-8"
+    )
+    match = _PYPROJECT_VERSION_RE.search(pyproject)
+    assert match, "pyproject.toml declares no project version"
+    assert sprezzature_audio.__version__ == match.group(1)
 
 
 def test_lang_detect_fallback_without_langdetect(monkeypatch: object) -> None:
