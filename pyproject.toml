@@ -75,7 +75,7 @@ mcp = [
     "mcp<2.0",
 ]
 [project.urls]
-Homepage = "https://harchaoui.org/warith/sprezzature/"
+Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]

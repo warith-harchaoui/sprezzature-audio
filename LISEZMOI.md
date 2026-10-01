@@ -1,6 +1,6 @@
 # sprezzature-audio
 
-Traitement local de la parole pour la suite [sprezzature](https://harchaoui.org/warith/sprezzature/).
+Traitement local de la parole pour la suite [sprezzature](https://sprezzature.ai/).
 
 On pointe l'outil vers un enregistrement (une réunion, un entretien, un cours) et il renvoie une transcription qui dit non seulement *ce qui* a été dit, mais *qui* l'a dit et *dans quelle langue*. Tout tourne sur la machine locale : aucun son n'en sort, aucune clé d'API n'est nécessaire. Pour découper, rééchantillonner ou nettoyer le signal audio lui-même (couper les silences, séparer une voix d'une musique de fond), c'est un autre métier, assuré par un paquet voisin, [audio-helper](https://github.com/warith-harchaoui/audio-helper) ; ce paquet-ci part d'un audio déjà exploitable et se demande ce qui y a été dit.
 

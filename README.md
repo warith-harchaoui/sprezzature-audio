@@ -1,6 +1,6 @@
 # sprezzature-audio
 
-Local-first speech processing for the [sprezzature](https://harchaoui.org/warith/sprezzature/) stack.
+Local-first speech processing for the [sprezzature](https://sprezzature.ai/) stack.
 
 Point it at a recording (a meeting, an interview, a lecture) and it hands back a transcript that says not just *what* was said, but *who* said it and *in which language*. Everything runs on your own machine: no audio leaves it, and no API key is needed. If you instead need to cut, resample, or clean up the audio signal itself (trim silence, separate a voice from background music), that is a different job, handled by a sibling package, [audio-helper](https://github.com/warith-harchaoui/audio-helper); this package starts once the audio is already usable and asks what was said in it.
 
