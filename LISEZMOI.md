@@ -48,26 +48,26 @@ pip install "sprezzature-audio[all]"
 
 ```sh
 # Transcrire une vidéo en WebVTT
-python scripts/captions_from_whisper.py conf.mp4
+sprezzature-audio-captions conf.mp4
 
 # Idem, en transcription brute
-python scripts/captions_from_whisper.py podcast.mp3 --format text
+sprezzature-audio-captions podcast.mp3 --format text
 
 # Diariser un fichier audio : qui a parlé quand
-python scripts/diarize_from_nemo.py entretien.wav
+sprezzature-audio-diarize entretien.wav
 
 # Pipeline complet : caption_diarize.py fusionne les fichiers de sous-titres
 # et de diarisation déjà produits par les deux étapes ci-dessus (il ne prend
 # pas de fichier média en entrée)
-python scripts/captions_from_whisper.py reunion.mp4
-python scripts/diarize_from_nemo.py reunion.mp4
-python scripts/caption_diarize.py --captions reunion.vtt --diarization reunion.diarization.json
+sprezzature-audio-captions reunion.mp4
+sprezzature-audio-diarize reunion.mp4
+sprezzature-audio-pipeline --captions reunion.vtt --diarization reunion.diarization.json
 
 # Deviner les noms des locuteurs depuis la transcription diarisée
-python scripts/name_from_transcript.py reunion.speakers.vtt
+sprezzature-audio-name reunion.speakers.vtt
 
 # Traduire des sous-titres en anglais
-python scripts/translate_captions.py conf.vtt --lang en
+sprezzature-audio-translate conf.vtt --lang en
 ```
 
 ## Ce qui distingue ce paquet d'audio-helper
