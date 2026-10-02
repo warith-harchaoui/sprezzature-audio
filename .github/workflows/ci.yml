@@ -34,5 +34,16 @@ jobs:
           pip install -e ".[api,mcp]" -r requirements-dev.txt
       - name: Ruff
         run: ruff check .
+      # The type half of the gate. Added after running mypy by hand found
+      # the same real defect in all six packages: mcp.py's two `main`
+      # definitions, the missing-extra fallback and the real one, took
+      # different arguments. Once, on one version: this is a gate, not a
+      # matrix. scripts/ is a separate invocation because those modules
+      # import siblings by bare name off a runtime sys.path.
+      - name: Mypy
+        if: matrix.python-version == '3.12'
+        run: |
+          mypy sprezzature_audio
+          mypy scripts
       - name: Pytest
         run: pytest -q
