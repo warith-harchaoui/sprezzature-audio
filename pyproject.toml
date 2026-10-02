@@ -86,6 +86,14 @@ sprezzature-audio-identify = "sprezzature_audio_scripts.identify_from_titanet:ma
 sprezzature-audio-pipeline = "sprezzature_audio_scripts.caption_diarize:main"
 sprezzature-audio-name = "sprezzature_audio_scripts.name_from_transcript:main"
 sprezzature-audio-translate = "sprezzature_audio_scripts.translate_captions:main"
+# The two installers set `prog="sprezzature-audio-install"` and
+# `prog="sprezzature-audio-install-diarize"` in their own parsers, so their
+# --help printed commands nobody could run; EXAMPLES.md sent readers to
+# `python scripts/install_captions.py`, a path a wheel does not have. Same
+# shape as the caption_diarize mismatch fixed in 1.1.0, missed because the
+# guard there was a hand-written list of the six Click commands.
+sprezzature-audio-install = "sprezzature_audio_scripts.install_captions:main"
+sprezzature-audio-install-diarize = "sprezzature_audio_scripts.install_diarize:main"
 
 [tool.setuptools]
 packages = ["sprezzature_audio", "sprezzature_audio_scripts"]

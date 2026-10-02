@@ -89,13 +89,13 @@ python scripts/translate_captions.py interview.vtt --lang de --media interview.m
 ## Install Whisper models ahead of time
 
 ```sh
-python scripts/install_captions.py
+sprezzature-audio-install
 # Downloads ggml-large-v3-turbo.bin to ~/.cache/sprezzature-skill/whisper/
 ```
 
 ## Install NeMo diarization models
 
 ```sh
-python scripts/install_diarize.py
+sprezzature-audio-install-diarize
 # Downloads Sortformer and TitaNet checkpoints from Hugging Face
 ```
