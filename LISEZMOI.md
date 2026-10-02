@@ -101,4 +101,4 @@ BSD à 3 clauses. Voir [LICENSE](https://github.com/warith-harchaoui/sprezzature
 
 ## Auteur
 
-Warith HARCHAOUI : [harchaoui.org/warith](https://harchaoui.org/warith/)
+Warith HARCHAOUI : [deraison.ai](https://deraison.ai/)
