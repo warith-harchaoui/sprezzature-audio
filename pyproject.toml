@@ -80,6 +80,9 @@ Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
 sprezzature-audio-mcp = "sprezzature_audio.mcp:main"
+# The audit half. This package drafts captions; this is what asks whether
+# they can be read at the speed they go by.
+sprezzature-audio-audit = "sprezzature_audio_scripts.audit_captions:main"
 sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"
 sprezzature-audio-diarize = "sprezzature_audio_scripts.diarize_from_nemo:main"
 sprezzature-audio-identify = "sprezzature_audio_scripts.identify_from_titanet:main"
