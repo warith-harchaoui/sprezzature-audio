@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-LABEL maintainer="warith.harchaoui@gmail.com"
+LABEL maintainer="warithmetics@deraison.ai"
 LABEL description="sprezzature-audio: speech-to-text and caption translation (base install, no heavy ML)"
 
 WORKDIR /app

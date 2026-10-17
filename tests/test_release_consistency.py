@@ -16,7 +16,7 @@ this package supports 3.10.
 
 Author
 ------
-Warith HARCHAOUI <warith.harchaoui@gmail.com>
+Warith HARCHAOUI <warithmetics@deraison.ai>
 """
 
 from __future__ import annotations
