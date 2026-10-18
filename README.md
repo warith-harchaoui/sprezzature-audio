@@ -76,6 +76,20 @@ pip install "sprezzature-audio[all]"
 
 ## Quick start
 
+Fifteen tools ship here, each with its own command — which is what a script
+should call. The two front doors are how you find them:
+
+```sh
+make-audio --help          # argparse: the catalogue, with a line per tool
+sprezzature-audio --help   # click: the same fifteen, the other parser
+
+make-audio audit subtitles.vtt
+make-audio narrate post.md --out post.mp3
+```
+
+Every argument after the tool name belongs to that tool, so
+`make-audio captions --help` shows the transcription flags, not these.
+
 ```sh
 # Transcribe a video to WebVTT
 sprezzature-audio-captions talk.mp4
@@ -98,6 +112,38 @@ sprezzature-audio-name meeting.speakers.vtt
 # Translate captions to French
 sprezzature-audio-translate talk.vtt --lang fr
 ```
+
+## As a library
+
+`import sprezzature_audio` hands back the engine, not a version string. What
+is importable with **no extras at all** is everything that needs no model —
+the same set the HTTP API serves, and for the same reason: it is fast and
+pure.
+
+```python
+import sprezzature_audio as audio
+
+cues = audio.parse(open("talk.vtt").read())
+for finding in audio.audit_cues(cues):      # too fast, too short, too wide
+    print(finding)
+
+print(audio.write_srt(cues))                # VTT -> SRT, same reader
+print(audio.word_error_rate(reference, hypothesis)["wer"])
+print(audio.describe_device())              # which accelerator this host uses
+```
+
+The model-backed half resolves on first use, so the import above costs
+nothing even on a machine with Whisper, NeMo and Kokoro installed:
+
+```python
+audio.synthesise(...)      # [narrate]  — Kokoro
+audio.transcribe(...)      # [captions] — Whisper
+audio.diarize(...)         # [diarize]  — NeMo Sortformer
+audio.translate_cues(...)  # [translate]
+```
+
+Ask for one without its extra and the error names the `pip install` that
+fixes *that* tool, not the package in general.
 
 ## How this differs from audio-helper
 

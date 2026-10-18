@@ -304,8 +304,10 @@ def synthesise(
         from kokoro_onnx import Kokoro
     except ImportError as e:
         raise RuntimeError(
-            "kokoro-onnx not installed; "
-            "pip install -r requirements-narrate-kokoro.txt"
+            "kokoro-onnx not installed. From a wheel:\n"
+            "    pip install 'sprezzature-audio[narrate]'\n"
+            "From a clone:\n"
+            "    pip install -r requirements-narrate-kokoro.txt"
         ) from e
 
     paths = model_paths()
@@ -456,8 +458,11 @@ def synthesise(
 def parse_args() -> argparse.Namespace:
     """Parse the wrapper's command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="narrate_kokoro",
-        description="Kokoro narration engine for narrate_post.py.",
+        prog="sprezzature-audio-narrate-kokoro",
+        description=(
+            "Kokoro narration engine. Driven by sprezzature-publish-narrate "
+            "when a page is being narrated, and runnable on its own."
+        ),
     )
     parser.add_argument(
         "--check",

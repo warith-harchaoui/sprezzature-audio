@@ -204,8 +204,10 @@ def synthesise(
             mod = importlib.import_module("chatterbox_tts")
     except ImportError as e:
         raise RuntimeError(
-            "chatterbox-tts not installed; "
-            "pip install -r requirements-narrate-chatterbox.txt"
+            "chatterbox-tts not installed. From a wheel:\n"
+            "    pip install 'sprezzature-audio[narrate-chatterbox]'\n"
+            "From a clone:\n"
+            "    pip install -r requirements-narrate-chatterbox.txt"
         ) from e
 
     # Resolve the reference audio path. When neither --voice-sample
@@ -311,8 +313,12 @@ def synthesise(
 def parse_args() -> argparse.Namespace:
     """Parse the wrapper's command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="narrate_chatterbox",
-        description="ChatterboxTTS engine wrapper for narrate_post.py.",
+        prog="sprezzature-audio-narrate-chatterbox",
+        description=(
+            "ChatterboxTTS narration engine. Driven by "
+            "sprezzature-publish-narrate when a page is being narrated, "
+            "and runnable on its own."
+        ),
     )
     parser.add_argument(
         "--check",

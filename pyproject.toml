@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.3.0"
-description = "Speech-to-text, speaker diarization, speaker identification, and multilingual caption translation. Local-first: Whisper, NeMo Sortformer, TitaNet, local LLM."
+version = "1.4.0"
+description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "BSD-3-Clause"
@@ -125,6 +125,14 @@ Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
+# The two front doors, over the same fifteen tools and the same table
+# (sprezzature_audio/cli.py). argparse because it is in the standard library
+# and therefore always there; click because its sub-commands carry the shape
+# without hand-rolling it. Fifteen commands is well past what anybody keeps
+# in their head, and until these existed there was no way to find out what
+# this package does except by reading its README.
+make-audio = "sprezzature_audio.cli:main"
+sprezzature-audio = "sprezzature_audio.cli_click:main"
 sprezzature-audio-mcp = "sprezzature_audio.mcp:main"
 # The audit half. This package drafts captions; this is what asks whether
 # they can be read at the speed they go by.
@@ -151,6 +159,12 @@ sprezzature-audio-translate = "sprezzature_audio_scripts.translate_captions:main
 # guard there was a hand-written list of the six Click commands.
 sprezzature-audio-install = "sprezzature_audio_scripts.install_captions:main"
 sprezzature-audio-install-diarize = "sprezzature_audio_scripts.install_diarize:main"
+# The measuring tool. It had a `main()` and no line here, so it ran from a
+# clone and from nowhere else -- which is the one failure mode its own
+# docstring argues against: "a measurement tool that is hard to install does
+# not get used, and one nobody runs is worse than none, because it lets 'it
+# feels faster' stand unchallenged."
+sprezzature-audio-benchmark = "sprezzature_audio_scripts.benchmark_stt:main"
 
 [tool.setuptools]
 packages = ["sprezzature_audio", "sprezzature_audio_scripts"]

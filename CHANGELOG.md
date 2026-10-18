@@ -1,5 +1,72 @@
 # Changelog: sprezzature-audio
 
+## v1.4.0 (2026-10-18): the package you can import, and the door you can find
+
+The engine was always here. Reaching it was the problem.
+
+`import sprezzature_audio` handed back a version string, an author and an
+email — the surface `SURFACES.md` calls the easiest of the five to fake,
+because `pip install` works, `import` works, and the caller still has nothing
+to call. The code lived in `sprezzature_audio_scripts`, a package named for
+how it was built rather than for what it does. And on the command line there
+were fifteen `sprezzature-audio-*` commands and no way to learn that without
+reading the README.
+
+### Added
+
+- **A library surface.** `sprezzature_audio` now exports the engine. What is
+  importable with no extras at all is everything that needs no model: the
+  shared WebVTT reader and writer (`parse`, `write_vtt`, `write_srt`, `Cue`),
+  the caption audit (`audit_cues`, `Finding`), speaker attribution over an
+  existing transcript (`attribute_speakers` and the three renderers), the
+  word- and diarization-error rates, what accelerator this host will use, and
+  which language a document is written in. That is deliberately the same set
+  the HTTP API serves, and for the same reason: it is fast and pure.
+- **The model-backed half, served lazily** (PEP 562): transcription,
+  diarization, identification, translation and narration resolve on first
+  use, each naming *its own* extra when the dependency is missing. Being told
+  to install the captions extra when you asked for `synthesise` is worse than
+  no message at all.
+- **Two front doors**, over one table: `make-audio` (argparse) and
+  `sprezzature-audio` (click). Both list the fifteen tools with a line each
+  saying when to reach for them, and dispatch to the same engine. The table
+  is the dispatcher *and* the help text, so a tool cannot be listed and
+  unreachable, or reachable and undocumented.
+- **`sprezzature-audio-benchmark`** — the measuring tool had a `main()` and
+  no line in `[project.scripts]`, so it ran from a clone and from nowhere
+  else. Its own docstring argues against exactly that: "a measurement tool
+  that is hard to install does not get used, and one nobody runs is worse
+  than none, because it lets 'it feels faster' stand unchallenged."
+- **A `docker-compose.yml`**, as every brick with a Dockerfile now owes. Three
+  services: the API, a `diarize` profile that is the same build with NeMo
+  added, and the model server behind a `translate` profile. The image also
+  gained `ffmpeg` and `espeak-ng`, the two halves pip cannot supply.
+
+### Fixed
+
+- **Six commands told the reader to type something that does not exist.**
+  `sprezzature-audio-narrate-kokoro --help` printed `usage: narrate_kokoro`;
+  `benchmark_stt.py`, `pick_voice`, `install_narrate` and the two other
+  narration engines did the same. All six are module names. The guard that
+  was supposed to catch this matched `prog="sprezzature-*"`, so it caught a
+  command named *wrongly* and was blind to one named after nothing at all —
+  now widened, and verified to fail on a sabotage.
+- **Five install hints named a file a wheel does not contain.** "kokoro-onnx
+  not installed; pip install -r requirements-narrate-kokoro.txt" is sound
+  advice in a clone and useless to the one person who most needs it: someone
+  who ran `pip install sprezzature-audio`. Each now names the extra first and
+  the requirements file second, and a test holds every runtime hint to it.
+- **The default Docker command printed `--help` and exited** — a container
+  that looks like it works and does nothing. It serves the API now.
+
+### Changed
+
+- The package description and the module docstring said nothing about
+  narration, which has been half of this brick since 1.3.0.
+- Three narration engines described themselves as wrappers "for
+  narrate_post.py", a script that moved to `sprezzature-publish` when the
+  bricks left the monorepo.
+
 ## v1.3.0 (2026-10-18): a voice that reads, rather than one that impersonates
 
 The two engines that arrived in 1.2.0 are voice-*cloning* engines, and

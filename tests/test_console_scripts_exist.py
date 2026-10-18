@@ -136,3 +136,52 @@ def test_every_console_script_points_at_something_importable() -> None:
             f"console script {name} points at {target}, but {module_name} has "
             f"no attribute {attribute!r}."
         )
+
+
+#: Any ``prog=`` at all, not only one that already spells a suite command.
+#: The check above reads ``_PROG_RE``, which matches ``prog="sprezzature-*"``
+#: — so it catches a command named *wrongly* and is blind to one named after
+#: nothing at all. Six scripts sat in that blind spot:
+#: ``sprezzature-audio-narrate-kokoro --help`` printed ``usage:
+#: narrate_kokoro``, and ``sprezzature-audio-benchmark --help`` printed
+#: ``usage: benchmark_stt.py``. Both are module names: a reader who typed
+#: what the help told them got "command not found", from the surface whose
+#: whole job is to say how to run the thing.
+_ANY_PROG_RE = re.compile(r'prog\s*=\s*["\']([^"\']+)["\']')
+
+
+def _module_to_command() -> dict[str, str]:
+    """``{scripts/<module>.py: the command pip installs for it}``."""
+    out: dict[str, str] = {}
+    for command, target in _console_scripts().items():
+        module_name, _, _attribute = target.partition(":")
+        if module_name.startswith("sprezzature_audio_scripts."):
+            out[module_name.split(".")[-1]] = command
+    return out
+
+
+@pytest.mark.parametrize(
+    "module_name,command",
+    sorted(_module_to_command().items()),
+    ids=lambda value: value,
+)
+def test_an_installed_script_names_its_own_command_in_prog(
+    module_name: str, command: str
+) -> None:
+    """A script that pip installs must say, in ``--help``, what pip called it.
+
+    Only scripts that *have* a console script are checked, and only if they
+    declare a ``prog=`` at all: a module with no parser of its own, or one
+    reached solely as a sub-command, owes nothing here.
+    """
+    path = SCRIPTS_DIR / f"{module_name}.py"
+    if not path.is_file():  # pragma: no cover - layout guard
+        pytest.skip(f"{path} is not in this checkout")
+    progs = _ANY_PROG_RE.findall(path.read_text(encoding="utf-8", errors="replace"))
+    if not progs:
+        pytest.skip(f"{module_name}.py declares no prog=")
+    assert command in progs, (
+        f"{module_name}.py sets prog={progs!r}, but pip installs it as "
+        f"{command!r}. A reader who types what --help shows gets "
+        f"'command not found'."
+    )

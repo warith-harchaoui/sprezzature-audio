@@ -1,0 +1,90 @@
+# `docker compose up` is the whole onboarding. The Dockerfile beside this file
+# is a recipe; this is the way in — the port, the volume, the environment and
+# the command, declared rather than reconstructed by the next reader from a
+# `docker run` line in somebody's shell history.
+#
+#   docker compose up -d
+#   curl -s localhost:8000/health
+#   curl -s localhost:8000/v1/device          # which accelerator this host uses
+#   docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
+#   docker compose run --rm api sprezzature-audio-narrate-kokoro /work/post.md --out /work/post.mp3
+#   docker compose --profile diarize run --rm diarize sprezzature-audio-pipeline /work/talk.mp4
+#   docker compose --profile translate up -d  # + the model the translator needs
+#
+# Three services, and the split is the point.
+#
+# `api` serves the routes that are fast and pure — caption conversion, speaker
+# merge, WER and DER. Transcription is deliberately absent from the API: it
+# loads a multi-gigabyte model and runs for minutes, which behind a
+# synchronous route is a timeout with extra steps. So the long tools stay
+# command lines, run through this same image.
+#
+# `diarize` is the same build with one more extra. `nemo_toolkit[asr]` pulls
+# torch and several gigabytes with it, and nothing the API serves needs it —
+# so the default image does not carry it, and this service declares the build
+# argument rather than leaving it in a comment for someone to retype.
+
+services:
+  api:
+    build: .
+    image: sprezzature-audio:local
+    ports:
+      - "8000:8000"
+    environment:
+      # The package reads OLLAMA_URL; the ollama server reads OLLAMA_HOST.
+      # They are not interchangeable, and getting it wrong is invisible until
+      # the first call: the default http://localhost:11434 resolves to *this*
+      # container, so the API comes up healthy and fails on the first
+      # translation.
+      OLLAMA_URL: http://ollama:11434
+      # Whisper weights and the Kokoro voice pack land under $HOME by default,
+      # which a `down` throws away — and re-downloading a multi-gigabyte model
+      # looks exactly like a slow first run. Pointed at a named volume below.
+      SPREZZATURE_CACHE_DIR: /cache
+    volumes:
+      # The recordings to caption and the captions written beside them.
+      # Mounted rather than copied so the container never holds the only copy.
+      - ./work:/work
+      - audio-cache:/cache
+    working_dir: /work
+    restart: unless-stopped
+
+  diarize:
+    build:
+      context: .
+      args:
+        EXTRAS: all,api,mcp
+    image: sprezzature-audio-diarize:local
+    profiles: ["diarize"]
+    environment:
+      SPREZZATURE_CACHE_DIR: /cache
+    volumes:
+      - ./work:/work
+      - audio-cache:/cache
+    working_dir: /work
+    # No port and no restart: this one is run, not served. `docker compose run`
+    # gives it a command; a `restart: unless-stopped` here would turn a finished
+    # transcription into a loop.
+    command: ["sprezzature-audio-pipeline", "--help"]
+
+  ollama:
+    image: ollama/ollama:latest
+    # Only started with `--profile translate`, because one tool of many needs it.
+    profiles: ["translate"]
+    ports:
+      - "11434:11434"
+    volumes:
+      # Named volume, not a bind mount: the weights survive `down` and a
+      # rebuild, and are not something anyone wants in their working tree.
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+volumes:
+  audio-cache:
+  ollama-models:

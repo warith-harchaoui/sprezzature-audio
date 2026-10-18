@@ -161,8 +161,10 @@ def synthesise(
         se_extractor_mod = importlib.import_module("openvoice.se_extractor")
     except ImportError as e:
         raise RuntimeError(
-            "openvoice not installed; "
-            "pip install -r requirements-narrate-openvoice.txt"
+            "openvoice not installed. From a wheel:\n"
+            "    pip install 'sprezzature-audio[narrate-openvoice]'\n"
+            "From a clone:\n"
+            "    pip install -r requirements-narrate-openvoice.txt"
         ) from e
 
     # OpenVoice v2 requires checkpoint paths discovered at install
@@ -309,8 +311,12 @@ def synthesise(
 def parse_args() -> argparse.Namespace:
     """Parse the wrapper's command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="narrate_openvoice",
-        description="OpenVoice v2 engine wrapper for narrate_post.py.",
+        prog="sprezzature-audio-narrate-openvoice",
+        description=(
+            "OpenVoice v2 narration engine. Driven by "
+            "sprezzature-publish-narrate when a page is being narrated, "
+            "and runnable on its own."
+        ),
     )
     parser.add_argument(
         "--check",

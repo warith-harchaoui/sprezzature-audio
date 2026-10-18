@@ -276,7 +276,7 @@ def pitch_span_semitones(path: Path) -> float | None:
 def parse_args() -> argparse.Namespace:
     """Parse the command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="pick_voice",
+        prog="sprezzature-audio-voice",
         description="List narration engine voices and optionally sample them.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,

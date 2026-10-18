@@ -129,9 +129,10 @@ def install_openvoice() -> int:
     """
     if not _check_importable(("openvoice",)):
         print(
-            "openvoice not installed; run\n"
-            "  pip install -r "
-            "requirements-narrate-openvoice.txt",
+            "openvoice not installed. From a wheel:\n"
+            "    pip install 'sprezzature-audio[narrate-openvoice]'\n"
+            "From a clone:\n"
+            "    pip install -r requirements-narrate-openvoice.txt",
             file=sys.stderr,
         )
         return 1
@@ -194,9 +195,10 @@ def install_chatterbox() -> int:
             mod = importlib.import_module("chatterbox_tts")
         except ImportError:
             print(
-                "chatterbox-tts not installed; run\n"
-                "  pip install -r "
-                "requirements-narrate-chatterbox.txt",
+                "chatterbox-tts not installed. From a wheel:\n"
+                "    pip install 'sprezzature-audio[narrate-chatterbox]'\n"
+                "From a clone:\n"
+                "    pip install -r requirements-narrate-chatterbox.txt",
                 file=sys.stderr,
             )
             return 1
@@ -250,8 +252,10 @@ def install_kokoro() -> int:
     """
     if not _check_importable(("kokoro_onnx",)):
         print(
-            "kokoro-onnx not installed; run\n"
-            "  pip install -r requirements-narrate-kokoro.txt",
+            "kokoro-onnx not installed. From a wheel:\n"
+            "    pip install 'sprezzature-audio[narrate]'\n"
+            "From a clone:\n"
+            "    pip install -r requirements-narrate-kokoro.txt",
             file=sys.stderr,
         )
         return 1
@@ -315,7 +319,7 @@ def _espeak_is_usable() -> bool:
 def parse_args() -> argparse.Namespace:
     """Parse the command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="install_narrate",
+        prog="sprezzature-audio-install-voice",
         description=(
             "Download model checkpoints for the narration engines "
             "(kokoro, openvoice, chatterbox). The Python packages themselves "

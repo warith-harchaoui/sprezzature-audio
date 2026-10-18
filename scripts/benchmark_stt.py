@@ -473,13 +473,14 @@ def format_report(results: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     """Command-line entry point."""
     parser = make_parser(
-        "benchmark_stt.py",
+        "sprezzature-audio-benchmark",
         "Measure transcription quality (WER), speaker attribution (DER) and speed (RTF).",
         epilog=(
             "Examples:\n"
-            "  benchmark_stt.py --reference truth.vtt --hypothesis whisper.vtt\n"
-            "  benchmark_stt.py --reference-rttm truth.rttm --hypothesis-rttm out.rttm\n"
-            "  benchmark_stt.py --audio-seconds 3600 --time-command 'python captions_from_whisper.py a.mp4'\n"
+            "  sprezzature-audio-benchmark --reference truth.vtt --hypothesis whisper.vtt\n"
+            "  sprezzature-audio-benchmark --reference-rttm truth.rttm --hypothesis-rttm out.rttm\n"
+            "  sprezzature-audio-benchmark --audio-seconds 3600 \\\n"
+            "      --time-command 'sprezzature-audio-captions a.mp4'\n"
         ),
     )
     parser.add_argument("--reference", type=Path, help="Reference transcript (.vtt, .srt or .txt).")
