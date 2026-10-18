@@ -37,6 +37,22 @@ narration ends up flat with nobody able to say why.
 It cannot clone a voice either. ``--voice-sample`` is refused rather than
 accepted-and-ignored, with the two engines that do support it named.
 
+A note on licences
+------------------
+Kokoro's code and weights are Apache-2.0, which is what lets this sit in a
+BSD-3 repository. **espeak-ng is GPL**, and it is reached as a separate
+binary through ``ctypes`` — the way a program calls ``ffmpeg`` — not linked
+into anything here.
+
+Stated precisely, because the tidy version of this sentence is wrong: the
+``[narrate-kokoro]`` extra does declare ``espeakng-loader``, a wheel that
+carries a built espeak-ng, so a container image built from that extra
+contains a GPL binary. That is an ordinary dependency and not by itself a
+problem, but it is a thing somebody shipping an image should know they are
+shipping, rather than discover from a licence scan. The preferred path is
+the machine's own espeak-ng; the wheel is the fallback, and on macOS it does
+not work anyway (see :func:`espeak_config`).
+
 Author
 ------
 `Warith HARCHAOUI, Ph.D. <https://www.linkedin.com/in/warith-harchaoui/>`_
