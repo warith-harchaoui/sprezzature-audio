@@ -77,6 +77,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _vtt  # noqa: E402
 import click  # noqa: E402
 from _click import run_command, sprezzature_command  # noqa: E402
 from _lang import detect_text_language, extract_body_text, language_name  # noqa: E402
@@ -184,57 +185,32 @@ def resolve_target_language(
 
 
 def _format_timestamp(seconds: float) -> str:
-    """
-    Format a time in seconds as a WebVTT ``HH:MM:SS.mmm`` timestamp.
-
-    Parameters
-    ----------
-    seconds : float
-        Cue time in seconds (as parsed by
-        :func:`caption_diarize.parse_caption_cues`).
-
-    Returns
-    -------
-    str
-        WebVTT timestamp string.
-    """
-    total_ms: int = max(0, round(float(seconds) * 1000.0))
-    hours, rem = divmod(total_ms, 3_600_000)
-    minutes, rem = divmod(rem, 60_000)
-    secs, ms = divmod(rem, 1_000)
-    return f"{hours:02d}:{minutes:02d}:{secs:02d}.{ms:03d}"
+    """Format a time in seconds as a WebVTT ``HH:MM:SS.mmm`` timestamp."""
+    return _vtt.format_timestamp(seconds)
 
 
 def render_vtt(cues: list[dict[str, object]]) -> str:
     """
     Render translated cues as a plain WebVTT document.
 
-    The subtitle track is dialogue-only (no ``<v Name>`` voice tags): W3C
-    reserves those for the same-language ``captions`` track, and
-    :func:`caption_diarize.parse_caption_cues` has already stripped them.
-
-    Parameters
-    ----------
-    cues : list of dict
-        Cues with ``"start"`` / ``"end"`` (seconds) and translated
-        ``"text"``.
-
-    Returns
-    -------
-    str
-        A WebVTT document, ready to write to ``<stem>.<lang>.vtt``.
+    The subtitle track is dialogue-only: ``voices=False`` is passed
+    deliberately, and is the reason the shared writer takes the flag at all.
+    W3C reserves ``<v Name>`` tags for the same-language ``captions`` track,
+    so a translated track must not carry them — and since the shared reader
+    now lifts a speaker into the cue rather than dropping it, the writer
+    would otherwise put the tags back.
     """
-    lines: list[str] = ["WEBVTT", ""]
-    for cue in cues:
-        text: str = str(cue.get("text", "")).strip()
-        if not text:
-            continue
-        start: str = _format_timestamp(float(cue["start"]))  # type: ignore[arg-type]
-        end: str = _format_timestamp(float(cue["end"]))  # type: ignore[arg-type]
-        lines.append(f"{start} --> {end}")
-        lines.append(text)
-        lines.append("")
-    return "\n".join(lines)
+    return _vtt.write_vtt(
+        [
+            _vtt.Cue(
+                start=float(cue["start"]),  # type: ignore[arg-type]
+                end=float(cue["end"]),  # type: ignore[arg-type]
+                text=str(cue.get("text", "")).strip(),
+            )
+            for cue in cues
+        ],
+        voices=False,
+    )
 
 
 # ── Translation core (pure; Ollama injected as a seam) ────────────────────────

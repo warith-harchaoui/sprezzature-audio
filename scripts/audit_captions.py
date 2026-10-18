@@ -62,6 +62,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from _argparse import make_parser  # noqa: E402
+from _vtt import Cue, parse  # noqa: E402
 
 #: Netflix Timed Text Style Guide, adult content. Named rather than inlined
 #: so the next reader knows these are conventions with a source, not numbers
@@ -71,9 +72,6 @@ DEFAULT_MIN_SECONDS: float = 5 / 6
 DEFAULT_MAX_SECONDS: float = 7.0
 DEFAULT_LINE_CHARS: int = 42
 DEFAULT_MAX_LINES: int = 2
-
-_VTT_TIME = r"(?:(\d+):)?(\d{2}):(\d{2})[.,](\d{3})"
-_CUE_RE = re.compile(rf"^\s*{_VTT_TIME}\s*-->\s*{_VTT_TIME}", re.M)
 
 
 @dataclass(frozen=True)
@@ -89,55 +87,9 @@ class Finding:
         return f"cue {self.cue} @ {self.start:7.3f}s  {self.rule}: {self.message}"
 
 
-@dataclass(frozen=True)
-class Cue:
-    """One timed caption."""
-
-    index: int
-    start: float
-    end: float
-    text: str
-
-    @property
-    def duration(self) -> float:
-        return self.end - self.start
-
-    @property
-    def lines(self) -> list[str]:
-        return [line for line in self.text.splitlines() if line.strip()]
-
-    @property
-    def characters(self) -> int:
-        """Visible characters, which is what a reader actually processes."""
-        return len(re.sub(r"\s+", " ", self.text).strip())
-
-
-def _seconds(hours: str | None, minutes: str, secs: str, millis: str) -> float:
-    return int(hours or 0) * 3600 + int(minutes) * 60 + int(secs) + int(millis) / 1000
-
-
-def parse(text: str) -> list[Cue]:
-    """
-    Read a WebVTT or SubRip document into cues.
-
-    Both formats are accepted because this package emits both, and a reader
-    who has one has no reason to convert before checking it. The timestamp
-    grammar differs only in its decimal separator, which the regex takes
-    either way.
-    """
-    cues: list[Cue] = []
-    matches = list(_CUE_RE.finditer(text))
-    for index, match in enumerate(matches, start=1):
-        start = _seconds(*match.groups()[:4])
-        end = _seconds(*match.groups()[4:])
-        body_start = match.end()
-        body_end = matches[index].start() if index < len(matches) else len(text)
-        body = text[body_start:body_end]
-        # An SRT cue is preceded by its sequence number, which belongs to the
-        # next cue's block, not to this one's text.
-        body = re.sub(r"\n\s*\d+\s*$", "", body.strip("\n"))
-        cues.append(Cue(index=index, start=start, end=end, text=body.strip()))
-    return cues
+def _characters(cue: Cue) -> int:
+    """Visible characters, which is what a reader actually processes."""
+    return len(re.sub(r"\s+", " ", cue.text).strip())
 
 
 def audit(
@@ -152,48 +104,52 @@ def audit(
     """Report every cue that cannot be read as timed."""
     findings: list[Finding] = []
     previous: Cue | None = None
+    previous_index = 0
 
-    for cue in cues:
+    # The shared reader returns cues in time order without numbering them —
+    # a cue's identity is its position in the track, which is what a reader
+    # scrubbing a timeline actually counts.
+    for index, cue in enumerate(cues, start=1):
         if cue.end <= cue.start:
             findings.append(Finding(
-                "cue-reversed", cue.index, cue.start,
+                "cue-reversed", index, cue.start,
                 f"ends at {cue.end:.3f}s, which is not after it starts",
             ))
         if previous is not None and cue.start < previous.end:
             findings.append(Finding(
-                "cue-overlap", cue.index, cue.start,
+                "cue-overlap", index, cue.start,
                 f"starts {previous.end - cue.start:.3f}s before cue "
-                f"{previous.index} ends; players either stack the two or drop "
+                f"{previous_index} ends; players either stack the two or drop "
                 f"one, and neither is what was meant",
             ))
         if not cue.text.strip():
             findings.append(Finding(
-                "cue-empty", cue.index, cue.start,
+                "cue-empty", index, cue.start,
                 "a timed cue with no text: a blank caption box, on screen, "
                 "for its full duration",
             ))
-            previous = cue
+            previous, previous_index = cue, index
             continue
 
         duration = max(cue.duration, 0.0)
         if 0 < duration < min_seconds:
             findings.append(Finding(
-                "cue-too-brief", cue.index, cue.start,
+                "cue-too-brief", index, cue.start,
                 f"{duration:.3f}s on screen, under the {min_seconds:.3f}s "
                 f"floor; the eye registers a flash, not a sentence",
             ))
         if duration > max_seconds:
             findings.append(Finding(
-                "cue-too-long", cue.index, cue.start,
+                "cue-too-long", index, cue.start,
                 f"{duration:.1f}s on screen, over the {max_seconds:.0f}s "
                 f"ceiling; a cue that lingers has usually swallowed a "
                 f"sentence boundary",
             ))
         if duration > 0:
-            speed = cue.characters / duration
+            speed = _characters(cue) / duration
             if speed > cps:
                 findings.append(Finding(
-                    "cue-too-fast", cue.index, cue.start,
+                    "cue-too-fast", index, cue.start,
                     f"{speed:.1f} characters per second, over the {cps:.0f} "
                     f"ceiling: accurate and still unreadable at the speed it "
                     f"goes by",
@@ -201,7 +157,7 @@ def audit(
         for line in cue.lines:
             if len(line) > line_chars:
                 findings.append(Finding(
-                    "line-too-wide", cue.index, cue.start,
+                    "line-too-wide", index, cue.start,
                     f"a line of {len(line)} characters, over the "
                     f"{line_chars}-character budget; wider lines wrap "
                     f"differently in every player",
@@ -209,11 +165,11 @@ def audit(
                 break
         if len(cue.lines) > max_lines:
             findings.append(Finding(
-                "too-many-lines", cue.index, cue.start,
+                "too-many-lines", index, cue.start,
                 f"{len(cue.lines)} lines in one cue, over {max_lines}; the "
                 f"extra lines cover the picture they are describing",
             ))
-        previous = cue
+        previous, previous_index = cue, index
 
     return findings
 

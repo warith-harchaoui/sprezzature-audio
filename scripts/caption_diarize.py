@@ -65,6 +65,7 @@ from pathlib import Path as _PathHelper
 from typing import Any
 
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
+import _vtt  # noqa: E402
 import click
 from _click import run_command, sprezzature_command  # noqa: E402
 
@@ -96,12 +97,7 @@ def _parse_timestamp(h: str, m: str, s: str, ms: str) -> float:
 
 def _format_timestamp(t: float, srt: bool = False) -> str:
     """Format seconds as ``HH:MM:SS.mmm`` (VTT) / ``HH:MM:SS,mmm`` (SRT)."""
-    total_ms = max(0, int(round(t * 1000)))
-    h, rem = divmod(total_ms, 3_600_000)
-    m, rem = divmod(rem, 60_000)
-    s, ms = divmod(rem, 1000)
-    sep = "," if srt else "."
-    return f"{h:02d}:{m:02d}:{s:02d}{sep}{ms:03d}"
+    return _vtt.format_timestamp(t, srt=srt)
 
 
 def parse_caption_cues(text: str) -> list[dict[str, Any]]:
@@ -117,30 +113,20 @@ def parse_caption_cues(text: str) -> list[dict[str, Any]]:
     list of dict
         ``[{"start": float, "end": float, "text": str}, ...]`` sorted
         by ``start``.
+
+    Notes
+    -----
+    The shared reader lifts a ``<v Name>`` tag into the cue's ``speaker``
+    field rather than leaving it in the text, which is what keeps the merger
+    from double-tagging. It also preserves the newlines inside a cue; this
+    function joins them, because a merger compares spans of speech and a
+    line break is a rendering decision, not part of what was said.
     """
-    cues: list[dict[str, Any]] = []
-    lines = text.splitlines()
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        m = _TIMESTAMP_VTT.match(line)
-        if not m:
-            i += 1
-            continue
-        start = _parse_timestamp(m.group("h"), m.group("m"), m.group("s"), m.group("ms"))
-        end = _parse_timestamp(m.group("h2"), m.group("m2"), m.group("s2"), m.group("ms2"))
-        j = i + 1
-        body_lines: list[str] = []
-        while j < len(lines) and lines[j].strip() != "":
-            # Strip any pre-existing <v ...> voice cue so the merger doesn't
-            # double-tag.
-            raw = re.sub(r"^<v\s+[^>]+>", "", lines[j]).strip()
-            body_lines.append(raw)
-            j += 1
-        cues.append({"start": start, "end": end, "text": " ".join(body_lines).strip()})
-        i = j + 1
-    cues.sort(key=lambda c: (c["start"], c["end"]))
-    return cues
+    return [
+        {"start": cue.start, "end": cue.end,
+         "text": " ".join(cue.text.split())}
+        for cue in _vtt.parse(text)
+    ]
 
 
 # ── Merger ─────────────────────────────────────────────────────────────────
@@ -204,43 +190,33 @@ def attribute_speakers(
 # ── Renderers ──────────────────────────────────────────────────────────────
 
 
+def _as_cues(cues: list[dict[str, Any]]) -> list[_vtt.Cue]:
+    """Adapt this module's dicts to the suite's cue type.
+
+    ``speaker`` is read with ``.get``: a cue that has not been through
+    ``attribute_speakers`` carries none, and there is nothing wrong with
+    that — converting plain captions between formats is a legitimate use.
+    Indexing here once raised KeyError and turned a valid request into a 500.
+    """
+    return [
+        _vtt.Cue(
+            start=float(cue["start"]),
+            end=float(cue["end"]),
+            text=str(cue.get("text", "")),
+            speaker=cue.get("speaker"),
+        )
+        for cue in cues
+    ]
+
+
 def render_vtt(cues: list[dict[str, Any]]) -> str:
     """Render speaker-attributed cues as a WebVTT document."""
-    lines: list[str] = ["WEBVTT", ""]
-    for cue in cues:
-        if not cue["text"]:
-            continue
-        lines.append(f"{_format_timestamp(cue['start'])} --> {_format_timestamp(cue['end'])}")
-        # A cue that has not been through attribute_speakers carries no
-        # speaker, and there is nothing wrong with that: converting plain
-        # captions between formats is a legitimate use. Indexing here
-        # raised KeyError and turned a valid request into a 500.
-        speaker = cue.get("speaker")
-        lines.append(
-            VTT_VOICE_CUE.format(name=speaker, text=cue["text"]) if speaker else cue["text"]
-        )
-        lines.append("")
-    return "\n".join(lines)
+    return _vtt.write_vtt(_as_cues(cues))
 
 
 def render_srt(cues: list[dict[str, Any]]) -> str:
     """Render speaker-attributed cues as a SubRip (SRT) document."""
-    lines: list[str] = []
-    idx = 1
-    for cue in cues:
-        if not cue["text"]:
-            continue
-        lines.append(str(idx))
-        lines.append(
-            f"{_format_timestamp(cue['start'], srt=True)} --> {_format_timestamp(cue['end'], srt=True)}"
-        )
-        speaker = cue.get("speaker")
-        lines.append(
-            SRT_SPEAKER_PREFIX.format(name=speaker, text=cue["text"]) if speaker else cue["text"]
-        )
-        lines.append("")
-        idx += 1
-    return "\n".join(lines)
+    return _vtt.write_srt(_as_cues(cues))
 
 
 def render_text(cues: list[dict[str, Any]]) -> str:

@@ -92,6 +92,7 @@ if TYPE_CHECKING:
 
 # Vocabulary + language helpers, shared with the other Ollama-backed scripts.
 sys.path.insert(0, str(Path(__file__).parent))
+import _vtt  # noqa: E402
 from _lang import detect_text_language  # noqa: E402
 from _vocab import resolve_vocab_terms  # noqa: E402
 
@@ -369,30 +370,26 @@ def _cache_set(key: str, text: str, fmt: str) -> None:
 
 def _format_timestamp(centiseconds: int, *, srt: bool = False) -> str:
     """
-    Format a timestamp expressed in 10-ms units as ``HH:MM:SS.mmm`` (VTT)
-    or ``HH:MM:SS,mmm`` (SRT).
+    Format a pywhispercpp timestamp (10-ms units) as a caption timestamp.
 
-    Parameters
-    ----------
-    centiseconds : int
-        Time value in 10-ms units, as returned by pywhispercpp.
-    srt : bool, optional
-        Format with a comma decimal separator for SRT.
-
-    Returns
-    -------
-    str
-        Formatted timestamp string.
+    Kept as a named function rather than inlined at the call sites: it is the
+    unit conversion this model's output needs and nothing else in the suite
+    does, which is exactly the part that should not move into the shared
+    module.
     """
-    total_ms: int = max(0, int(centiseconds)) * 10
-    hours, rem = divmod(total_ms, 3_600_000)
-    minutes, rem = divmod(rem, 60_000)
-    seconds, ms = divmod(rem, 1_000)
-    sep: str = "," if srt else "."
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}{sep}{ms:03d}"
+    return _vtt.format_timestamp(_vtt.from_centiseconds(centiseconds), srt=srt)
 
 
-# ── Segment → output format ─────────────────────────────────────────────────
+def _as_cues(segments: list) -> list[_vtt.Cue]:
+    """Adapt pywhispercpp segments to the suite's cue type."""
+    return [
+        _vtt.Cue(
+            start=_vtt.from_centiseconds(seg.t0),
+            end=_vtt.from_centiseconds(seg.t1),
+            text=seg.text.strip(),
+        )
+        for seg in segments
+    ]
 
 
 def segments_to_vtt(segments: list) -> str:
@@ -410,17 +407,7 @@ def segments_to_vtt(segments: list) -> str:
     str
         WebVTT document, ready to write to ``<file>.vtt``.
     """
-    lines: list[str] = ["WEBVTT", ""]
-    for seg in segments:
-        start = _format_timestamp(seg.t0)
-        end = _format_timestamp(seg.t1)
-        text = seg.text.strip()
-        if not text:
-            continue
-        lines.append(f"{start} --> {end}")
-        lines.append(text)
-        lines.append("")
-    return "\n".join(lines)
+    return _vtt.write_vtt(_as_cues(segments))
 
 
 def segments_to_srt(segments: list) -> str:
@@ -437,20 +424,7 @@ def segments_to_srt(segments: list) -> str:
     str
         SRT document.
     """
-    lines: list[str] = []
-    idx: int = 1
-    for seg in segments:
-        text = seg.text.strip()
-        if not text:
-            continue
-        start = _format_timestamp(seg.t0, srt=True)
-        end = _format_timestamp(seg.t1, srt=True)
-        lines.append(str(idx))
-        lines.append(f"{start} --> {end}")
-        lines.append(text)
-        lines.append("")
-        idx += 1
-    return "\n".join(lines)
+    return _vtt.write_srt(_as_cues(segments))
 
 
 def segments_to_text(segments: list) -> str:
