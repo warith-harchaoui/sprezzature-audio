@@ -296,3 +296,38 @@ def test_silence_is_refused_rather_than_scored(tmp_path: Path) -> None:
         handle.setframerate(24_000)
         handle.writeframes(b"\x00\x00" * 24_000)
     assert pick_voice.pitch_span_semitones(path) is None
+
+
+# ── A sentence with nothing to say ─────────────────────────────────────────
+
+
+@pytest.mark.parametrize("text", ["»", "« ", "—", "...", "…", "“”"])
+def test_punctuation_alone_is_not_speakable(text: str) -> None:
+    """
+    The defect that stopped a narration twelve pages in.
+
+    A French page closing a quotation on its own line gives a sentence that
+    is one `»`. Handed to the engine it raises "nothing to synthesize,
+    produced no phonemes" and takes the whole run with it — after eleven
+    minutes of audio already made.
+    """
+    assert not narrate_kokoro._SPEAKABLE.search(text)
+
+
+@pytest.mark.parametrize("text", ["1", "Bonjour", "x²", "N9", "été"])
+def test_anything_with_a_letter_or_a_digit_is_speakable(text: str) -> None:
+    assert narrate_kokoro._SPEAKABLE.search(text)
+
+
+def test_such_a_sentence_still_takes_its_turn() -> None:
+    """
+    It cannot simply be dropped. The page shows it, so the narration owes it
+    a cue — without one, every later sentence lights up one place out and
+    `align` refuses to build the page at all. It becomes a short silence
+    that keeps its place in the queue.
+    """
+    source = (ROOT / "scripts" / "narrate_kokoro.py").read_text(encoding="utf-8")
+    assert "timeline.speech(0, index=index, text=text)" in source, (
+        "a punctuation-only sentence must still record a cue"
+    )
+    assert 0 < narrate_kokoro.PUNCTUATION_PAUSE_MS <= 400

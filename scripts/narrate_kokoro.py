@@ -63,6 +63,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import re
 import sys
 import wave
 from pathlib import Path
@@ -133,6 +134,16 @@ PACE_SPEED: dict[str, float] = {
     "normal": 1.00,
     "fast":   1.15,
 }
+
+#: Whether a segment has anything a voice could say. Punctuation alone does
+#: not: a French page closing a quotation on its own line gives a sentence
+#: that is one `»`, which is a mark on the page and silence in the ear.
+_SPEAKABLE = re.compile(r"[^\W_]", re.UNICODE)
+
+#: How long such a sentence lasts. Short, because the pause around it is
+#: already carried by its neighbours -- but not zero, because the cue has
+#: to have somewhere to sit.
+PUNCTUATION_PAUSE_MS: int = 120
 
 #: The neutral value of each hint this engine has no dial for — what the
 #: segment carries when nothing was asked for. A hint is reported as ignored
@@ -357,6 +368,19 @@ def synthesise(
             lead = timeline.silence(seg.get("pause_before_ms", 0))
             if lead > 0:
                 pieces.append(np.zeros(lead, dtype=np.int16))
+
+        # A segment with nothing speakable in it. A French page closing a
+        # quotation on its own line gives a sentence that is one `»`, and
+        # the engine refuses it: "nothing to synthesize, produced no
+        # phonemes". It cannot simply be dropped -- the page shows it, so
+        # the cue has to exist or every later sentence lights up one place
+        # out -- so it becomes a short silence that still takes its turn.
+        if not _SPEAKABLE.search(spoken):
+            quiet = timeline.silence(PUNCTUATION_PAUSE_MS)
+            if quiet > 0:
+                pieces.append(np.zeros(quiet, dtype=np.int16))
+            timeline.speech(0, index=index, text=text)
+            continue
 
         speed: float = PACE_SPEED.get(seg.get("pace", "normal"), 1.0)
         # `trim` cuts the leading and trailing silence the vocoder leaves on
