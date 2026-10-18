@@ -74,6 +74,21 @@ mcp = [
     # 2.0 until fastapi-mcp ships a fix.
     "mcp<2.0",
 ]
+# Text into speech — the other direction of this package's modality.
+# Two engines because neither is right for every job: OpenVoice v2 clones a
+# voice from a short sample, Chatterbox renders from a voice library and
+# takes emotion hints. Both are heavy (torch, torchaudio), which is exactly
+# why they are an extra: transcribing a recording must not require them.
+narrate = [
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "numpy>=1.24.0",
+    "best-engine-ai-helper>=1.4",
+]
+# OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
+# extra above and is installed by `sprezzature-audio-install-voice`, which is
+# what that command is for.
+
 [project.urls]
 Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
@@ -83,6 +98,13 @@ sprezzature-audio-mcp = "sprezzature_audio.mcp:main"
 # The audit half. This package drafts captions; this is what asks whether
 # they can be read at the speed they go by.
 sprezzature-audio-audit = "sprezzature_audio_scripts.audit_captions:main"
+# The other direction: text into speech. Captions make sound readable,
+# narration makes text audible, and both land as timed text beside a wav —
+# which is why the voices live here rather than beside a site generator.
+sprezzature-audio-narrate-openvoice = "sprezzature_audio_scripts.narrate_openvoice:main"
+sprezzature-audio-narrate-chatterbox = "sprezzature_audio_scripts.narrate_chatterbox:main"
+sprezzature-audio-voice = "sprezzature_audio_scripts.pick_voice:main"
+sprezzature-audio-install-voice = "sprezzature_audio_scripts.install_narrate:main"
 sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"
 sprezzature-audio-diarize = "sprezzature_audio_scripts.diarize_from_nemo:main"
 sprezzature-audio-identify = "sprezzature_audio_scripts.identify_from_titanet:main"
