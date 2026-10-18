@@ -1,5 +1,50 @@
 # Changelog: sprezzature-audio
 
+## v1.2.0 (2026-10-18): the other direction, and one WebVTT
+
+This package transcribed sound into text. It now also turns text back into
+sound, because those are the same modality in opposite directions and one
+package should own both: captions make sound readable, narration makes text
+audible, and each lands as a timed track beside an audio file.
+
+### Added
+
+- **The voices**, arriving from `sprezzature-publish`:
+  `sprezzature-audio-narrate-openvoice` and `-chatterbox` (OpenVoice v2 clones
+  a voice from a short sample; Chatterbox renders from a voice library and
+  takes emotion hints), `sprezzature-audio-voice` to choose one by listening,
+  and `sprezzature-audio-install-voice` for the checkpoints. Behind a
+  `[narrate]` extra, deliberately **outside `[all]`**: `all` means "every way
+  to turn a recording into text", and torch is gigabytes for the opposite
+  journey.
+- **`sprezzature-audio-audit`** — the audit half this brick never had. Eight
+  static rules over a caption track: overlapping or reversed cues, empty
+  cues, reading speed, minimum and maximum duration, line width, line count.
+  Defaults follow the Netflix Timed Text Style Guide and the two-line
+  convention BBC and Netflix share — each one a flag, because a children's
+  programme and a dense technical talk do not share a reading speed.
+- **`scripts/_vtt.py`** — one WebVTT, read and written in one place, and
+  exported for the siblings through `sync_helpers.py`.
+
+### Changed
+
+- **Four WebVTT writers became one.** Three lived here
+  (`captions_from_whisper`, `caption_diarize`, `translate_captions`) and a
+  fourth in `sprezzature-publish`'s narration engine. The differences were
+  kept rather than flattened: `voices=False` for a translated track (W3C
+  reserves `<v Name>` for the same-language `captions` track), cue
+  identifiers for narration, and line structure preserved on read because the
+  audit counts lines and the merger does not.
+- **Milliseconds are truncated, never rounded.** The narration path had
+  worked this out — "a cue must never claim to start before the sample that
+  starts it" — and the caption path had not. Consolidating meant choosing the
+  behaviour with a reason, not the one written first.
+- **A `conftest.py`, at last.** This package had none: every test file
+  inserted its own path, and nothing neutralised the content-safety scan.
+  With the voices here that was a real gap — measured elsewhere in the suite
+  at 19.1 s instead of 1.1 s, and a 270 MB download on any machine where
+  `transformers` is installed for another reason.
+
 ## v1.1.1 (2026-10-02): the half of the dependency guard nobody runs
 
 ### Fixed
