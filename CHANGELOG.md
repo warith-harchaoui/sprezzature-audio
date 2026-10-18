@@ -46,6 +46,34 @@ thing that mattered: the result did not sound good.
   `from_pretrained` dies on `TypeError: 'NoneType' object is not callable`,
   which names nothing that would lead anyone to the cause.
 
+### Choosing a voice by measurement
+
+`sprezzature-audio-voice --sample --measure` now ranks the sampled voices by
+**how far their pitch moves**, in semitones between the 5th and 95th
+percentile. Semitones and not hertz, because pitch is heard as a ratio: a
+hundred and twenty hertz of movement is enormous on a voice centred at a
+hundred hertz and unremarkable on one centred at two hundred and twenty, and
+in hertz the two look the same.
+
+This came out of asking whether the intonation could be improved, and the
+answer turned out to be a measurement rather than a setting. Two things it
+found:
+
+- **The default was one of the flattest voices.** `af_heart` moves 9.8
+  semitones on a test paragraph; `am_puck` moves 18.0 and `af_kore` 14.2.
+  `af_heart` is the voice the model card grades A — but A rewards
+  naturalness, not expressiveness, and they are not the same axis.
+- **Synthesising a whole paragraph at once does nothing for intonation.**
+  The hypothesis was that prosody would carry across sentences instead of
+  resetting at each one. It does not: the pitch range is unchanged to within
+  a tenth of a semitone. Kokoro conditions prosody on a style vector per
+  utterance, and more context does not widen it. Recorded here so the
+  experiment is not run twice.
+
+The measure ranks movement, not quality — a wide voice can be wide and
+unpleasant. It exists to turn fifty-four candidates into a shortlist worth
+listening to, which is the part a person has to do.
+
 ### Note on espeak-ng
 
 Kokoro turns text into phonemes with espeak-ng, and the copy bundled in the

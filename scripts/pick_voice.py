@@ -47,6 +47,7 @@ import argparse
 import json
 import subprocess
 import sys
+import wave
 from pathlib import Path
 
 # ── Module-level configuration ──────────────────────────────────────────────
@@ -197,6 +198,79 @@ def sample_one_voice(
     return target if target.is_file() else None
 
 
+
+# ── Measuring a voice ──────────────────────────────────────────────────────
+
+#: Plausible speaking range for a human voice, in hertz. Outside it an
+#: autocorrelation tracker is almost certainly locking onto a harmonic
+#: rather than the fundamental.
+F0_MIN_HZ: float = 70.0
+F0_MAX_HZ: float = 330.0
+
+
+def pitch_span_semitones(path: Path) -> float | None:
+    """How far a voice moves, in semitones, or ``None`` if it cannot be told.
+
+    This is the number that separates "reads with intonation" from "reads
+    flatly", and it is worth having because listening to fifty-four voices
+    is not a thing anyone does. It does not replace listening: a wide voice
+    can be wide and unpleasant, and this ranks movement, not timbre. It
+    turns fifty-four candidates into a shortlist.
+
+    Semitones rather than hertz, because pitch is heard as a ratio. A
+    hundred and twenty hertz of movement is enormous on a voice centred at
+    a hundred hertz and unremarkable on one centred at two hundred and
+    twenty, and in hertz those two look identical.
+
+    The estimator is autocorrelation per frame — crude next to a research
+    pitch tracker, and that is acceptable here: the job is to compare
+    renderings of the same sentence, and consistency matters more than
+    absolute accuracy. Frames that are too quiet, or too aperiodic to be
+    voiced, are dropped rather than guessed at.
+    """
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+
+    with wave.open(str(path)) as handle:
+        if handle.getsampwidth() != 2:
+            return None
+        rate = handle.getframerate()
+        raw = handle.readframes(handle.getnframes())
+    samples = np.frombuffer(raw, dtype="<i2").astype(np.float64)
+    if handle.getnchannels() > 1:
+        samples = samples.reshape(-1, handle.getnchannels()).mean(axis=1)
+    samples /= 32768.0
+
+    window = int(0.04 * rate)
+    hop = int(0.01 * rate)
+    low, high = int(rate / F0_MAX_HZ), int(rate / F0_MIN_HZ)
+    pitches: list[float] = []
+    for start in range(0, max(0, len(samples) - window), hop):
+        frame = samples[start:start + window]
+        if np.sqrt(np.mean(frame * frame)) < 0.02:
+            continue
+        frame = frame - frame.mean()
+        correlation = np.correlate(frame, frame, mode="full")[window - 1:]
+        if correlation[0] <= 0:
+            continue
+        band = correlation[low:high]
+        if band.size == 0:
+            continue
+        lag = low + int(np.argmax(band))
+        # Below this the frame is noise or a consonant, and the "pitch"
+        # would be whichever lag happened to win.
+        if correlation[lag] / correlation[0] < 0.3:
+            continue
+        pitches.append(rate / lag)
+
+    if len(pitches) < 10:
+        return None
+    quiet, loud = np.percentile(pitches, [5, 95])
+    return float(12.0 * np.log2(loud / quiet))
+
+
 # ── CLI ────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
@@ -229,6 +303,12 @@ def parse_args() -> argparse.Namespace:
         default=Path("out/voice-samples"),
         help="Where to write the demo clips (default: out/voice-samples/).",
     )
+    parser.add_argument(
+        "--measure",
+        action="store_true",
+        help="With --sample, rank the voices by how far their pitch moves. "
+             "Turns a long list into a shortlist worth listening to.",
+    )
     return parser.parse_args()
 
 
@@ -251,11 +331,31 @@ def main() -> int:
                 f"requirements-narrate-{engine}.txt"
             )
             continue
+        measured: list[tuple[float, str, Path]] = []
         for voice in BUILTIN_VOICES[engine]:
             out: Path | None = sample_one_voice(
                 engine, voice, args.text, args.out_dir / engine,
             )
             print(f"    → {voice}: {out if out else 'FAILED'}")
+            if args.measure and out is not None:
+                span = pitch_span_semitones(out)
+                if span is not None:
+                    measured.append((span, voice, out))
+
+        if measured:
+            # Widest first, because that is the end of the list anybody
+            # reading this is looking for. A flat narrator is the complaint;
+            # nobody opens this table hoping to find the flattest voice.
+            measured.sort(reverse=True)
+            print(f"\n  pitch movement, widest first ({len(measured)} voices)")
+            print(f"    {'voice':16} {'semitones':>9}")
+            for span, voice, _ in measured:
+                print(f"    {voice:16} {span:9.1f}")
+            print(
+                "    Movement, not quality: a wide voice can be wide and "
+                "unpleasant.\n"
+                "    This shortlists; your ears choose."
+            )
 
     print(
         "\nUse one of the voices above with:\n"

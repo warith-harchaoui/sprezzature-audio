@@ -219,3 +219,80 @@ def test_the_install_hint_names_an_extra_that_exists() -> None:
     source = (ROOT / "scripts" / "narrate_kokoro.py").read_text(encoding="utf-8")
     assert "requirements-narrate-kokoro.txt" in source
     assert (ROOT / "scripts" / "requirements-narrate-kokoro.txt").is_file()
+
+
+# ── Ranking a voice by how far it moves ────────────────────────────────────
+
+
+def _tone(path: Path, hertz, seconds: float = 2.0, rate: int = 24_000) -> Path:
+    """A 16-bit mono WAV at a given pitch — constant, or swept.
+
+    Synthetic on purpose. The measurement is being tested, not the model,
+    and a test that has to load 340 MB of weights to check an arithmetic
+    property is a test nobody runs.
+    """
+    import wave
+
+    import numpy as np
+
+    t = np.linspace(0, seconds, int(rate * seconds), endpoint=False)
+    track = np.full_like(t, hertz) if np.isscalar(hertz) else np.linspace(
+        hertz[0], hertz[1], t.size
+    )
+    # Integrate the frequency track, or a sweep comes out at the wrong pitch.
+    phase = 2 * np.pi * np.cumsum(track) / rate
+    wave_data = (0.4 * np.sin(phase) * 32767).astype("<i2")
+    with wave.open(str(path), "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(rate)
+        handle.writeframes(wave_data.tobytes())
+    return path
+
+
+def test_a_flat_tone_measures_as_flat(tmp_path: Path) -> None:
+    """The floor of the scale. A constant pitch moves by nothing."""
+    pytest.importorskip("numpy")
+    span = pick_voice.pitch_span_semitones(_tone(tmp_path / "flat.wav", 150.0))
+    assert span is not None
+    assert span < 1.0, f"a constant 150 Hz tone measured {span:.1f} semitones"
+
+
+def test_a_sweep_measures_as_the_interval_it_sweeps(tmp_path: Path) -> None:
+    """
+    120 Hz to 240 Hz is an octave, which is twelve semitones. Measured off
+    the 5th and 95th percentiles, so the answer lands slightly under.
+    """
+    pytest.importorskip("numpy")
+    span = pick_voice.pitch_span_semitones(_tone(tmp_path / "sweep.wav", (120.0, 240.0)))
+    assert span is not None
+    assert 9.0 < span < 12.5, f"an octave sweep measured {span:.1f} semitones"
+
+
+def test_the_measure_orders_a_sweep_above_a_flat_tone(tmp_path: Path) -> None:
+    """
+    The property the shortlist rests on. Absolute accuracy does not matter
+    much — this estimator is autocorrelation, not a research pitch tracker —
+    but the ordering has to hold, or the table is noise.
+    """
+    pytest.importorskip("numpy")
+    flat = pick_voice.pitch_span_semitones(_tone(tmp_path / "f.wav", 150.0))
+    sweep = pick_voice.pitch_span_semitones(_tone(tmp_path / "s.wav", (120.0, 240.0)))
+    assert flat is not None and sweep is not None
+    assert sweep > flat + 5.0
+
+
+def test_silence_is_refused_rather_than_scored(tmp_path: Path) -> None:
+    """
+    A failed render is an empty or near-empty file. Returning a number for
+    it would put a voice in the table that was never spoken.
+    """
+    import wave
+
+    path = tmp_path / "silence.wav"
+    with wave.open(str(path), "wb") as handle:
+        handle.setnchannels(1)
+        handle.setsampwidth(2)
+        handle.setframerate(24_000)
+        handle.writeframes(b"\x00\x00" * 24_000)
+    assert pick_voice.pitch_span_semitones(path) is None
