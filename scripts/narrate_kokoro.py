@@ -335,6 +335,13 @@ def synthesise(
         text: str = seg.get("text", "").strip()
         if not text:
             continue
+        # What the page shows and what the voice says are not always the
+        # same string. A formula is notation on the page and a sentence in
+        # the ear; a footnote marker is a signpost on the page and a stray
+        # number in the ear. The caller resolves that and puts the result in
+        # `say`; `text` stays the page's words, because that is what the
+        # cue carries and what a read-along highlights.
+        spoken: str = (seg.get("say") or text).strip() or text
 
         for hint, neutral in NEUTRAL_HINTS.items():
             value = seg.get(hint)
@@ -357,7 +364,7 @@ def synthesise(
         # the pauses the segments asked for arrive on top of it — the
         # narration drifts slower and slower against its own cues.
         samples, rate = kokoro.create(
-            text, voice=voice, speed=speed, lang=language, trim=True
+            spoken, voice=voice, speed=speed, lang=language, trim=True
         )
         if rate != SAMPLE_RATE_HZ:  # pragma: no cover - the model is fixed at 24 kHz
             raise RuntimeError(
