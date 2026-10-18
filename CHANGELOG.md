@@ -1,5 +1,63 @@
 # Changelog: sprezzature-audio
 
+## v1.3.0 (2026-10-18): a voice that reads, rather than one that impersonates
+
+The two engines that arrived in 1.2.0 are voice-*cloning* engines, and
+cloning is not what "this article should have a voice" asks for. Both want a
+reference recording, both pull a multi-gigabyte torch stack, and Chatterbox
+cannot even load its checkpoint without `resemble-perth` — a watermarker
+nothing declared. For reading a page aloud, that is a great deal of
+machinery between the text and the sound, and none of it addresses the one
+thing that mattered: the result did not sound good.
+
+### Added
+
+- **Kokoro** — `sprezzature-audio-narrate-kokoro`, now the default engine.
+  82 M parameters through ONNX Runtime, **no torch at all**, Apache-2.0 in
+  code *and* weights (the bar that ruled out F5-TTS and XTTS-v2, whose
+  weights are non-commercial). 54 voices across nine languages, about 340 MB
+  fetched by `sprezzature-audio-install-voice --engine kokoro`. On a laptop
+  CPU it synthesises at roughly a fifth of real time.
+- **The voice follows the language of the text.** Nobody passes a flag:
+  `_lang` (langdetect) reads the segments and the voice that speaks that
+  language is chosen. This is not a convenience — the detected language is
+  what the phonemiser works from, so French read as English is not French in
+  an American accent, it is an American spelling the words out. When the
+  language has no Kokoro voice, the result says `language_fallback: true`
+  rather than passing the substitute off as a choice.
+- **A record of what was ignored.** Kokoro has no emotion dial, and the
+  segments carry `emotion` and `intensity` because Chatterbox does. The
+  engine applies `pace`, reports the rest under `ignored_hints`, and
+  reports nothing when nothing was asked for. `--voice-sample` is refused
+  outright, naming the two engines that honour it.
+
+### Changed
+
+- **`[narrate]` is now the light extra** — it resolves to `[narrate-kokoro]`,
+  and the cloning engines moved to `[narrate-openvoice]` and
+  `[narrate-chatterbox]`. Installing `chatterbox-tts` into a working
+  environment once downgraded torch 2.8 to 2.6 and broke an unrelated package
+  that depended on it; asking for an article to be read aloud should not be
+  able to do that.
+- **`[all]` now includes `[narrate]`.** It was excluded when narration meant
+  torch. That exclusion was about weight, not about scope.
+- `[narrate-chatterbox]` declares `resemble-perth`, which Chatterbox loads
+  its checkpoint through and does not declare itself. Without it
+  `from_pretrained` dies on `TypeError: 'NoneType' object is not callable`,
+  which names nothing that would lead anyone to the cause.
+
+### Note on espeak-ng
+
+Kokoro turns text into phonemes with espeak-ng, and the copy bundled in the
+`espeakng-loader` wheel does not find its own data on macOS: it was built on
+a CI runner and resolves to that machine's home directory. The failure is not
+catchable — espeak reports it from C and calls `exit(1)`, so there is no
+traceback, only a path belonging to somebody else's computer. The engine
+therefore prefers a system install and falls back to the wheel, and
+`sprezzature-audio-install-voice` says so at install time rather than letting
+it surface mid-narration. `brew install espeak-ng`, or
+`apt install espeak-ng`.
+
 ## v1.2.0 (2026-10-18): the other direction, and one WebVTT
 
 This package transcribed sound into text. It now also turns text back into

@@ -21,6 +21,26 @@ Six scripts, each one stage of the pipeline. A few terms recur throughout the ta
 | `caption_diarize.py` | The combined pipeline: transcript and speaker turns merged in one pass |
 | `name_from_transcript.py` | A guess at each speaker's real name, read off the diarized transcript (pattern matching, with an optional LLM assist) |
 | `translate_captions.py` | A translated copy of a VTT/SRT file, via a local LLM |
+| `audit_captions.py` | What is wrong with a caption track: reading speed, overlaps, line width, duration |
+
+And the other direction — text back into sound, because that is the same
+modality read backwards. A narration lands as a WAV plus a WebVTT, exactly
+like a transcript does, so a page can follow the reading sentence by
+sentence.
+
+| Script | What it produces |
+|---|---|
+| `narrate_kokoro.py` | A narrated WAV and its cues, from 54 built-in voices in nine languages. **The default.** |
+| `narrate_openvoice.py` | The same, in a voice cloned from a 6–30 s sample |
+| `narrate_chatterbox.py` | The same, with emotion and intensity hints the model can act on |
+| `pick_voice.py` | A one-line demo clip per voice, so a narrator is chosen by listening |
+| `install_narrate.py` | The checkpoints each engine needs |
+
+Nobody passes a language. `narrate_kokoro.py` reads the text, detects the
+language, and picks the voice that speaks it — which matters more than it
+sounds: the detected language is what the phonemiser works from, so French
+read as English is not French in an American accent, it is an American
+spelling the words out.
 
 ## Install
 
@@ -38,6 +58,17 @@ pip install "sprezzature-audio[diarize]"
 
 # Add LLM translation (best-engine-ai-helper + a local Ollama server)
 pip install "sprezzature-audio[translate]"
+
+# Add narration. No torch: Kokoro is 82 M parameters through ONNX Runtime,
+# Apache-2.0 in code and weights. espeak-ng is the one half pip cannot
+# supply — `brew install espeak-ng`, or `apt install espeak-ng`.
+pip install "sprezzature-audio[narrate]"
+sprezzature-audio-install-voice --engine kokoro
+
+# The cloning engines, if you want to sound like a particular person rather
+# than to have a page read aloud. These are the ones that pull torch.
+pip install "sprezzature-audio[narrate-openvoice]"
+pip install "sprezzature-audio[narrate-chatterbox]"
 
 # Everything
 pip install "sprezzature-audio[all]"

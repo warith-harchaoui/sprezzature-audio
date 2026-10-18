@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.2.0"
+version = "1.3.0"
 description = "Speech-to-text, speaker diarization, speaker identification, and multilingual caption translation. Local-first: Whisper, NeMo Sortformer, TitaNet, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -75,18 +75,49 @@ mcp = [
     "mcp<2.0",
 ]
 # Text into speech — the other direction of this package's modality.
-# Two engines because neither is right for every job: OpenVoice v2 clones a
-# voice from a short sample, Chatterbox renders from a voice library and
-# takes emotion hints. Both are heavy (torch, torchaudio), which is exactly
-# why they are an extra: transcribing a recording must not require them.
-narrate = [
+#
+# Three engines, and they split along a line worth naming: Kokoro *reads*,
+# the other two *impersonate*. Reading a page aloud and sounding like a
+# particular person are different jobs with different costs, and for years
+# the second one's price was charged for both.
+#
+# `narrate` is Kokoro, and that is the whole extra: 82 M parameters through
+# ONNX Runtime, no torch, about 340 MB of weights fetched by
+# `sprezzature-audio-install-voice`. Apache-2.0 in code *and* weights, which
+# is the bar that ruled out F5-TTS and XTTS-v2.
+narrate = ["sprezzature-audio[narrate-kokoro]"]
+narrate-kokoro = [
+    "kokoro-onnx>=0.4",
+    "soundfile>=0.12",
+    "numpy>=1.24.0",
+    # espeak-ng, which Kokoro phonemises through. The wheel's bundled copy
+    # does not find its own data on macOS, so narrate_kokoro.py prefers a
+    # system install (`brew install espeak-ng`, `apt install espeak-ng`) and
+    # falls back to this one.
+    "espeakng-loader>=0.2",
+]
+# The cloning engines. torch is here and not above on purpose: installing
+# chatterbox-tts into a working environment once downgraded torch 2.8 -> 2.6
+# and broke an unrelated package that depended on it. Nobody who wants an
+# article read aloud should be able to trip that.
+narrate-openvoice = [
     "torch>=2.0.0",
     "torchaudio>=2.0.0",
     "numpy>=1.24.0",
     "best-engine-ai-helper>=1.4",
 ]
+narrate-chatterbox = [
+    "torch>=2.0.0",
+    "torchaudio>=2.0.0",
+    "numpy>=1.24.0",
+    "best-engine-ai-helper>=1.4",
+    # Chatterbox loads its checkpoint through a watermarker it does not
+    # declare: without this, `from_pretrained` dies on
+    # `TypeError: 'NoneType' object is not callable`, which names nothing.
+    "resemble-perth>=1.0",
+]
 # OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
-# extra above and is installed by `sprezzature-audio-install-voice`, which is
+# extras above and is installed by `sprezzature-audio-install-voice`, which is
 # what that command is for.
 
 [project.urls]
@@ -101,6 +132,7 @@ sprezzature-audio-audit = "sprezzature_audio_scripts.audit_captions:main"
 # The other direction: text into speech. Captions make sound readable,
 # narration makes text audible, and both land as timed text beside a wav —
 # which is why the voices live here rather than beside a site generator.
+sprezzature-audio-narrate-kokoro = "sprezzature_audio_scripts.narrate_kokoro:main"
 sprezzature-audio-narrate-openvoice = "sprezzature_audio_scripts.narrate_openvoice:main"
 sprezzature-audio-narrate-chatterbox = "sprezzature_audio_scripts.narrate_chatterbox:main"
 sprezzature-audio-voice = "sprezzature_audio_scripts.pick_voice:main"

@@ -7,7 +7,7 @@ Help the designer pick a narration voice — either from an engine's
 built-in library, or by recording a 6–30 s sample of their own voice
 for zero-shot cloning.
 
-For each engine the orchestrator supports (``openvoice``,
+For each engine the orchestrator supports (``kokoro``, ``openvoice``,
 ``chatterbox``), the script:
 
 1. Probes whether the engine is installed.
@@ -52,7 +52,7 @@ from pathlib import Path
 # ── Module-level configuration ──────────────────────────────────────────────
 
 #: Engines the script knows about, in display order.
-ENGINES: tuple[str, ...] = ("openvoice", "chatterbox")
+ENGINES: tuple[str, ...] = ("kokoro", "openvoice", "chatterbox")
 
 #: Default sample line. Designed to exercise a range of phonemes plus
 #: one comma + one period so prosody is audible.
@@ -64,6 +64,29 @@ DEFAULT_SAMPLE_TEXT: str = (
 #: the checkpoint) so the picker works even when the engine isn't yet
 #: installed — the user sees what they would get.
 BUILTIN_VOICES: dict[str, tuple[str, ...]] = {
+    # All 54, grouped by the language the first letter encodes: a = American
+    # English, b = British, e = Spanish, f = French, h = Hindi, i = Italian,
+    # j = Japanese, p = Portuguese, z = Mandarin. The second letter is the
+    # speaker's gender. Listing them in full rather than sampling is the
+    # point of this table — someone choosing a narrator wants to see the
+    # choice, and `narrate_kokoro.py --list-voices` only works once the
+    # weights are downloaded.
+    "kokoro": (
+        "af_alloy", "af_aoede", "af_bella", "af_heart", "af_jessica",
+        "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky",
+        "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam",
+        "am_michael", "am_onyx", "am_puck", "am_santa",
+        "bf_alice", "bf_emma", "bf_isabella", "bf_lily",
+        "bm_daniel", "bm_fable", "bm_george", "bm_lewis",
+        "ef_dora", "em_alex", "em_santa",
+        "ff_siwis",
+        "hf_alpha", "hf_beta", "hm_omega", "hm_psi",
+        "if_sara", "im_nicola",
+        "jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo",
+        "pf_dora", "pm_alex", "pm_santa",
+        "zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi",
+        "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang",
+    ),
     "openvoice": (
         "base-en-default", "base-en-friendly", "base-en-cheerful",
         "base-en-sad", "base-en-whispering",
@@ -113,7 +136,7 @@ def sample_one_voice(
     Parameters
     ----------
     engine : str
-        ``"openvoice"`` or ``"chatterbox"``.
+        One of :data:`ENGINES`.
     voice : str
         Built-in voice name to demonstrate.
     text : str

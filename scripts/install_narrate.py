@@ -214,6 +214,102 @@ def install_chatterbox() -> int:
     return 0
 
 
+# ── Kokoro ─────────────────────────────────────────────────────────────────
+
+#: The ONNX graph and the voice bank, from the kokoro-onnx release that
+#: publishes them. Pinned to a tagged release rather than a floating "latest"
+#: so two machines installing a week apart get the same narrator.
+KOKORO_RELEASE: str = (
+    "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0"
+)
+KOKORO_FILES: tuple[tuple[str, int], ...] = (
+    ("kokoro-v1.0.onnx", 325_532_387),
+    ("voices-v1.0.bin", 28_214_398),
+)
+
+
+def install_kokoro() -> int:
+    """
+    Fetch Kokoro's two model files into the cache.
+
+    Returns
+    -------
+    int
+        ``0`` on success; ``1`` when the package isn't installed yet.
+
+    Unlike the other two engines this one has nothing lazy to trigger:
+    kokoro-onnx is handed the paths to its files, so if they are not on disk
+    nothing downloads them later. Which is the better arrangement — the wait
+    happens here, where the command is named "install", instead of in the
+    middle of the first narration.
+
+    Already-downloaded files are skipped by size. A truncated download is the
+    normal way this fails (a dropped connection leaves a short file that
+    exists), and a size check is what tells the two apart; re-running the
+    command then repairs it instead of trusting the shorter file forever.
+    """
+    if not _check_importable(("kokoro_onnx",)):
+        print(
+            "kokoro-onnx not installed; run\n"
+            "  pip install -r requirements-narrate-kokoro.txt",
+            file=sys.stderr,
+        )
+        return 1
+
+    target_dir: Path = CACHE_ROOT / "kokoro"
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for filename, expected_bytes in KOKORO_FILES:
+        dest = target_dir / filename
+        if dest.is_file() and dest.stat().st_size == expected_bytes:
+            print(f"✓ {filename} already here")
+            continue
+        if dest.is_file():
+            print(
+                f"→ {filename} is {dest.stat().st_size} bytes, expected "
+                f"{expected_bytes} — downloading again"
+            )
+        _download(f"{KOKORO_RELEASE}/{filename}", dest)
+        if dest.stat().st_size != expected_bytes:
+            print(
+                f"FAIL {filename} downloaded {dest.stat().st_size} bytes, "
+                f"expected {expected_bytes}",
+                file=sys.stderr,
+            )
+            return 1
+
+    # espeak-ng is the half pip cannot supply. Kokoro phonemises through it,
+    # and the copy inside the `espeakng-loader` wheel does not find its own
+    # data on macOS — it resolves to the CI runner's home directory and the
+    # process dies from C with no traceback. Saying so here, while the person
+    # is still at the install step, is cheaper than letting them meet that
+    # message during a narration.
+    if not _espeak_is_usable():
+        print(
+            "→ no system espeak-ng found. Kokoro needs it to turn text into "
+            "phonemes.\n"
+            "    macOS:         brew install espeak-ng\n"
+            "    Debian/Ubuntu: sudo apt install espeak-ng",
+            file=sys.stderr,
+        )
+        return 1
+
+    print("✓ kokoro ready")
+    return 0
+
+
+def _espeak_is_usable() -> bool:
+    """Whether a system espeak-ng with readable data is installed."""
+    for prefix in (Path("/opt/homebrew"), Path("/usr/local"), Path("/usr")):
+        libraries = (
+            prefix / "lib" / "libespeak-ng.dylib",
+            prefix / "lib" / "libespeak-ng.so",
+        )
+        data = prefix / "share" / "espeak-ng-data"
+        if any(lib.is_file() for lib in libraries) and (data / "phontab").is_file():
+            return True
+    return False
+
+
 # ── CLI ────────────────────────────────────────────────────────────────────
 
 def parse_args() -> argparse.Namespace:
@@ -222,7 +318,7 @@ def parse_args() -> argparse.Namespace:
         prog="install_narrate",
         description=(
             "Download model checkpoints for the narration engines "
-            "(openvoice, chatterbox). The Python packages themselves "
+            "(kokoro, openvoice, chatterbox). The Python packages themselves "
             "are installed via pip — see the per-engine requirements "
             "files in ."
         ),
@@ -231,7 +327,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--engine",
-        choices=("openvoice", "chatterbox", "all"),
+        choices=("kokoro", "openvoice", "chatterbox", "all"),
         default="all",
         help="Engine to install (default: all).",
     )
@@ -242,15 +338,17 @@ def main() -> int:
     """CLI entrypoint."""
     args = parse_args()
     engines = (
-        ("openvoice", "chatterbox")
+        ("kokoro", "openvoice", "chatterbox")
         if args.engine == "all" else (args.engine,)
     )
+    installers = {
+        "kokoro": install_kokoro,
+        "openvoice": install_openvoice,
+        "chatterbox": install_chatterbox,
+    }
     failed: int = 0
     for engine in engines:
-        if engine == "openvoice":
-            failed += install_openvoice()
-        else:
-            failed += install_chatterbox()
+        failed += installers[engine]()
     return 1 if failed else 0
 
 

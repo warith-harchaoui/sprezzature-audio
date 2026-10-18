@@ -1,0 +1,24 @@
+# Kokoro narration engine — see scripts/narrate_kokoro.py.
+#
+# No torch. kokoro-onnx runs the 82 M-parameter model through ONNX Runtime,
+# which is the reason this engine installs in a minute rather than pulling a
+# multi-gigabyte ML stack next to whatever the machine already has. That
+# matters beyond disk: installing chatterbox-tts into a working environment
+# downgraded torch 2.8 -> 2.6 and broke an unrelated package that depended on
+# it. An engine whose whole job is reading a page aloud should not be able to
+# do that.
+#
+# The weights are NOT here — `sprezzature-audio-install-voice --engine kokoro`
+# fetches them into ~/.cache/sprezzature-skill/kokoro/. Keeping them out of
+# pip is deliberate: they are 340 MB and a `pip install` is not where anyone
+# expects to wait for that.
+kokoro-onnx>=0.4
+soundfile>=0.12
+numpy>=1.24
+
+# espeak-ng, which Kokoro phonemises through. The wheel below carries a copy
+# that does not find its own data on macOS (it resolves to the CI runner's
+# home directory), so narrate_kokoro.py prefers a system install and falls
+# back to this. On macOS: `brew install espeak-ng`. On Debian/Ubuntu:
+# `apt install espeak-ng`.
+espeakng-loader>=0.2
