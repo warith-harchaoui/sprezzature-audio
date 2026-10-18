@@ -80,7 +80,7 @@ def test_every_exported_name_resolves(name: str) -> None:
 
 def test_dir_sees_the_lazy_names_too() -> None:
     """Tab completion must show the half that is served on demand."""
-    assert "synthesise" in dir(sprezzature_audio)
+    assert "narrate" in dir(sprezzature_audio)
     assert "transcribe" in dir(sprezzature_audio)
 
 

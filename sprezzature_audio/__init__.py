@@ -141,11 +141,16 @@ _LAZY: dict[str, tuple[str, str]] = {
     "resolve_target_language": ("translate_captions", "translate"),
     "translate_cues": ("translate_captions", "translate"),
     # narration — [narrate]
-    "espeak_config": ("narrate_kokoro", "narrate"),
-    "language_for": ("narrate_kokoro", "narrate"),
-    "model_paths": ("narrate_kokoro", "narrate"),
-    "synthesise": ("narrate_kokoro", "narrate"),
-    "voice_for_text": ("narrate_kokoro", "narrate"),
+    #
+    # The voice itself is not re-exported here, and that is deliberate. It
+    # lives in `speaker-helper` now; forwarding its names through this package
+    # would give the engine two owners and let the two drift. What this
+    # package exports of narration is what it still owns: the adapter that
+    # turns a document's segments into the files a page needs, and the
+    # measurement that says how flat a voice is before a long text is
+    # committed to it. For the engine, `import speaker_helper`.
+    "narrate": ("_speaker", "narrate"),
+    "check_narration_install": ("_speaker", "narrate"),
     "engine_is_available": ("pick_voice", "narrate"),
     "pitch_span_semitones": ("pick_voice", "narrate"),
     "sample_one_voice": ("pick_voice", "narrate"),

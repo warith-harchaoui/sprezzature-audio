@@ -85,37 +85,21 @@ mcp = [
 # ONNX Runtime, no torch, about 340 MB of weights fetched by
 # `sprezzature-audio-install-voice`. Apache-2.0 in code *and* weights, which
 # is the bar that ruled out F5-TTS and XTTS-v2.
-narrate = ["sprezzature-audio[narrate-kokoro]"]
-narrate-kokoro = [
-    "kokoro-onnx>=0.4",
-    "soundfile>=0.12",
-    "numpy>=1.24.0",
-    # espeak-ng, which Kokoro phonemises through. The wheel's bundled copy
-    # does not find its own data on macOS, so narrate_kokoro.py prefers a
-    # system install (`brew install espeak-ng`, `apt install espeak-ng`) and
-    # falls back to this one.
-    "espeakng-loader>=0.2",
-]
-# The cloning engines. torch is here and not above on purpose: installing
-# chatterbox-tts into a working environment once downgraded torch 2.8 -> 2.6
-# and broke an unrelated package that depended on it. Nobody who wants an
-# article read aloud should be able to trip that.
-narrate-openvoice = [
-    "torch>=2.0.0",
-    "torchaudio>=2.0.0",
-    "numpy>=1.24.0",
-    "best-engine-ai-helper>=1.4",
-]
-narrate-chatterbox = [
-    "torch>=2.0.0",
-    "torchaudio>=2.0.0",
-    "numpy>=1.24.0",
-    "best-engine-ai-helper>=1.4",
-    # Chatterbox loads its checkpoint through a watermarker it does not
-    # declare: without this, `from_pretrained` dies on
-    # `TypeError: 'NoneType' object is not callable`, which names nothing.
-    "resemble-perth>=1.0",
-]
+# The voice lives in `speaker-helper` now: the engines, the espeak-ng
+# resolution, the timeline, the cues and the refusals are all there, and this
+# package drives them through `scripts/_speaker.py`. Three wrappers of some
+# 350 lines each became three of thirty, and the hard-won behaviour is tested
+# over there against a backend that needs no model — more coverage than it
+# had here.
+#
+# The floors name 0.8.0, the release that carries `Speaker.narrate`. Until
+# that is on PyPI, `pip install 'sprezzature-audio[narrate]'` resolves only
+# against a local checkout.
+narrate = ["speaker-helper[kokoro,detect]>=0.8.0"]
+# Kept as a name, because EXAMPLES.md and the installer both say it.
+narrate-kokoro = ["sprezzature-audio[narrate]"]
+narrate-openvoice = ["speaker-helper[openvoice]>=0.8.0"]
+narrate-chatterbox = ["speaker-helper[chatterbox]>=0.8.0"]
 # OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
 # extras above and is installed by `sprezzature-audio-install-voice`, which is
 # what that command is for.
