@@ -70,6 +70,39 @@ sprezzature-audio-name reunion.speakers.vtt
 sprezzature-audio-translate conf.vtt --lang en
 ```
 
+## En bibliothèque
+
+`import sprezzature_audio` rend le moteur, pas une chaîne de version. Ce qui
+est importable **sans aucun extra** est tout ce qui n'a besoin d'aucun modèle
+— exactement l'ensemble que sert l'API HTTP, et pour la même raison : c'est
+rapide et c'est pur.
+
+```python
+import sprezzature_audio as audio
+
+cues = audio.parse(open("talk.vtt").read())
+for constat in audio.audit_cues(cues):      # trop rapide, trop court, trop large
+    print(constat)
+
+print(audio.write_srt(cues))                # VTT -> SRT, le même lecteur
+print(audio.word_error_rate(reference, hypothese)["wer"])
+print(audio.describe_device())              # quel accélérateur cette machine utilise
+```
+
+La moitié adossée aux modèles se résout au premier usage, donc l'import
+ci-dessus ne coûte rien, même sur une machine où Whisper, NeMo et Kokoro sont
+installés :
+
+```python
+audio.synthesise(...)      # [narrate]  — Kokoro
+audio.transcribe(...)      # [captions] — Whisper
+audio.diarize(...)         # [diarize]  — NeMo Sortformer
+audio.translate_cues(...)  # [translate]
+```
+
+Demandez-en un sans son extra, et l'erreur nomme le `pip install` qui répare
+*cet outil-là*, pas le paquet en général.
+
 ## Ce qui distingue ce paquet d'audio-helper
 
 `audio-helper` travaille au **niveau du signal** : conversion de formats, découpe d'une forme d'onde, rééchantillonnage, séparation d'une voix et d'une musique de fond avec Demucs. Il n'a aucune notion des mots ; un silence et une phrase se ressemblent à ses yeux.
