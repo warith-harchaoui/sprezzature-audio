@@ -59,6 +59,8 @@ __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"
 __license__ = "BSD-3-Clause"
 
+from typing import Any  # noqa: E402
+
 # ── What needs no model, and therefore no extra ────────────────────────────
 #
 # Alphabetical, because the import sorter says so — not grouped by half. The
@@ -162,7 +164,7 @@ _LAZY: dict[str, tuple[str, str]] = {
 # export would silently be whichever one was listed last.
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """Resolve one of the model-backed names on first use, per :pep:`562`.
 
     A caller who stays inside the no-extra set never reaches this. A caller
