@@ -20,14 +20,62 @@ Author
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pick_voice
 import pytest
-import tomllib
 
 ROOT = Path(__file__).resolve().parent.parent
-PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+
+def _section(name: str) -> str:
+    """The raw body of one ``[project.<name>]`` table."""
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    found = re.search(
+        rf"^\[project\.{re.escape(name)}\]\s*$(.*?)(?=^\[|\Z)",
+        text,
+        re.M | re.S,
+    )
+    return found.group(1) if found else ""
+
+
+def _extras() -> dict[str, list[str]]:
+    """``extra -> requirement strings``, from ``[project.optional-dependencies]``.
+
+    The closing bracket is found by counting, not by a lazy regex. A
+    requirement may carry its own extras — ``speaker-helper[kokoro,detect]`` —
+    and the lazy version stopped at *that* bracket, returning a fragment with
+    no closing quote in it. Every requirement then read as the empty list, and
+    two assertions failed saying ``'speaker-helper' in ''``, which points at
+    the packaging rather than at the reader.
+    """
+    body = _section("optional-dependencies")
+    out: dict[str, list[str]] = {}
+    for match in re.finditer(r"^([A-Za-z0-9._-]+)\s*=\s*\[", body, re.M):
+        depth, index = 1, match.end()
+        while index < len(body) and depth:
+            depth += {"[": 1, "]": -1}.get(body[index], 0)
+            index += 1
+        out[match.group(1)] = re.findall(r'"([^"]+)"', body[match.end() : index - 1])
+    return out
+
+
+def _scripts() -> dict[str, str]:
+    """``command -> target``, from ``[project.scripts]``."""
+    return dict(
+        re.findall(
+            r'^([A-Za-z0-9._-]+)\s*=\s*"([^"]+)"', _section("scripts"), re.M
+        )
+    )
+
+
+#: Read with regexes rather than ``tomllib``, which is in the standard library
+#: only from 3.11 while this package supports 3.10 — there the import alone
+#: failed collection of this whole file, and CI said so on three runs in a row
+#: before anybody looked. Two sibling packages already read pyproject this way
+#: and say why in their own comments; this file had not followed.
+PYPROJECT = {"project": {"optional-dependencies": _extras(), "scripts": _scripts()}}
 
 
 # ── The packaging says what the code needs ─────────────────────────────────
