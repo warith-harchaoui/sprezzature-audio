@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.4.0"
+version = "1.5.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"

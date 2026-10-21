@@ -1,5 +1,53 @@
 # Changelog: sprezzature-audio
 
+## v1.5.0 (2026-10-21): the voice moved out, and the thread format stayed
+
+### Changed
+
+- **Narration synthesis now comes from `speaker-helper`.** This package
+  carried its own copy of the voice: espeak-ng resolution, the Kokoro
+  session, the OpenVoice checkpoints, the Chatterbox dials, and in each of
+  the three wrappers its own copy of the loop that lays segments out and
+  records where they fall. Three copies of one loop is how one oversight
+  becomes three, and it already had: `pause_before_ms` was computed
+  everywhere and applied nowhere.
+
+  Everything that was paid for travels with it: the phoneme-free block that
+  becomes a silence keeping its rank, `say` distinct from `text`, requested
+  pauses, timestamps truncated and never rounded, and the invariant that
+  refuses a timeline disagreeing with its own file. They are tested there
+  against an engine that needs no model, so they are better covered than
+  here, where exercising them took 340 MB.
+
+  The extras keep their names and the commands keep theirs, so nothing a
+  caller typed changes. `narrate` now resolves to
+  `speaker-helper[kokoro,detect]>=0.8.0`, which is on PyPI.
+
+  What stays is what genuinely belongs here: the thread format
+  (`--segments`, `--out-dir`), the one-line JSON report `sprezzature-publish`
+  reads back, and the measure that says how flat a voice is before a long
+  document is handed to it. One thousand and seventy lines of wrappers
+  become three hundred and five.
+
+### Fixed
+
+- **Two engine tiers told a reader to install from their old repository.**
+  The prose outlived the move.
+- **The lazy `__getattr__` was unannotated**, so mypy checked nothing
+  reached through it.
+- **The canonical `_click` copy named the missing module, not the extra to
+  install.** A reader was told what Python could not find rather than what
+  to type.
+- **`tomllib` is in the standard library only from 3.11**, and the tests
+  claimed 3.10.
+- **`httpx>=0.27` declared** where the install actually looks: starlette
+  1.9.0 needs it for its `TestClient`.
+
+### Documentation
+
+- The library section was missing from `LISEZMOI.md`, which the charter's
+  parity rule does not allow.
+
 ## v1.4.0 (2026-10-18): the package you can import, and the door you can find
 
 The engine was always here. Reaching it was the problem.
