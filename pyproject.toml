@@ -166,3 +166,12 @@ ignore = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# `--strict-markers` because the alternative is a marker that does nothing.
+# pytest warns about an unknown mark and then runs the test anyway: a typo in
+# `@pytest.mark.slow` reads as a marked test and behaves as an unmarked one.
+# It cost sprezzature-accessibility seven LLM tests running in every default
+# run for weeks, and that repository is the only one of the nine that had the
+# flag. The flag is cheap, it fires at collection, and the whole suite now
+# carries it -- scripts/test_the_suite_runs_tests_the_same_way.py in the hub
+# checks that it still does.
+addopts = "-ra --strict-markers"
