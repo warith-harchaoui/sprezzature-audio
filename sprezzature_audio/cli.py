@@ -1,22 +1,19 @@
 """
-The argparse command line — ``make-audio``.
+``sprezzature-audio`` — the command line over this package's tools.
 
-Fifteen tools ship here, each with its own command, and that is the right
-shape for the work: `sprezzature-audio-audit` in a pre-commit hook,
-`sprezzature-audio-install-voice` once when the machine is new. What fifteen
-separate commands do not give you is a way to find out what this package does
-without reading its README — and fifteen is well past the number anybody
-keeps in their head.
+One front door. Until 2026-10-25 there were two, an argparse one and a click
+one kept in step by sharing a table; the click module imported ``TOOLS`` from
+the argparse module, so neither could be removed without the other and every
+sub-command had to be written twice. The catalogue now lives in
+:mod:`sprezzature_audio._tools`, and this is the only parser.
 
-So this is the front door. ``make-audio`` lists the tools, says what each one
-is for, and dispatches to it — the same engine, reached by a name you can
-guess. :mod:`sprezzature_audio.cli_click` is its twin, reading the same
-arguments with click.
+``make-audio`` and ``sprezzature-audio`` both land here. The first name is kept because it is what the
+skill, the README and years of notes tell people to type; they are two
+spellings of one command, not two commands.
 
-The table below carries the extra each tool needs, so that a tool whose
-dependency is missing says which ``pip install`` fixes *it* — not which one
-fixes the package in general. Reaching for `narrate` and being told to
-install the captions extra is worse than no message at all.
+Each tool below is also its own console script, which is what a script or a
+pre-commit hook should call. This front door is for a person who does not
+remember the exact name.
 
 Author
 ------
@@ -25,205 +22,105 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import importlib
 import sys
 
-from sprezzature_audio_scripts._argparse import make_parser
+import click
 
-#: Every tool: sub-command name → (module, extra, the one line that says when
-#: to reach for it). The table is the dispatcher *and* the help text, so a
-#: tool cannot be listed and unreachable, or reachable and undocumented.
-#:
-#: ``extra`` is the empty string for the tools that need nothing beyond a bare
-#: install. Those are not the small ones by accident: reading a caption track,
-#: auditing it, attributing speakers over an existing transcript and scoring
-#: the result are exactly the jobs that should run in a hook, on any machine,
-#: with no model anywhere near them.
-TOOLS: dict[str, tuple[str, str, str]] = {
-    "audit": (
-        "audit_captions",
-        "",
-        "Report every cue that cannot be read as timed — too fast, too "
-        "short, too long, too many lines. Standard library only.",
-    ),
-    "benchmark": (
-        "benchmark_stt",
-        "",
-        "Word error rate, diarization error rate and real-time factor, so "
-        "'it got better' stops being an opinion.",
-    ),
-    "captions": (
-        "captions_from_whisper",
-        "captions",
-        "Recording → a timed transcript. The long job of this package: a "
-        "multi-gigabyte model and minutes of work.",
-    ),
-    "diarize": (
-        "diarize_from_nemo",
-        "diarize",
-        "Mark who spoke when, without yet knowing anyone's name.",
-    ),
-    "identify": (
-        "identify_from_titanet",
-        "diarize",
-        "Match diarized speakers against labelled reference samples, so the "
-        "turns get names.",
-    ),
-    "pipeline": (
-        "caption_diarize",
-        "",
-        "Captions + speaker turns → one attributed track. Pure merge: both "
-        "halves are already on disk.",
-    ),
-    "name": (
-        "name_from_transcript",
-        "",
-        "Ask a local model to name the speakers from what they say. Needs "
-        "Ollama running; no extra to install.",
-    ),
-    "translate": (
-        "translate_captions",
-        "translate",
-        "Translate a caption track with a local model, keeping its timings "
-        "and dropping the <v> tags W3C reserves for one language.",
-    ),
-    "narrate": (
-        "narrate_kokoro",
-        "narrate",
-        "Document → narration, with the timed track beside it. Kokoro, the "
-        "default voice since 1.3.0.",
-    ),
-    "narrate-openvoice": (
-        "narrate_openvoice",
-        "narrate-openvoice",
-        "The same narration through OpenVoice, when a cloned voice is what "
-        "is wanted.",
-    ),
-    "narrate-chatterbox": (
-        "narrate_chatterbox",
-        "narrate-chatterbox",
-        "The same narration through Chatterbox.",
-    ),
-    "voice": (
-        "pick_voice",
-        "narrate",
-        "Hear the available voices and measure how flat each one is, before "
-        "committing a long document to one of them.",
-    ),
-    "install": (
-        "install_captions",
-        "",
-        "Pre-download what transcription needs, so the first real run is not "
-        "also the first download.",
-    ),
-    "install-diarize": (
-        "install_diarize",
-        "",
-        "The same, for the diarization and identification models.",
-    ),
-    "install-voice": (
-        "install_narrate",
-        "",
-        "The same, for a narration engine's weights — and it checks for the "
-        "system espeak-ng that pip cannot supply.",
-    ),
-}
+from sprezzature_audio._tools import TOOLS, missing_extra_message
+
+#: Shown under the command list. Completion is click's, and worth saying out
+#: loud: a front door with several tools is exactly where tab completion pays
+#: off, and nobody discovers it by guessing.
+_EPILOG = """\
+Shell completion:
+
+  \b
+  eval "$(_SPREZZATURE_AUDIO_COMPLETE=bash_source sprezzature-audio)"   # bash
+  eval "$(_SPREZZATURE_AUDIO_COMPLETE=zsh_source sprezzature-audio)"    # zsh
+
+Run `sprezzature-audio tools` to see which tools are ready on this machine
+and which need an extra installed.
+"""
 
 
-def build_parser() -> argparse.ArgumentParser:
-    """The parser, built separately so a test can read it without running it."""
+@click.group(
+    context_settings={"help_option_names": ["-h", "--help"]},
+    epilog=_EPILOG,
+    help=(
+        "Everything this package does with a recording and a voice. Each "
+        "tool below is also its own command (sprezzature-audio-audit and so "
+        "on), which is what a script should call."
+    ),
+)
+@click.version_option(package_name="sprezzature-audio")
+def main() -> None:  # pragma: no cover - click dispatches
+    """Front door over the fifteen tools this package ships."""
+
+
+@main.command(name="tools")
+def list_tools() -> None:
+    """
+    List the tools, and say which ones can run here.
+
+    The second half is the point: "installed" and "will run" are different
+    questions when a tool needs an extra, and a reader should not have to
+    discover the difference from a traceback.
+    """
     width = max(len(name) for name in TOOLS)
-    catalogue = "\n".join(
-        f"  {name:<{width}}  {summary}" for name, (_, _, summary) in TOOLS.items()
-    )
-    parser = make_parser(
-        prog="make-audio",
-        description=(
-            "Everything this package does with a recording and a voice. One "
-            "front door over the fifteen tools it ships; each is also its own "
-            "command, which is what a script should call."
-        ),
-        epilog=(
-            f"Tools:\n{catalogue}\n"
-            "\n"
-            "Examples:\n"
-            "  make-audio audit subtitles.vtt\n"
-            "  make-audio captions talk.mp4 --out talk.vtt\n"
-            "  make-audio narrate post.md --out post.mp3\n"
-            "\n"
-            "Every argument after the tool name belongs to that tool; run\n"
-            "`make-audio <tool> --help` to see them.\n"
-        ),
-    )
-    parser.add_argument(
-        "tool",
-        choices=sorted(TOOLS),
-        help="Which tool to run. See the list below.",
-    )
-    # Everything after the tool name belongs to the tool, including flags this
-    # parser also defines. Without REMAINDER, `make-audio audit --help` would
-    # print *this* help rather than the audit's, which is the opposite of what
-    # the reader asked for.
-    parser.add_argument(
-        "rest",
-        nargs=argparse.REMAINDER,
-        help="Arguments passed through to the tool.",
-    )
-    return parser
+    for name, entry in TOOLS.items():
+        _module, extra = (entry[0], entry[1]) if len(entry) == 3 else (entry[0], "")
+        target = f"sprezzature_audio_scripts.{_module}"
+        try:
+            importlib.import_module(target)
+            mark = "ready"
+        except ImportError:
+            mark = f"needs [{extra}]" if extra else "unavailable"
+        summary = entry[-1].split(".")[0]
+        click.echo(f"  {name:<{width}}  {mark:<14}  {summary}.")
 
 
-def main(argv: list[str] | None = None) -> int:
+def _attach(name: str, module_name: str, extra: str, summary: str) -> None:
+    """Register one tool as a click sub-command.
+
+    Built in a loop rather than written out fifteen times: the catalogue
+    lives in one table, and a tool added there appears in both command lines
+    without anybody remembering to add it twice.
     """
-    Dispatch to one of the fifteen tools.
 
-    Parameters
-    ----------
-    argv : list of str or None, optional
-        Argument vector without ``argv[0]``. Reads ``sys.argv`` when ``None``.
-
-    Returns
-    -------
-    int
-        Whatever the dispatched tool returns.
-    """
-    args = build_parser().parse_args(argv)
-    module_name, extra, _ = TOOLS[args.tool]
-    try:
-        module = importlib.import_module(f"sprezzature_audio_scripts.{module_name}")
-    except ImportError as exc:  # pragma: no cover - dependency guard
-        sys.stderr.write(_missing_extra_message(args.tool, extra, exc))
-        return 2
-
-    # The tools read sys.argv themselves — they were commands before they were
-    # sub-commands, and they still are. Handing them a rewritten argv is what
-    # lets both be true.
-    saved = sys.argv
-    try:
-        sys.argv = [f"make-audio {args.tool}", *args.rest]
-        return int(module.main() or 0)
-    finally:
-        sys.argv = saved
-
-
-def _missing_extra_message(tool: str, extra: str, exc: Exception) -> str:
-    """What to say when a tool's dependency is not installed.
-
-    Shared with the click twin so the two front doors cannot drift into
-    saying different things about the same missing package.
-    """
-    if extra:
-        return (
-            f"{tool}: its dependencies are an optional extra, so a bare "
-            f"install stays small. Add them with:\n"
-            f"    pip install 'sprezzature-audio[{extra}]'\n"
-            f"  ({exc})\n"
-        )
-    return (
-        f"{tool}: needs nothing optional, so this is not a missing extra — "
-        f"something else failed to import.\n  ({exc})\n"
+    @main.command(
+        name,
+        help=summary,
+        context_settings={
+            "ignore_unknown_options": True,
+            "allow_extra_args": True,
+        },
     )
+    @click.argument("rest", nargs=-1, type=click.UNPROCESSED)
+    def _run(
+        rest: tuple[str, ...],
+        _module: str = module_name,
+        _name: str = name,
+        _extra: str = extra,
+    ) -> None:
+        try:
+            module = importlib.import_module(f"sprezzature_audio_scripts.{_module}")
+        except ImportError as exc:  # pragma: no cover - dependency guard
+            raise SystemExit(missing_extra_message(_name, _extra, exc).rstrip()) from exc
+
+        # The tools read sys.argv themselves — they were commands before they
+        # were sub-commands, and they still are.
+        saved = sys.argv
+        try:
+            sys.argv = [f"sprezzature-audio {_name}", *rest]
+            raise SystemExit(int(module.main() or 0))
+        finally:
+            sys.argv = saved
+
+
+for _tool, (_module_name, _extra, _summary) in TOOLS.items():
+    _attach(_tool, _module_name, _extra, _summary)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
