@@ -72,8 +72,10 @@ def test_subrip_is_read_too() -> None:
     [
         (
             "cue-overlap",
-            (("00:00:00.000", "00:00:03.000", "First."),
-             ("00:00:02.000", "00:00:04.000", "Second.")),
+            (
+                ("00:00:00.000", "00:00:03.000", "First."),
+                ("00:00:02.000", "00:00:04.000", "Second."),
+            ),
         ),
         (
             "cue-reversed",
@@ -89,13 +91,23 @@ def test_subrip_is_read_too() -> None:
         ),
         (
             "cue-too-fast",
-            (("00:00:00.000", "00:00:01.000",
-              "Far too many characters for one single second of screen time."),),
+            (
+                (
+                    "00:00:00.000",
+                    "00:00:01.000",
+                    "Far too many characters for one single second of screen time.",
+                ),
+            ),
         ),
         (
             "line-too-wide",
-            (("00:00:00.000", "00:00:09.000",
-              "A single line well past the forty-two character budget any player honours."),),
+            (
+                (
+                    "00:00:00.000",
+                    "00:00:09.000",
+                    "A single line well past the forty-two character budget any player honours.",
+                ),
+            ),
         ),
         (
             "too-many-lines",

@@ -52,10 +52,23 @@ EXTRAS = set(PYPROJECT["project"].get("optional-dependencies", {}))
 #: the subprocess below, which is the only way to check the promise on a
 #: machine where the extras happen to be installed — and this machine is one.
 OPTIONAL_DISTRIBUTIONS = (
-    "torch", "torchaudio", "numpy", "nemo", "nemo_toolkit", "vocal_helper",
-    "audio_helper", "video_helper", "kokoro_onnx", "soundfile",
-    "espeakng_loader", "best_engine_ai_helper", "resemble_perth",
-    "onnxruntime", "fastapi", "uvicorn", "fastapi_mcp",
+    "torch",
+    "torchaudio",
+    "numpy",
+    "nemo",
+    "nemo_toolkit",
+    "vocal_helper",
+    "audio_helper",
+    "video_helper",
+    "kokoro_onnx",
+    "soundfile",
+    "espeakng_loader",
+    "best_engine_ai_helper",
+    "resemble_perth",
+    "onnxruntime",
+    "fastapi",
+    "uvicorn",
+    "fastapi_mcp",
 )
 
 
@@ -96,9 +109,7 @@ def test_an_unknown_name_is_an_attribute_error_not_an_import_error() -> None:
 )
 def test_every_lazy_name_names_a_real_extra(name: str, extra: str) -> None:
     """The install line in the error has to be one pip can actually run."""
-    assert extra in EXTRAS, (
-        f"{name} points at `[{extra}]`, which pyproject does not declare"
-    )
+    assert extra in EXTRAS, f"{name} points at `[{extra}]`, which pyproject does not declare"
 
 
 def test_an_ambiguous_name_is_not_exported() -> None:
@@ -193,9 +204,7 @@ _EXTRA_HINT = re.compile(r"sprezzature-audio\[[a-z-]+\]")
 #: `print(` up to the closing paren. Deliberately per *message*: a module may
 #: legitimately name the requirements file in its docstring while raising a
 #: hint that names the extra, and a per-file check would conflate the two.
-_MESSAGE = re.compile(
-    r"(?:raise \w+Error\(|print\()(.*?)\)(?:\s*from\s|\s*\n)", re.S
-)
+_MESSAGE = re.compile(r"(?:raise \w+Error\(|print\()(.*?)\)(?:\s*from\s|\s*\n)", re.S)
 
 
 @pytest.mark.parametrize(

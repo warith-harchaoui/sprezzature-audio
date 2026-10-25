@@ -78,9 +78,12 @@ def test_merge_attaches_names() -> None:
 
 def test_unparseable_captions_are_a_400() -> None:
     """Empty output for bad input would read as 'no captions found'."""
-    assert client.post(
-        "/v1/captions/convert", json={"captions": "not a vtt file", "to": "srt"}
-    ).status_code == 400
+    assert (
+        client.post(
+            "/v1/captions/convert", json={"captions": "not a vtt file", "to": "srt"}
+        ).status_code
+        == 400
+    )
 
 
 def test_wer_counts_one_substitution() -> None:

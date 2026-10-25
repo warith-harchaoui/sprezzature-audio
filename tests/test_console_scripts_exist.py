@@ -165,9 +165,7 @@ def _module_to_command() -> dict[str, str]:
     sorted(_module_to_command().items()),
     ids=lambda value: value,
 )
-def test_an_installed_script_names_its_own_command_in_prog(
-    module_name: str, command: str
-) -> None:
+def test_an_installed_script_names_its_own_command_in_prog(module_name: str, command: str) -> None:
     """A script that pip installs must say, in ``--help``, what pip called it.
 
     Only scripts that *have* a console script are checked, and only if they

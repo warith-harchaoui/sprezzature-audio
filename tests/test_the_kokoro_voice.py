@@ -63,11 +63,7 @@ def _extras() -> dict[str, list[str]]:
 
 def _scripts() -> dict[str, str]:
     """``command -> target``, from ``[project.scripts]``."""
-    return dict(
-        re.findall(
-            r'^([A-Za-z0-9._-]+)\s*=\s*"([^"]+)"', _section("scripts"), re.M
-        )
-    )
+    return dict(re.findall(r'^([A-Za-z0-9._-]+)\s*=\s*"([^"]+)"', _section("scripts"), re.M))
 
 
 #: Read with regexes rather than ``tomllib``, which is in the standard library
@@ -148,8 +144,8 @@ def _tone(path: Path, hertz, seconds: float = 2.0, rate: int = 24_000) -> Path:
     import numpy as np
 
     t = np.linspace(0, seconds, int(rate * seconds), endpoint=False)
-    track = np.full_like(t, hertz) if np.isscalar(hertz) else np.linspace(
-        hertz[0], hertz[1], t.size
+    track = (
+        np.full_like(t, hertz) if np.isscalar(hertz) else np.linspace(hertz[0], hertz[1], t.size)
     )
     # Integrate the frequency track, or a sweep comes out at the wrong pitch.
     phase = 2 * np.pi * np.cumsum(track) / rate

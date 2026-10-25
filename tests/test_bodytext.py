@@ -26,6 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # ── extract_body_text ───────────────────────────────────────────────────────
 
+
 def test_html_strips_tags_scripts_styles() -> None:
     html = (
         "<html><head><style>.x{color:red}</style></head><body>"
@@ -58,7 +59,10 @@ def test_plain_is_passed_through_collapsed() -> None:
 
 
 def test_auto_sniff_html_vs_markdown_vs_text() -> None:
-    assert _lang.extract_body_text("<html><body>Bonjour tout le monde</body></html>") == "Bonjour tout le monde"
+    assert (
+        _lang.extract_body_text("<html><body>Bonjour tout le monde</body></html>")
+        == "Bonjour tout le monde"
+    )
     assert _lang.extract_body_text("# Title\n\nbody words here") == "Title body words here"
     assert _lang.extract_body_text("just some plain words") == "just some plain words"
 
@@ -71,11 +75,16 @@ def test_malformed_html_does_not_crash() -> None:
 
 # ── detect_language (extract + detect) ──────────────────────────────────────
 
+
 def test_detect_language_from_html_content() -> None:
-    fr = ("<html><body><p>Le rapide renard brun saute par-dessus le chien "
-          "paresseux et continue sa route le long du fleuve.</p></body></html>")
-    en = ("<html><body><p>The quick brown fox jumps over the lazy dog and "
-          "keeps running along the river bank all day.</p></body></html>")
+    fr = (
+        "<html><body><p>Le rapide renard brun saute par-dessus le chien "
+        "paresseux et continue sa route le long du fleuve.</p></body></html>"
+    )
+    en = (
+        "<html><body><p>The quick brown fox jumps over the lazy dog and "
+        "keeps running along the river bank all day.</p></body></html>"
+    )
     assert _lang.detect_language(fr) == "fr"
     assert _lang.detect_language(en) == "en"
 
@@ -87,6 +96,7 @@ def test_detect_language_falls_back_when_no_signal() -> None:
 
 # ── sync guard: every _lang.py copy is byte-identical ───────────────────────
 
+
 def test_lang_helper_copies_are_identical() -> None:
     """The shared helper is duplicated for self-containment; the copies must
     never drift. This test fails the moment one is edited without the others."""
@@ -97,8 +107,11 @@ def test_lang_helper_copies_are_identical() -> None:
             f"now live in the standalone skill repos, so there is nothing to cross-check."
         )
     canonical = copies[0].read_text(encoding="utf-8")
-    drifted = [str(p.relative_to(REPO_ROOT)) for p in copies[1:]
-               if p.read_text(encoding="utf-8") != canonical]
+    drifted = [
+        str(p.relative_to(REPO_ROOT))
+        for p in copies[1:]
+        if p.read_text(encoding="utf-8") != canonical
+    ]
     assert not drifted, (
         f"_lang.py copies drifted from {copies[0].relative_to(REPO_ROOT)}: {drifted}. "
         "Edit one, then propagate the exact bytes to all copies."

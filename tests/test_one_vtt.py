@@ -159,9 +159,7 @@ def test_subrip_reads_too() -> None:
 def test_cues_come_back_in_time_order() -> None:
     """A merger compares spans and needs them ordered."""
     out_of_order = (
-        "WEBVTT\n\n"
-        "00:00:05.000 --> 00:00:06.000\nsecond\n\n"
-        "00:00:01.000 --> 00:00:02.000\nfirst\n"
+        "WEBVTT\n\n00:00:05.000 --> 00:00:06.000\nsecond\n\n00:00:01.000 --> 00:00:02.000\nfirst\n"
     )
     assert [c.text for c in parse(out_of_order)] == ["first", "second"]
 
