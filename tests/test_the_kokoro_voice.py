@@ -87,10 +87,30 @@ def test_the_engine_has_its_own_extra_and_its_own_command() -> None:
     assert "narrate-kokoro" in extras
     packages = " ".join(extras["narrate"])
     # The engine arrives through speaker-helper now, and the extra has to name
-    # the release that carries `Speaker.narrate` — an older one installs a
-    # package whose API this adapter calls and which does not have it.
+    # a release carrying the API this adapter calls — an older one installs a
+    # package that does not have it.
+    #
+    # A floor, compared as a version, not the literal string it was. The
+    # literal turned this test red on the 0.8.0 -> 0.11.0 bump, which is the
+    # wrong failure: the question is "is the floor high enough", and a test
+    # that answers "is the floor exactly what it was when I was written"
+    # cannot tell a correct bump from a regression.
+    #
+    # 0.11.0 is the release that brought the pronunciation lexicon, which
+    # `scripts/_speaker.py` now passes through as `settings.lexicon`. Against
+    # 0.10 that key is accepted and ignored, so the failure would be a
+    # narration that quietly mispronounces every acronym — no traceback.
     assert "speaker-helper" in packages
-    assert ">=0.8.0" in packages
+    floor = re.search(r"speaker-helper\[[^\]]*\]>=([0-9][0-9.]*)", packages)
+    assert floor, f"the narrate extra names no speaker-helper floor: {packages}"
+    need = (0, 11, 0)
+    got = tuple(int(n) for n in floor.group(1).split("."))
+    assert got >= need, (
+        f"narrate pins speaker-helper>={floor.group(1)}, but this package "
+        f"passes settings.lexicon, which landed in "
+        f"{'.'.join(str(n) for n in need)}. Older releases accept the key "
+        f"and ignore it, so the symptom is a mispronunciation, not an error."
+    )
     # No torch. That is the whole reason this engine exists alongside the
     # other two, and an innocent-looking edit to the extra would undo it.
     assert "torch" not in packages

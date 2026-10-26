@@ -1,5 +1,50 @@
 # Changelog: sprezzature-audio
 
+## v1.6.0 (2026-10-26): speaker-helper 0.11 — a lexicon, and a French voice
+
+### Added
+
+- **A pronunciation lexicon reaches the narration**, as `--lexicon` on each
+  wrapper and `settings.lexicon` underneath. Technical prose is full of words
+  no engine can work out — WebVTT, RTTM, OKLCH, GMTED2010, Qwen3-VL — and each
+  engine guesses differently, so the same page read by two of them does not
+  say the same words. State a word once, in IPA or as a respelling, and every
+  synthesis honours it: kokoro splices the IPA verbatim at the phonemisation
+  step it already runs, the other engines get the respelling tier.
+
+- **`sprezzature-audio-narrate-kyutai`**, behind the new `narrate-kyutai`
+  extra. Kyutai's `tts-1.6b-en_fr` is the one engine here chosen *for French*
+  — a Paris lab's model that renders French natively, where kokoro, openvoice
+  and chatterbox all reach French through an English-first pipeline. On a Mac
+  `speaker-helper` serves it through Kyutai's own MLX build, which is what
+  makes it usable at all: RTF 0.84 against 7.8 on torch-CPU.
+
+  It is an extra and not the default, and the bar this package already states
+  is why: Apache-2.0 in code *and* weights, which is what kokoro has and what
+  ruled out F5-TTS and XTTS-v2. Kyutai's code is MIT and its weights are
+  CC-BY-4.0 — permissive, and not the same promise. Ask for the better French
+  voice by name; nobody gets a different licence by surprise.
+
+### Changed
+
+- **The `speaker-helper` floors move from `>=0.8.0` to `>=0.11.0`.** 0.8.0 was
+  the release that first carried `Speaker.narrate`; 0.11.0 is the one that
+  carries the lexicon this package now passes through. The gap matters more
+  than a floor usually does: against 0.10 the `lexicon` key is *accepted and
+  ignored*, so an under-pinned install does not fail — it mispronounces every
+  acronym, silently.
+
+- **The language default is no longer restated here.** `_speaker.py` sent
+  `language = lang or "fr"`, which copied `speaker-helper`'s own default into
+  a second place. The field is only a fallback — `narrate(language=None)`
+  detects — and a fallback belongs to whoever owns the voice. It is sent only
+  when a caller asks for one.
+
+- **The floor test compares versions instead of matching a string.** It
+  asserted `">=0.8.0" in packages`, so a correct bump turned it red; it now
+  parses the floor and requires it to be at least the release whose API this
+  adapter calls, and says in its failure what breaks below that.
+
 ## v1.5.0 (2026-10-21): the voice moved out, and the thread format stayed
 
 ### Changed

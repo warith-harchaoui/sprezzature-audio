@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.5.0"
+version = "1.6.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -92,14 +92,27 @@ mcp = [
 # over there against a backend that needs no model — more coverage than it
 # had here.
 #
-# The floors name 0.8.0, the release that carries `Speaker.narrate`. Until
-# that is on PyPI, `pip install 'sprezzature-audio[narrate]'` resolves only
-# against a local checkout.
-narrate = ["speaker-helper[kokoro,detect]>=0.8.0"]
+# The floors name 0.11.0, the release that brought the pronunciation lexicon
+# and the kyutai backend. They were 0.8.0, the release that first carried
+# `Speaker.narrate`; the lexicon is the reason to move, because this suite
+# narrates pages full of acronyms -- WebVTT, RTTM, OKLCH, GMTED2010 -- and
+# stating a pronunciation once beats hearing four engines each guess
+# differently.
+narrate = ["speaker-helper[kokoro,detect]>=0.11.0"]
 # Kept as a name, because EXAMPLES.md and the installer both say it.
 narrate-kokoro = ["sprezzature-audio[narrate]"]
-narrate-openvoice = ["speaker-helper[openvoice]>=0.8.0"]
-narrate-chatterbox = ["speaker-helper[chatterbox]>=0.8.0"]
+narrate-openvoice = ["speaker-helper[openvoice]>=0.11.0"]
+narrate-chatterbox = ["speaker-helper[chatterbox]>=0.11.0"]
+# French, natively. `speaker-helper`'s 2026-10 survey picked it for French --
+# a Paris lab's model, where the other three reach French through an
+# English-first pipeline -- and on a Mac it is served through Kyutai's own MLX
+# build, RTF 0.84 against 7.8 on torch-CPU.
+#
+# An extra rather than the default, and the bar above says why: code MIT,
+# weights CC-BY-4.0. Permissive, and not "Apache-2.0 in code *and* weights".
+# Ask for it by name and you get a better French voice; nobody gets a
+# different licence by surprise.
+narrate-kyutai = ["speaker-helper[kyutai]>=0.11.0"]
 # OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
 # extras above and is installed by `sprezzature-audio-install-voice`, which is
 # what that command is for.
@@ -127,6 +140,7 @@ sprezzature-audio-audit = "sprezzature_audio_scripts.audit_captions:main"
 sprezzature-audio-narrate-kokoro = "sprezzature_audio_scripts.narrate_kokoro:main"
 sprezzature-audio-narrate-openvoice = "sprezzature_audio_scripts.narrate_openvoice:main"
 sprezzature-audio-narrate-chatterbox = "sprezzature_audio_scripts.narrate_chatterbox:main"
+sprezzature-audio-narrate-kyutai = "sprezzature_audio_scripts.narrate_kyutai:main"
 sprezzature-audio-voice = "sprezzature_audio_scripts.pick_voice:main"
 sprezzature-audio-install-voice = "sprezzature_audio_scripts.install_narrate:main"
 sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"

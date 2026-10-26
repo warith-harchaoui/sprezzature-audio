@@ -44,6 +44,7 @@ from typing import Any
 #: selecting the wrong voice there.
 BACKEND_FOR: dict[str, str] = {
     "kokoro": "kokoro",
+    "kyutai": "kyutai",
     "openvoice": "openvoice",
     "chatterbox": "chatterbox",
 }
@@ -53,6 +54,7 @@ BACKEND_FOR: dict[str, str] = {
 #: the other two pull torch.
 INSTALL_HINT: dict[str, str] = {
     "kokoro": "pip install 'sprezzature-audio[narrate]'",
+    "kyutai": "pip install 'sprezzature-audio[narrate-kyutai]'",
     "openvoice": "pip install 'sprezzature-audio[narrate-openvoice]'",
     "chatterbox": "pip install 'sprezzature-audio[narrate-chatterbox]'",
 }
@@ -68,6 +70,8 @@ def check_narration_install(engine: str) -> int:
     try:
         if engine == "kokoro":
             from speaker_helper.backends.kokoro import check_install as probe
+        elif engine == "kyutai":
+            from speaker_helper.backends.kyutai import check_install as probe
         elif engine == "openvoice":
             from speaker_helper.backends.openvoice import check_install as probe
         elif engine == "chatterbox":
@@ -119,6 +123,15 @@ def build_parser(engine: str) -> argparse.ArgumentParser:
         help="Reference recording to clone (the cloning engines only).",
     )
     parser.add_argument("--lang", default="", help="Override the language. Rarely needed.")
+    parser.add_argument(
+        "--lexicon",
+        type=Path,
+        default=None,
+        help=(
+            "A pronunciation lexicon (YAML). State once how a word is said and "
+            "every synthesis honours it -- which is what an acronym needs."
+        ),
+    )
     return parser
 
 
@@ -130,6 +143,7 @@ def narrate(
     voice_sample: Path | None,
     out_dir: Path,
     lang: str = "",
+    lexicon: Path | None = None,
 ) -> dict[str, Any]:
     """Read ``segments`` aloud and write ``narration.wav`` beside its cues.
 
@@ -145,14 +159,27 @@ def narrate(
             f"    {INSTALL_HINT.get(engine, INSTALL_HINT['kokoro'])}"
         ) from exc
 
-    settings = Settings.from_mapping(
-        {
-            "backend": BACKEND_FOR[engine],
-            "voice": voice,
-            "voice_sample": str(voice_sample) if voice_sample else "",
-            "language": lang or "fr",
-        }
-    )
+    mapping: dict[str, Any] = {
+        "backend": BACKEND_FOR[engine],
+        "voice": voice,
+        "voice_sample": str(voice_sample) if voice_sample else "",
+    }
+    # Only when asked. This used to say `lang or "fr"`, which restated
+    # speaker-helper's own default in a second place -- and a default copied
+    # is a default that drifts. `narrate(language=None)` detects anyway, so
+    # the field is a fallback, and the fallback belongs to whoever owns the
+    # voice.
+    if lang:
+        mapping["language"] = lang
+    # An acronym is the whole reason this knob exists. "GMTED2010", "WebVTT",
+    # "RTTM", "OKLCH" and "Qwen3-VL" are read letter-salad by every engine
+    # that has to guess; stated once in the lexicon, they come out the same
+    # way in every narration this suite produces. Kokoro splices the IPA
+    # verbatim at the phonemisation step it already runs; the other engines
+    # get the respelling tier.
+    if lexicon is not None:
+        mapping["lexicon"] = {"path": str(lexicon), "enabled": True}
+    settings = Settings.from_mapping(mapping)
 
     async def run() -> Any:
         async with Speaker(settings) as speaker:
@@ -198,6 +225,7 @@ def main(engine: str, argv: list[str] | None = None) -> int:
             voice_sample=args.voice_sample,
             out_dir=args.out_dir,
             lang=args.lang,
+            lexicon=args.lexicon,
         )
     except (RuntimeError, ValueError, NotImplementedError) as exc:
         sys.stderr.write(f"{exc}\n")

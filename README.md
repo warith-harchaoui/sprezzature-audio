@@ -65,6 +65,12 @@ pip install "sprezzature-audio[translate]"
 pip install "sprezzature-audio[narrate]"
 sprezzature-audio-install-voice --engine kokoro
 
+# French, natively. Kyutai's tts-1.6b-en_fr comes from a Paris lab, where the
+# other three reach French through an English-first pipeline; on a Mac it runs
+# through Kyutai's own MLX build. An extra rather than the default because its
+# weights are CC-BY-4.0, not Apache-2.0 — permissive, and not the same promise.
+pip install "sprezzature-audio[narrate-kyutai]"
+
 # The cloning engines, if you want to sound like a particular person rather
 # than to have a page read aloud. These are the ones that pull torch.
 pip install "sprezzature-audio[narrate-openvoice]"
