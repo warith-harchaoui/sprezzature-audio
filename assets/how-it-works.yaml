@@ -1,0 +1,97 @@
+# How this brick works, as drawn in README.md and LISEZMOI.md.
+#
+# The renderer lives in the hub, at sprezzature/scripts/make_brick_diagram.py,
+# because the ten bricks share one drawing and ten generators would have become
+# ten dialects of it. The content lives here, because the brick is what knows
+# what is true about itself.
+#
+# Redraw after any edit:
+#   python ~/sprezzature/scripts/make_brick_diagram.py sprezzature-audio
+package: sprezzature-audio
+
+en:
+  title: How sprezzature-audio works
+  subtitle: One modality, read in both directions, entirely on your own machine.
+  alt: >-
+    Flow diagram. At the top, a recording or a page of text feeds two lanes. The
+    left lane turns sound into text: it transcribes with a local Whisper build,
+    says who spoke when with NeMo Sortformer, names the speakers against a
+    reference voice, and translates, returning WebVTT, SRT or a plain transcript.
+    The right lane turns text into sound: it detects the language, picks the voice
+    that speaks it, measures each audio file and cuts the cues, returning a WAV and
+    its WebVTT. Both meet in one outcome, the same audit of the cue track whichever
+    direction wrote it.
+  input:
+    label: A recording, or a page of text
+    note: a meeting, an interview, a lecture. Or the post you want read aloud.
+  lanes:
+    - title: "Sound into text"
+      steps:
+        - label: Transcribe
+          note: "a local Whisper build through vocal-helper, large-v3-turbo by default. The audio is pulled down to 16 kHz mono first, which is what the model expects."
+        - label: Say who spoke when
+          note: "NeMo Sortformer, up to four speakers, as an RTTM file and a JSON turn list. TitaNet then matches a voice against a reference sample and gives it a name."
+        - label: Translate the cues
+          note: a local model, through the same environment variables every model call in the suite reads
+      result:
+        label: WebVTT, SRT, or a plain transcript
+        note: what was said, by whom, and in which language
+    - title: "Text into sound"
+      steps:
+        - label: Detect the language first
+          note: "nobody passes one. The detected language is what the phonemiser works from, so a French page read as English is not French in an American accent, it is an American spelling the words out."
+        - label: Pick the voice that speaks it
+          note: "fifty-four built-in voices across nine languages. Or one cloned from a sample of six to thirty seconds, when you need a particular person rather than a page read aloud."
+        - label: Measure the audio, then cut the cues
+          note: the WebVTT is built from the measured length of each file. Not transcribed back, and not typed.
+      result:
+        label: A WAV, and its WebVTT beside it
+        note: which lands exactly the way a transcript does, so a page can follow the reading sentence by sentence
+  outcome:
+    label: Audit the cue track, whichever direction wrote it
+    note: "Reading speed, overlaps, line width, duration, with exit 1 on any finding. One parser reads both, because a narration and a transcript are the same file."
+  footer: Nothing leaves the machine, and there is no key to a remote service to obtain. Signal work, cutting, resampling, separating a voice from music, belongs to audio-helper; this package starts once the audio is already usable and asks what was said in it.
+
+fr:
+  title: Comment fonctionne sprezzature-audio
+  subtitle: Une modalité, lue dans les deux sens, entièrement sur votre machine.
+  alt: >-
+    Schéma de flux. En haut, un enregistrement ou une page de texte alimente deux
+    voies. La voie de gauche transforme le son en texte : elle transcrit avec un
+    Whisper local, dit qui a parlé quand avec NeMo Sortformer, nomme les locuteurs
+    à partir d'une voix de référence, et traduit, puis rend du WebVTT, du SRT ou
+    une transcription simple. La voie de droite transforme le texte en son : elle
+    détecte la langue, choisit la voix qui la parle, mesure chaque fichier audio et
+    découpe les repères, puis rend un WAV et son WebVTT. Les deux se rejoignent en
+    un seul résultat, le même contrôle de la piste de repères quel que soit le sens
+    qui l'a écrite.
+  input:
+    label: Un enregistrement, ou une page de texte
+    note: une réunion, un entretien, un cours. Ou le billet que vous voulez entendre lire.
+  lanes:
+    - title: "Du son vers le texte"
+      steps:
+        - label: Transcrire
+          note: "un Whisper local via vocal-helper, large-v3-turbo par défaut. L'audio est d'abord ramené en mono à 16 kHz, ce qu'attend le modèle."
+        - label: Dire qui a parlé quand
+          note: "NeMo Sortformer, jusqu'à quatre locuteurs, en fichier RTTM et en liste de tours JSON. TitaNet rapproche ensuite une voix d'un échantillon de référence et lui donne un nom."
+        - label: Traduire les repères
+          note: un modèle local, par les mêmes variables d'environnement que lit chaque appel de modèle de la suite
+      result:
+        label: Du WebVTT, du SRT, ou une transcription simple
+        note: ce qui a été dit, par qui, et dans quelle langue
+    - title: "Du texte vers le son"
+      steps:
+        - label: Détecter la langue d'abord
+          note: "personne n'en passe une. La langue détectée est ce dont part le phonémiseur, si bien qu'une page française lue en anglais n'est pas du français avec un accent américain, c'est un Américain qui épelle les mots."
+        - label: Choisir la voix qui la parle
+          note: "cinquante-quatre voix intégrées dans neuf langues. Ou une voix clonée depuis un échantillon de six à trente secondes, quand il faut une personne précise et pas une page lue à voix haute."
+        - label: Mesurer l'audio, puis découper les repères
+          note: le WebVTT est construit sur la durée mesurée de chaque fichier. Ni retranscrit, ni saisi à la main.
+      result:
+        label: Un WAV, et son WebVTT à côté
+        note: qui se présente exactement comme une transcription, si bien qu'une page peut suivre la lecture phrase après phrase
+  outcome:
+    label: Contrôler la piste de repères, quel que soit le sens qui l'a écrite
+    note: "Vitesse de lecture, chevauchements, largeur de ligne, durée, avec le code de sortie 1 au premier constat. Un seul lecteur traite les deux, parce qu'une narration et une transcription sont le même fichier."
+  footer: Rien ne quitte la machine, et il n'y a aucune clé vers un service distant à obtenir. Le travail sur le signal, couper, rééchantillonner, séparer une voix d'une musique, revient à audio-helper ; ce paquet commence une fois l'audio exploitable et demande ce qui s'y dit.

@@ -4,6 +4,10 @@ Local-first speech processing for the [sprezzature](https://sprezzature.ai/) sta
 
 Point it at a recording (a meeting, an interview, a lecture) and it hands back a transcript that says not just *what* was said, but *who* said it and *in which language*. Everything runs on your own machine: no audio leaves it, and no API key is needed. If you instead need to cut, resample, or clean up the audio signal itself (trim silence, separate a voice from background music), that is a different job, handled by a sibling package, [audio-helper](https://github.com/warith-harchaoui/audio-helper); this package starts once the audio is already usable and asks what was said in it.
 
+## How it works
+
+![Flow diagram. At the top, a recording or a page of text feeds two lanes. The left lane turns sound into text: it transcribes with a local Whisper build, says who spoke when with NeMo Sortformer, names the speakers against a reference voice, and translates, returning WebVTT, SRT or a plain transcript. The right lane turns text into sound: it detects the language, picks the voice that speaks it, measures each audio file and cuts the cues, returning a WAV and its WebVTT. Both meet in one outcome, the same audit of the cue track whichever direction wrote it.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-audio/main/assets/how-it-works.svg)
+
 ## What it does
 
 Six scripts, each one stage of the pipeline. A few terms recur throughout the table below, so here they are once, up front, rather than repeated at every mention:

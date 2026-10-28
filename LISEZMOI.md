@@ -4,6 +4,10 @@ Traitement local de la parole pour la suite [sprezzature](https://sprezzature.ai
 
 On pointe l'outil vers un enregistrement (une réunion, un entretien, un cours) et il renvoie une transcription qui dit non seulement *ce qui* a été dit, mais *qui* l'a dit et *dans quelle langue*. Tout tourne sur la machine locale : aucun son n'en sort, aucune clé d'API n'est nécessaire. Pour découper, rééchantillonner ou nettoyer le signal audio lui-même (couper les silences, séparer une voix d'une musique de fond), c'est un autre métier, assuré par un paquet voisin, [audio-helper](https://github.com/warith-harchaoui/audio-helper) ; ce paquet-ci part d'un audio déjà exploitable et se demande ce qui y a été dit.
 
+## Comment ça marche
+
+![Schéma de flux. En haut, un enregistrement ou une page de texte alimente deux voies. La voie de gauche transforme le son en texte : elle transcrit avec un Whisper local, dit qui a parlé quand avec NeMo Sortformer, nomme les locuteurs à partir d'une voix de référence, et traduit, puis rend du WebVTT, du SRT ou une transcription simple. La voie de droite transforme le texte en son : elle détecte la langue, choisit la voix qui la parle, mesure chaque fichier audio et découpe les repères, puis rend un WAV et son WebVTT. Les deux se rejoignent en un seul résultat, le même contrôle de la piste de repères quel que soit le sens qui l'a écrite.](https://raw.githubusercontent.com/warith-harchaoui/sprezzature-audio/main/assets/comment-ca-marche.svg)
+
 ## Ce que ça fait
 
 Six scripts, chacun une étape du pipeline. Quelques termes reviennent tout au long du tableau ci-dessous ; autant les poser une fois pour toutes plutôt que de les répéter à chaque ligne :
