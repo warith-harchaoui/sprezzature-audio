@@ -1,0 +1,691 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><rect width="1224" height="946" fill="#FFFFFF"/><title id="sp-title">Outils dans le quadrant</title><desc id="sp-desc">A 2D positioning map of 23 outils, Efficacité to Créativité on the horizontal axis, Accessibilité to Liberté on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="197.6" y1="484.0" x2="1026.4" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="866.0" x2="612.0" y2="102.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="491.7" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="end">Créativité</text><text data-pole="left" x="60.0" y="491.7" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="start">Efficacité</text><text data-pole="top" x="612.0" y="65.4" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="middle">Liberté</text><text data-pole="bottom" x="612.0" y="915.6" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="middle">Accessibilité</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: sprezzature-audio
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 4
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 3
+Identification nommée du locuteur: 5
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 5
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 1
+Maturité et écosystème: 1
+Support commercial: 1"><circle cx="912.0" cy="259.0" r="7.36" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: sprezzature-audio
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 4
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 3
+Identification nommée du locuteur: 5
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 5
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 1
+Maturité et écosystème: 1
+Support commercial: 1</title></g><text x="899.5" y="263.9" font-size="14" fill="#1C1C1E" text-anchor="end">sprezzature-audio</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: whisper.cpp
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 2
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 3
+Maturité et écosystème: 5
+Support commercial: 2"><circle cx="385.3" cy="338.7" r="7.36" fill="#D494DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: whisper.cpp
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 2
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 3
+Maturité et écosystème: 5
+Support commercial: 2</title></g><text x="372.8" y="343.6" font-size="14" fill="#1C1C1E" text-anchor="end">whisper.cpp</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: faster-whisper
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 5
+Installation légère sans torch: 4
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 2
+Maturité et écosystème: 5
+Support commercial: 2"><circle cx="444.4" cy="300.3" r="7.36" fill="#B4B2FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: faster-whisper
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 5
+Installation légère sans torch: 4
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 2
+Maturité et écosystème: 5
+Support commercial: 2</title></g><text x="456.9" y="305.2" font-size="14" fill="#1C1C1E" text-anchor="start">faster-whisper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: WhisperX
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 1
+Maturité et écosystème: 4
+Support commercial: 1"><circle cx="520.9" cy="339.2" r="7.36" fill="#7598E8" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: WhisperX
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 1
+Maturité et écosystème: 4
+Support commercial: 1</title></g><text x="508.4" y="331.6" font-size="14" fill="#1C1C1E" text-anchor="end">WhisperX</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: whisper-diarization
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 4
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 3
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 3
+Traitement en flux temps réel: 1
+Maturité et écosystème: 3
+Support commercial: 1"><circle cx="595.1" cy="312.3" r="7.36" fill="#46DED5" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: whisper-diarization
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 4
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 3
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 3
+Traitement en flux temps réel: 1
+Maturité et écosystème: 3
+Support commercial: 1</title></g><text x="557.4" y="279.5" font-size="14" fill="#1C1C1E" text-anchor="end">whisper-diarization</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: pyannote.audio
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 3
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 5
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 3
+Traitement en flux temps réel: 2
+Maturité et écosystème: 5
+Support commercial: 4"><circle cx="570.3" cy="392.0" r="7.36" fill="#72C1FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: pyannote.audio
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 3
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 5
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 3
+Traitement en flux temps réel: 2
+Maturité et écosystème: 5
+Support commercial: 4</title></g><text x="582.8" y="396.9" font-size="14" fill="#1C1C1E" text-anchor="start">pyannote.audio</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: NVIDIA NeMo
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 4
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 2
+Couverture multilingue: 4
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="590.5" cy="476.0" r="7.36" fill="#D27DB5" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: NVIDIA NeMo
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 4
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 2
+Couverture multilingue: 4
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="603.0" y="468.4" font-size="14" fill="#1C1C1E" text-anchor="start">NVIDIA NeMo</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: SpeechBrain
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 3
+Segmentation par locuteur: 3
+Identification nommée du locuteur: 4
+Synthèse vocale: 3
+Clonage de voix: 2
+Piste minutée produite: 1
+Couverture multilingue: 3
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 4
+Support commercial: 1"><circle cx="726.9" cy="337.5" r="7.36" fill="#43C5A0" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: SpeechBrain
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 3
+Segmentation par locuteur: 3
+Identification nommée du locuteur: 4
+Synthèse vocale: 3
+Clonage de voix: 2
+Piste minutée produite: 1
+Couverture multilingue: 3
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 4
+Support commercial: 1</title></g><text x="739.4" y="342.4" font-size="14" fill="#1C1C1E" text-anchor="start">SpeechBrain</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Vosk
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 2
+Segmentation par locuteur: 2
+Identification nommée du locuteur: 2
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 4
+Support commercial: 3"><circle cx="442.7" cy="352.7" r="7.36" fill="#9672C4" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Vosk
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 2
+Segmentation par locuteur: 2
+Identification nommée du locuteur: 2
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 4
+Support commercial: 3</title></g><text x="455.2" y="357.6" font-size="14" fill="#1C1C1E" text-anchor="start">Vosk</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Kokoro
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 5
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 3
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 3
+Maturité et écosystème: 4
+Support commercial: 1"><circle cx="590.5" cy="307.7" r="7.36" fill="#00A4B8" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Kokoro
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 5
+Clonage de voix: 1
+Piste minutée produite: 2
+Couverture multilingue: 3
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 3
+Maturité et écosystème: 4
+Support commercial: 1</title></g><text x="603.0" y="300.1" font-size="14" fill="#1C1C1E" text-anchor="start">Kokoro</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Piper
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 3
+Clonage de voix: 1
+Piste minutée produite: 1
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 4
+Maturité et écosystème: 4
+Support commercial: 1"><circle cx="554.9" cy="335.4" r="7.36" fill="#0097C4" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Piper
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 3
+Clonage de voix: 1
+Piste minutée produite: 1
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 4
+Maturité et écosystème: 4
+Support commercial: 1</title></g><text x="567.4" y="340.3" font-size="14" fill="#1C1C1E" text-anchor="start">Piper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Chatterbox
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 5
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 4
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1"><circle cx="899.7" cy="332.2" r="7.36" fill="#89B964" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Chatterbox
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 5
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 4
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1</title></g><text x="912.2" y="337.1" font-size="14" fill="#1C1C1E" text-anchor="start">Chatterbox</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: XTTS v2
+Local et hors ligne: 5
+Gratuit ou open source: 3
+Licence permissive pour un usage commercial: 1
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 5
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 3
+Maturité et écosystème: 4
+Support commercial: 1"><circle cx="871.3" cy="448.8" r="7.36" fill="#8D952D" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: XTTS v2
+Local et hors ligne: 5
+Gratuit ou open source: 3
+Licence permissive pour un usage commercial: 1
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 5
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 3
+Maturité et écosystème: 4
+Support commercial: 1</title></g><text x="883.8" y="453.7" font-size="14" fill="#1C1C1E" text-anchor="start">XTTS v2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: F5-TTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 3
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1"><circle cx="912.0" cy="373.9" r="7.36" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: F5-TTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 5
+Piste minutée produite: 1
+Couverture multilingue: 3
+Installation légère sans torch: 1
+Vitesse sur une machine ordinaire: 2
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1</title></g><text x="924.5" y="378.8" font-size="14" fill="#1C1C1E" text-anchor="start">F5-TTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Kyutai TTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 4
+Couverture multilingue: 2
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 2
+Support commercial: 1"><circle cx="734.7" cy="376.6" r="7.36" fill="#5FB779" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Kyutai TTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 3
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 3
+Piste minutée produite: 4
+Couverture multilingue: 2
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 2
+Support commercial: 1</title></g><text x="747.2" y="381.5" font-size="14" fill="#1C1C1E" text-anchor="start">Kyutai TTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: MeloTTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 3
+Clonage de voix: 1
+Piste minutée produite: 1
+Couverture multilingue: 4
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1"><circle cx="667.4" cy="259.0" r="7.36" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: MeloTTS
+Local et hors ligne: 5
+Gratuit ou open source: 5
+Licence permissive pour un usage commercial: 5
+Qualité de la reconnaissance: 1
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 3
+Clonage de voix: 1
+Piste minutée produite: 1
+Couverture multilingue: 4
+Installation légère sans torch: 2
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 2
+Maturité et écosystème: 3
+Support commercial: 1</title></g><text x="679.9" y="263.9" font-size="14" fill="#1C1C1E" text-anchor="start">MeloTTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: ElevenLabs
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 2
+Synthèse vocale: 5
+Clonage de voix: 5
+Piste minutée produite: 5
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="477.2" cy="709.0" r="7.36" fill="#D1993E" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: ElevenLabs
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 2
+Synthèse vocale: 5
+Clonage de voix: 5
+Piste minutée produite: 5
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="489.7" y="713.9" font-size="14" fill="#1C1C1E" text-anchor="start">ElevenLabs</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Deepgram
+Local et hors ligne: 2
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="386.2" cy="612.6" r="7.36" fill="#D97578" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Deepgram
+Local et hors ligne: 2
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="398.7" y="648.2" font-size="14" fill="#1C1C1E" text-anchor="start">Deepgram</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: AssemblyAI
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="312.0" cy="606.0" r="7.36" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: AssemblyAI
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 5
+Segmentation par locuteur: 5
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 5
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="299.5" y="610.9" font-size="14" fill="#1C1C1E" text-anchor="end">AssemblyAI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Azure Speech
+Local et hors ligne: 3
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 4
+Synthèse vocale: 5
+Clonage de voix: 4
+Piste minutée produite: 4
+Couverture multilingue: 5
+Installation légère sans torch: 4
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="562.8" cy="661.1" r="7.36" fill="#CCB14A" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Azure Speech
+Local et hors ligne: 3
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 4
+Synthèse vocale: 5
+Clonage de voix: 4
+Piste minutée produite: 4
+Couverture multilingue: 5
+Installation légère sans torch: 4
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="575.3" y="666.0" font-size="14" fill="#1C1C1E" text-anchor="start">Azure Speech</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Amazon Transcribe
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 5"><circle cx="374.0" cy="580.6" r="7.36" fill="#FF9DBD" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Amazon Transcribe
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 1
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 4
+Couverture multilingue: 4
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 5</title></g><text x="361.5" y="585.5" font-size="14" fill="#1C1C1E" text-anchor="end">Amazon Transcribe</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: OpenAI Audio API
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 4"><circle cx="470.0" cy="566.6" r="7.36" fill="#FA997B" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: OpenAI Audio API
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 2
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 1
+Identification nommée du locuteur: 1
+Synthèse vocale: 4
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 5
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 4
+Maturité et écosystème: 5
+Support commercial: 4</title></g><text x="482.5" y="571.5" font-size="14" fill="#1C1C1E" text-anchor="start">OpenAI Audio API</text><g class="sp-dot" tabindex="0" role="img" aria-label="Outils: Otter.ai
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 1
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 4
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 2
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 4
+Support commercial: 4"><circle cx="452.9" cy="599.5" r="7.36" fill="#CC7E3F" stroke="white" stroke-width="1" opacity="0.95"/><title>Outils: Otter.ai
+Local et hors ligne: 1
+Gratuit ou open source: 1
+Licence permissive pour un usage commercial: 1
+Qualité de la reconnaissance: 4
+Segmentation par locuteur: 4
+Identification nommée du locuteur: 4
+Synthèse vocale: 1
+Clonage de voix: 1
+Piste minutée produite: 3
+Couverture multilingue: 2
+Installation légère sans torch: 5
+Vitesse sur une machine ordinaire: 4
+Traitement en flux temps réel: 5
+Maturité et écosystème: 4
+Support commercial: 4</title></g><text x="465.4" y="604.4" font-size="14" fill="#1C1C1E" text-anchor="start">Otter.ai</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Outils dans le quadrant</text></svg>

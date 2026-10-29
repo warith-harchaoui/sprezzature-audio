@@ -1,0 +1,597 @@
+meta:
+  reference: sprezzature-audio
+  rotation_deg: -131.306
+  explained_variance_ratio:
+  - 0.3872
+  - 0.1536
+  cumulative_variance: 0.5408
+  n_approaches: 23
+  attributes:
+  - Local et hors ligne
+  - Gratuit ou open source
+  - Licence permissive pour un usage commercial
+  - Qualité de la reconnaissance
+  - Segmentation par locuteur
+  - Identification nommée du locuteur
+  - Synthèse vocale
+  - Clonage de voix
+  - Piste minutée produite
+  - Couverture multilingue
+  - Installation légère sans torch
+  - Vitesse sur une machine ordinaire
+  - Traitement en flux temps réel
+  - Maturité et écosystème
+  - Support commercial
+  lower_is_better: []
+  imputed_cells: []
+axes:
+  axis_1:
+    name: Efficacité ↔ Créativité
+    pole_left: Efficacité
+    pole_right: Créativité
+    loadings:
+      Local et hors ligne: 0.1247
+      Gratuit ou open source: 0.0485
+      Licence permissive pour un usage commercial: -0.1279
+      Qualité de la reconnaissance: -0.2625
+      Segmentation par locuteur: -0.1448
+      Identification nommée du locuteur: 0.0806
+      Synthèse vocale: 0.3814
+      Clonage de voix: 0.4837
+      Piste minutée produite: -0.2329
+      Couverture multilingue: -0.1087
+      Installation légère sans torch: -0.3604
+      Vitesse sur une machine ordinaire: -0.4442
+      Traitement en flux temps réel: -0.0891
+      Maturité et écosystème: -0.2444
+      Support commercial: -0.1704
+  axis_2:
+    name: Accessibilité ↔ Liberté
+    pole_bottom: Accessibilité
+    pole_top: Liberté
+    loadings:
+      Local et hors ligne: 0.3758
+      Gratuit ou open source: 0.4322
+      Licence permissive pour un usage commercial: 0.4024
+      Qualité de la reconnaissance: -0.1821
+      Segmentation par locuteur: -0.2192
+      Identification nommée du locuteur: -0.1403
+      Synthèse vocale: -0.2461
+      Clonage de voix: -0.2916
+      Piste minutée produite: -0.1485
+      Couverture multilingue: -0.0357
+      Installation légère sans torch: -0.0616
+      Vitesse sur une machine ordinaire: 0.0688
+      Traitement en flux temps réel: -0.3061
+      Maturité et écosystème: -0.1405
+      Support commercial: -0.3437
+approaches:
+- name: sprezzature-audio
+  coordinates:
+    axis_1: 3.5643
+    axis_2: 3.5221
+  role: best
+  color: '#FF3B30'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 4.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 3.0
+    Identification nommée du locuteur: 5.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 3.0
+    Piste minutée produite: 5.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 1.0
+    Maturité et écosystème: 1.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: whisper.cpp
+  coordinates:
+    axis_1: -2.6938
+    axis_2: 2.2746
+  role: competitor
+  color: '#D494DE'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 2.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 3.0
+    Maturité et écosystème: 5.0
+    Support commercial: 2.0
+  imputed_attributes: []
+- name: faster-whisper
+  coordinates:
+    axis_1: -1.9917
+    axis_2: 2.8755
+  role: competitor
+  color: '#B4B2FF'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 2.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 4.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 5.0
+    Support commercial: 2.0
+  imputed_attributes: []
+- name: WhisperX
+  coordinates:
+    axis_1: -1.0826
+    axis_2: 2.2663
+  role: competitor
+  color: '#7598E8'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 3.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 2.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 1.0
+    Maturité et écosystème: 4.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: whisper-diarization
+  coordinates:
+    axis_1: -0.2002
+    axis_2: 2.6873
+  role: competitor
+  color: '#46DED5'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 4.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 3.0
+    Installation légère sans torch: 1.0
+    Vitesse sur une machine ordinaire: 3.0
+    Traitement en flux temps réel: 1.0
+    Maturité et écosystème: 3.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: pyannote.audio
+  coordinates:
+    axis_1: -0.4953
+    axis_2: 1.4408
+  role: competitor
+  color: '#72C1FF'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 3.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 5.0
+    Identification nommée du locuteur: 3.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 2.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 2.0
+    Vitesse sur une machine ordinaire: 3.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 5.0
+    Support commercial: 4.0
+  imputed_attributes: []
+- name: NVIDIA NeMo
+  coordinates:
+    axis_1: -0.2549
+    axis_2: 0.1256
+  role: competitor
+  color: '#D27DB5'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 5.0
+    Segmentation par locuteur: 5.0
+    Identification nommée du locuteur: 4.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 3.0
+    Piste minutée produite: 2.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 1.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 4.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: SpeechBrain
+  coordinates:
+    axis_1: 1.3653
+    axis_2: 2.2935
+  role: competitor
+  color: '#43C5A0'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 3.0
+    Segmentation par locuteur: 3.0
+    Identification nommée du locuteur: 4.0
+    Synthèse vocale: 3.0
+    Clonage de voix: 2.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 3.0
+    Installation légère sans torch: 2.0
+    Vitesse sur une machine ordinaire: 2.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 4.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: Vosk
+  coordinates:
+    axis_1: -2.0111
+    axis_2: 2.0551
+  role: competitor
+  color: '#9672C4'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 2.0
+    Segmentation par locuteur: 2.0
+    Identification nommée du locuteur: 2.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 3.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 4.0
+    Support commercial: 3.0
+  imputed_attributes: []
+- name: Kokoro
+  coordinates:
+    axis_1: -0.2549
+    axis_2: 2.7601
+  role: competitor
+  color: '#00A4B8'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 5.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 2.0
+    Couverture multilingue: 3.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 3.0
+    Maturité et écosystème: 4.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: Piper
+  coordinates:
+    axis_1: -0.6784
+    axis_2: 2.3254
+  role: competitor
+  color: '#0097C4'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 3.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 3.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 4.0
+    Maturité et écosystème: 4.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: Chatterbox
+  coordinates:
+    axis_1: 3.4178
+    axis_2: 2.3762
+  role: competitor
+  color: '#89B964'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 5.0
+    Clonage de voix: 5.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 1.0
+    Vitesse sur une machine ordinaire: 2.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 3.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: XTTS v2
+  coordinates:
+    axis_1: 3.0804
+    axis_2: 0.5509
+  role: competitor
+  color: '#8D952D'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 3.0
+    Licence permissive pour un usage commercial: 1.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 5.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 1.0
+    Vitesse sur une machine ordinaire: 2.0
+    Traitement en flux temps réel: 3.0
+    Maturité et écosystème: 4.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: F5-TTS
+  coordinates:
+    axis_1: 3.5643
+    axis_2: 1.7229
+  role: right
+  color: '#007AFF'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 5.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 3.0
+    Installation légère sans torch: 1.0
+    Vitesse sur une machine ordinaire: 2.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 3.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: Kyutai TTS
+  coordinates:
+    axis_1: 1.4583
+    axis_2: 1.6811
+  role: competitor
+  color: '#5FB779'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 3.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 3.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 2.0
+    Installation légère sans torch: 2.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 2.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: MeloTTS
+  coordinates:
+    axis_1: 0.658
+    axis_2: 3.5221
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Local et hors ligne: 5.0
+    Gratuit ou open source: 5.0
+    Licence permissive pour un usage commercial: 5.0
+    Qualité de la reconnaissance: 1.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 3.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 1.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 2.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 2.0
+    Maturité et écosystème: 3.0
+    Support commercial: 1.0
+  imputed_attributes: []
+- name: ElevenLabs
+  coordinates:
+    axis_1: -1.6011
+    axis_2: -3.5221
+  role: competitor
+  color: '#D1993E'
+  attributes:
+    Local et hors ligne: 1.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 5.0
+    Segmentation par locuteur: 5.0
+    Identification nommée du locuteur: 2.0
+    Synthèse vocale: 5.0
+    Clonage de voix: 5.0
+    Piste minutée produite: 5.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: Deepgram
+  coordinates:
+    axis_1: -2.683
+    axis_2: -2.0125
+  role: competitor
+  color: '#D97578'
+  attributes:
+    Local et hors ligne: 2.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 5.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: AssemblyAI
+  coordinates:
+    axis_1: -3.5643
+    axis_2: -1.9096
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Local et hors ligne: 1.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 5.0
+    Segmentation par locuteur: 5.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 5.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: Azure Speech
+  coordinates:
+    axis_1: -0.5851
+    axis_2: -2.7716
+  role: competitor
+  color: '#CCB14A'
+  attributes:
+    Local et hors ligne: 3.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 4.0
+    Synthèse vocale: 5.0
+    Clonage de voix: 4.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 4.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: Amazon Transcribe
+  coordinates:
+    axis_1: -2.8275
+    axis_2: -1.5114
+  role: competitor
+  color: '#FF9DBD'
+  attributes:
+    Local et hors ligne: 1.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 4.0
+    Couverture multilingue: 4.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 4.0
+    Maturité et écosystème: 5.0
+    Support commercial: 5.0
+  imputed_attributes: []
+- name: OpenAI Audio API
+  coordinates:
+    axis_1: -1.6872
+    axis_2: -1.2936
+  role: competitor
+  color: '#FA997B'
+  attributes:
+    Local et hors ligne: 1.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 2.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 1.0
+    Identification nommée du locuteur: 1.0
+    Synthèse vocale: 4.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 3.0
+    Couverture multilingue: 5.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 4.0
+    Maturité et écosystème: 5.0
+    Support commercial: 4.0
+  imputed_attributes: []
+- name: Otter.ai
+  coordinates:
+    axis_1: -1.8905
+    axis_2: -1.8086
+  role: competitor
+  color: '#CC7E3F'
+  attributes:
+    Local et hors ligne: 1.0
+    Gratuit ou open source: 1.0
+    Licence permissive pour un usage commercial: 1.0
+    Qualité de la reconnaissance: 4.0
+    Segmentation par locuteur: 4.0
+    Identification nommée du locuteur: 4.0
+    Synthèse vocale: 1.0
+    Clonage de voix: 1.0
+    Piste minutée produite: 3.0
+    Couverture multilingue: 2.0
+    Installation légère sans torch: 5.0
+    Vitesse sur une machine ordinaire: 4.0
+    Traitement en flux temps réel: 5.0
+    Maturité et écosystème: 4.0
+    Support commercial: 4.0
+  imputed_attributes: []

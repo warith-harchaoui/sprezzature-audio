@@ -1,0 +1,597 @@
+meta:
+  reference: sprezzature-audio
+  rotation_deg: -131.306
+  explained_variance_ratio:
+  - 0.3872
+  - 0.1536
+  cumulative_variance: 0.5408
+  n_approaches: 23
+  attributes:
+  - Local and offline
+  - Free or open source
+  - Permissive commercial licence
+  - Transcription accuracy
+  - Speaker segmentation
+  - Named speaker identification
+  - Speech synthesis
+  - Voice cloning
+  - Timed track produced
+  - Multilingual coverage
+  - Light install without torch
+  - Speed on an ordinary machine
+  - Streaming and real time
+  - Maturity and ecosystem
+  - Commercial support
+  lower_is_better: []
+  imputed_cells: []
+axes:
+  axis_1:
+    name: Nimble ↔ Creative
+    pole_left: Nimble
+    pole_right: Creative
+    loadings:
+      Local and offline: 0.1247
+      Free or open source: 0.0485
+      Permissive commercial licence: -0.1279
+      Transcription accuracy: -0.2625
+      Speaker segmentation: -0.1448
+      Named speaker identification: 0.0806
+      Speech synthesis: 0.3814
+      Voice cloning: 0.4837
+      Timed track produced: -0.2329
+      Multilingual coverage: -0.1087
+      Light install without torch: -0.3604
+      Speed on an ordinary machine: -0.4442
+      Streaming and real time: -0.0891
+      Maturity and ecosystem: -0.2444
+      Commercial support: -0.1704
+  axis_2:
+    name: Robust ↔ Accessible
+    pole_bottom: Robust
+    pole_top: Accessible
+    loadings:
+      Local and offline: 0.3758
+      Free or open source: 0.4322
+      Permissive commercial licence: 0.4024
+      Transcription accuracy: -0.1821
+      Speaker segmentation: -0.2192
+      Named speaker identification: -0.1403
+      Speech synthesis: -0.2461
+      Voice cloning: -0.2916
+      Timed track produced: -0.1485
+      Multilingual coverage: -0.0357
+      Light install without torch: -0.0616
+      Speed on an ordinary machine: 0.0688
+      Streaming and real time: -0.3061
+      Maturity and ecosystem: -0.1405
+      Commercial support: -0.3437
+approaches:
+- name: sprezzature-audio
+  coordinates:
+    axis_1: 3.5643
+    axis_2: 3.5221
+  role: best
+  color: '#FF3B30'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 4.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 3.0
+    Named speaker identification: 5.0
+    Speech synthesis: 4.0
+    Voice cloning: 3.0
+    Timed track produced: 5.0
+    Multilingual coverage: 4.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 1.0
+    Maturity and ecosystem: 1.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: whisper.cpp
+  coordinates:
+    axis_1: -2.6938
+    axis_2: 2.2746
+  role: competitor
+  color: '#D494DE'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 2.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 5.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 3.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 2.0
+  imputed_attributes: []
+- name: faster-whisper
+  coordinates:
+    axis_1: -1.9917
+    axis_2: 2.8755
+  role: competitor
+  color: '#B4B2FF'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 2.0
+    Multilingual coverage: 5.0
+    Light install without torch: 4.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 2.0
+  imputed_attributes: []
+- name: WhisperX
+  coordinates:
+    axis_1: -1.0826
+    axis_2: 2.2663
+  role: competitor
+  color: '#7598E8'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 3.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 4.0
+    Light install without torch: 2.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 1.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: whisper-diarization
+  coordinates:
+    axis_1: -0.2002
+    axis_2: 2.6873
+  role: competitor
+  color: '#46DED5'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 4.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 3.0
+    Light install without torch: 1.0
+    Speed on an ordinary machine: 3.0
+    Streaming and real time: 1.0
+    Maturity and ecosystem: 3.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: pyannote.audio
+  coordinates:
+    axis_1: -0.4953
+    axis_2: 1.4408
+  role: competitor
+  color: '#72C1FF'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 3.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 5.0
+    Named speaker identification: 3.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 2.0
+    Multilingual coverage: 5.0
+    Light install without torch: 2.0
+    Speed on an ordinary machine: 3.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 4.0
+  imputed_attributes: []
+- name: NVIDIA NeMo
+  coordinates:
+    axis_1: -0.2549
+    axis_2: 0.1256
+  role: competitor
+  color: '#D27DB5'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 5.0
+    Speaker segmentation: 5.0
+    Named speaker identification: 4.0
+    Speech synthesis: 4.0
+    Voice cloning: 3.0
+    Timed track produced: 2.0
+    Multilingual coverage: 4.0
+    Light install without torch: 1.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 4.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: SpeechBrain
+  coordinates:
+    axis_1: 1.3653
+    axis_2: 2.2935
+  role: competitor
+  color: '#43C5A0'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 3.0
+    Speaker segmentation: 3.0
+    Named speaker identification: 4.0
+    Speech synthesis: 3.0
+    Voice cloning: 2.0
+    Timed track produced: 1.0
+    Multilingual coverage: 3.0
+    Light install without torch: 2.0
+    Speed on an ordinary machine: 2.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: Vosk
+  coordinates:
+    axis_1: -2.0111
+    axis_2: 2.0551
+  role: competitor
+  color: '#9672C4'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 2.0
+    Speaker segmentation: 2.0
+    Named speaker identification: 2.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 3.0
+    Multilingual coverage: 4.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 3.0
+  imputed_attributes: []
+- name: Kokoro
+  coordinates:
+    axis_1: -0.2549
+    axis_2: 2.7601
+  role: competitor
+  color: '#00A4B8'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 5.0
+    Voice cloning: 1.0
+    Timed track produced: 2.0
+    Multilingual coverage: 3.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 3.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: Piper
+  coordinates:
+    axis_1: -0.6784
+    axis_2: 2.3254
+  role: competitor
+  color: '#0097C4'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 3.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 3.0
+    Voice cloning: 1.0
+    Timed track produced: 1.0
+    Multilingual coverage: 5.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 4.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: Chatterbox
+  coordinates:
+    axis_1: 3.4178
+    axis_2: 2.3762
+  role: competitor
+  color: '#89B964'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 5.0
+    Voice cloning: 5.0
+    Timed track produced: 1.0
+    Multilingual coverage: 4.0
+    Light install without torch: 1.0
+    Speed on an ordinary machine: 2.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 3.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: XTTS v2
+  coordinates:
+    axis_1: 3.0804
+    axis_2: 0.5509
+  role: competitor
+  color: '#8D952D'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 3.0
+    Permissive commercial licence: 1.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 4.0
+    Voice cloning: 5.0
+    Timed track produced: 1.0
+    Multilingual coverage: 5.0
+    Light install without torch: 1.0
+    Speed on an ordinary machine: 2.0
+    Streaming and real time: 3.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: F5-TTS
+  coordinates:
+    axis_1: 3.5643
+    axis_2: 1.7229
+  role: right
+  color: '#007AFF'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 4.0
+    Voice cloning: 5.0
+    Timed track produced: 1.0
+    Multilingual coverage: 3.0
+    Light install without torch: 1.0
+    Speed on an ordinary machine: 2.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 3.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: Kyutai TTS
+  coordinates:
+    axis_1: 1.4583
+    axis_2: 1.6811
+  role: competitor
+  color: '#5FB779'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 3.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 4.0
+    Voice cloning: 3.0
+    Timed track produced: 4.0
+    Multilingual coverage: 2.0
+    Light install without torch: 2.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 2.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: MeloTTS
+  coordinates:
+    axis_1: 0.658
+    axis_2: 3.5221
+  role: top
+  color: '#AF52DE'
+  attributes:
+    Local and offline: 5.0
+    Free or open source: 5.0
+    Permissive commercial licence: 5.0
+    Transcription accuracy: 1.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 3.0
+    Voice cloning: 1.0
+    Timed track produced: 1.0
+    Multilingual coverage: 4.0
+    Light install without torch: 2.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 2.0
+    Maturity and ecosystem: 3.0
+    Commercial support: 1.0
+  imputed_attributes: []
+- name: ElevenLabs
+  coordinates:
+    axis_1: -1.6011
+    axis_2: -3.5221
+  role: competitor
+  color: '#D1993E'
+  attributes:
+    Local and offline: 1.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 5.0
+    Speaker segmentation: 5.0
+    Named speaker identification: 2.0
+    Speech synthesis: 5.0
+    Voice cloning: 5.0
+    Timed track produced: 5.0
+    Multilingual coverage: 5.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: Deepgram
+  coordinates:
+    axis_1: -2.683
+    axis_2: -2.0125
+  role: competitor
+  color: '#D97578'
+  attributes:
+    Local and offline: 2.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 5.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 1.0
+    Speech synthesis: 4.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 4.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: AssemblyAI
+  coordinates:
+    axis_1: -3.5643
+    axis_2: -1.9096
+  role: worst
+  color: '#A52A2A'
+  attributes:
+    Local and offline: 1.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 5.0
+    Speaker segmentation: 5.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 4.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 5.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: Azure Speech
+  coordinates:
+    axis_1: -0.5851
+    axis_2: -2.7716
+  role: competitor
+  color: '#CCB14A'
+  attributes:
+    Local and offline: 3.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 4.0
+    Speech synthesis: 5.0
+    Voice cloning: 4.0
+    Timed track produced: 4.0
+    Multilingual coverage: 5.0
+    Light install without torch: 4.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: Amazon Transcribe
+  coordinates:
+    axis_1: -2.8275
+    axis_2: -1.5114
+  role: competitor
+  color: '#FF9DBD'
+  attributes:
+    Local and offline: 1.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 1.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 4.0
+    Multilingual coverage: 4.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 4.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 5.0
+  imputed_attributes: []
+- name: OpenAI Audio API
+  coordinates:
+    axis_1: -1.6872
+    axis_2: -1.2936
+  role: competitor
+  color: '#FA997B'
+  attributes:
+    Local and offline: 1.0
+    Free or open source: 1.0
+    Permissive commercial licence: 2.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 1.0
+    Named speaker identification: 1.0
+    Speech synthesis: 4.0
+    Voice cloning: 1.0
+    Timed track produced: 3.0
+    Multilingual coverage: 5.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 4.0
+    Maturity and ecosystem: 5.0
+    Commercial support: 4.0
+  imputed_attributes: []
+- name: Otter.ai
+  coordinates:
+    axis_1: -1.8905
+    axis_2: -1.8086
+  role: competitor
+  color: '#CC7E3F'
+  attributes:
+    Local and offline: 1.0
+    Free or open source: 1.0
+    Permissive commercial licence: 1.0
+    Transcription accuracy: 4.0
+    Speaker segmentation: 4.0
+    Named speaker identification: 4.0
+    Speech synthesis: 1.0
+    Voice cloning: 1.0
+    Timed track produced: 3.0
+    Multilingual coverage: 2.0
+    Light install without torch: 5.0
+    Speed on an ordinary machine: 4.0
+    Streaming and real time: 5.0
+    Maturity and ecosystem: 4.0
+    Commercial support: 4.0
+  imputed_attributes: []

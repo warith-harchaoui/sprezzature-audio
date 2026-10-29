@@ -1,0 +1,691 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1224" height="946" viewBox="0 0 1224 946" role="img" aria-labelledby="sp-title sp-desc" font-family="Roboto, -apple-system, Helvetica, Arial, sans-serif"><title id="sp-title">Tools in the Quadrant</title><desc id="sp-desc">A 2D positioning map of 23 tools, Nimble to Creative on the horizontal axis, Robust to Accessible on the vertical axis.</desc><style>.sp-dot{cursor:pointer}.sp-dot:hover circle,.sp-dot:focus circle{stroke-width:2.4}.sp-dot:hover,.sp-dot:focus{filter:brightness(1.08);outline:none}</style><line x1="146.6" y1="484.0" x2="1051.9" y2="484.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><line x1="612.0" y1="866.0" x2="612.0" y2="102.0" stroke="#C7C7CC" stroke-width="1.2" stroke-dasharray="2,4"/><text data-pole="right" x="1164.0" y="491.7" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="end">Creative</text><text data-pole="left" x="60.0" y="491.7" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="start">Nimble</text><text data-pole="top" x="612.0" y="65.4" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="middle">Accessible</text><text data-pole="bottom" x="612.0" y="915.6" font-size="22" font-style="italic" fill="#6E6E73" text-anchor="middle">Robust</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: sprezzature-audio
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 4
+Transcription accuracy: 4
+Speaker segmentation: 3
+Named speaker identification: 5
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 5
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 1
+Maturity and ecosystem: 1
+Commercial support: 1"><circle cx="912.0" cy="259.0" r="7.36" fill="#FF3B30" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: sprezzature-audio
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 4
+Transcription accuracy: 4
+Speaker segmentation: 3
+Named speaker identification: 5
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 5
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 1
+Maturity and ecosystem: 1
+Commercial support: 1</title></g><text x="899.5" y="263.9" font-size="14" fill="#1C1C1E" text-anchor="end">sprezzature-audio</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: whisper.cpp
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 4
+Speaker segmentation: 2
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 3
+Maturity and ecosystem: 5
+Commercial support: 2"><circle cx="385.3" cy="338.7" r="7.36" fill="#D494DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: whisper.cpp
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 4
+Speaker segmentation: 2
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 3
+Maturity and ecosystem: 5
+Commercial support: 2</title></g><text x="372.8" y="343.6" font-size="14" fill="#1C1C1E" text-anchor="end">whisper.cpp</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: faster-whisper
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 4
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 5
+Light install without torch: 4
+Speed on an ordinary machine: 5
+Streaming and real time: 2
+Maturity and ecosystem: 5
+Commercial support: 2"><circle cx="444.4" cy="300.3" r="7.36" fill="#B4B2FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: faster-whisper
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 4
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 5
+Light install without torch: 4
+Speed on an ordinary machine: 5
+Streaming and real time: 2
+Maturity and ecosystem: 5
+Commercial support: 2</title></g><text x="456.9" y="305.2" font-size="14" fill="#1C1C1E" text-anchor="start">faster-whisper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: WhisperX
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 1
+Maturity and ecosystem: 4
+Commercial support: 1"><circle cx="520.9" cy="339.2" r="7.36" fill="#7598E8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: WhisperX
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 1
+Maturity and ecosystem: 4
+Commercial support: 1</title></g><text x="508.4" y="331.6" font-size="14" fill="#1C1C1E" text-anchor="end">WhisperX</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: whisper-diarization
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 4
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 3
+Light install without torch: 1
+Speed on an ordinary machine: 3
+Streaming and real time: 1
+Maturity and ecosystem: 3
+Commercial support: 1"><circle cx="595.1" cy="312.3" r="7.36" fill="#46DED5" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: whisper-diarization
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 4
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 3
+Light install without torch: 1
+Speed on an ordinary machine: 3
+Streaming and real time: 1
+Maturity and ecosystem: 3
+Commercial support: 1</title></g><text x="557.4" y="279.5" font-size="14" fill="#1C1C1E" text-anchor="end">whisper-diarization</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: pyannote.audio
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 5
+Named speaker identification: 3
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 5
+Light install without torch: 2
+Speed on an ordinary machine: 3
+Streaming and real time: 2
+Maturity and ecosystem: 5
+Commercial support: 4"><circle cx="570.3" cy="392.0" r="7.36" fill="#72C1FF" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: pyannote.audio
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 5
+Named speaker identification: 3
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 5
+Light install without torch: 2
+Speed on an ordinary machine: 3
+Streaming and real time: 2
+Maturity and ecosystem: 5
+Commercial support: 4</title></g><text x="582.8" y="396.9" font-size="14" fill="#1C1C1E" text-anchor="start">pyannote.audio</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: NVIDIA NeMo
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 4
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 2
+Multilingual coverage: 4
+Light install without torch: 1
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="590.5" cy="476.0" r="7.36" fill="#D27DB5" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: NVIDIA NeMo
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 4
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 2
+Multilingual coverage: 4
+Light install without torch: 1
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="603.0" y="468.4" font-size="14" fill="#1C1C1E" text-anchor="start">NVIDIA NeMo</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: SpeechBrain
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 3
+Speaker segmentation: 3
+Named speaker identification: 4
+Speech synthesis: 3
+Voice cloning: 2
+Timed track produced: 1
+Multilingual coverage: 3
+Light install without torch: 2
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 4
+Commercial support: 1"><circle cx="726.9" cy="337.5" r="7.36" fill="#43C5A0" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: SpeechBrain
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 3
+Speaker segmentation: 3
+Named speaker identification: 4
+Speech synthesis: 3
+Voice cloning: 2
+Timed track produced: 1
+Multilingual coverage: 3
+Light install without torch: 2
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 4
+Commercial support: 1</title></g><text x="739.4" y="342.4" font-size="14" fill="#1C1C1E" text-anchor="start">SpeechBrain</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Vosk
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 2
+Speaker segmentation: 2
+Named speaker identification: 2
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 4
+Commercial support: 3"><circle cx="442.7" cy="352.7" r="7.36" fill="#9672C4" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Vosk
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 2
+Speaker segmentation: 2
+Named speaker identification: 2
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 4
+Commercial support: 3</title></g><text x="455.2" y="357.6" font-size="14" fill="#1C1C1E" text-anchor="start">Vosk</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Kokoro
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 5
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 3
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 3
+Maturity and ecosystem: 4
+Commercial support: 1"><circle cx="590.5" cy="307.7" r="7.36" fill="#00A4B8" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Kokoro
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 5
+Voice cloning: 1
+Timed track produced: 2
+Multilingual coverage: 3
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 3
+Maturity and ecosystem: 4
+Commercial support: 1</title></g><text x="603.0" y="300.1" font-size="14" fill="#1C1C1E" text-anchor="start">Kokoro</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Piper
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 3
+Voice cloning: 1
+Timed track produced: 1
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 4
+Maturity and ecosystem: 4
+Commercial support: 1"><circle cx="554.9" cy="335.4" r="7.36" fill="#0097C4" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Piper
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 3
+Voice cloning: 1
+Timed track produced: 1
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 4
+Maturity and ecosystem: 4
+Commercial support: 1</title></g><text x="567.4" y="340.3" font-size="14" fill="#1C1C1E" text-anchor="start">Piper</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Chatterbox
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 5
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 4
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1"><circle cx="899.7" cy="332.2" r="7.36" fill="#89B964" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Chatterbox
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 5
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 4
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1</title></g><text x="912.2" y="337.1" font-size="14" fill="#1C1C1E" text-anchor="start">Chatterbox</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: XTTS v2
+Local and offline: 5
+Free or open source: 3
+Permissive commercial licence: 1
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 5
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 3
+Maturity and ecosystem: 4
+Commercial support: 1"><circle cx="871.3" cy="448.8" r="7.36" fill="#8D952D" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: XTTS v2
+Local and offline: 5
+Free or open source: 3
+Permissive commercial licence: 1
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 5
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 3
+Maturity and ecosystem: 4
+Commercial support: 1</title></g><text x="883.8" y="453.7" font-size="14" fill="#1C1C1E" text-anchor="start">XTTS v2</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: F5-TTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 2
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 3
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1"><circle cx="912.0" cy="373.9" r="7.36" fill="#007AFF" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: F5-TTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 2
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 5
+Timed track produced: 1
+Multilingual coverage: 3
+Light install without torch: 1
+Speed on an ordinary machine: 2
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1</title></g><text x="924.5" y="378.8" font-size="14" fill="#1C1C1E" text-anchor="start">F5-TTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Kyutai TTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 4
+Multilingual coverage: 2
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 2
+Commercial support: 1"><circle cx="734.7" cy="376.6" r="7.36" fill="#5FB779" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Kyutai TTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 3
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 3
+Timed track produced: 4
+Multilingual coverage: 2
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 2
+Commercial support: 1</title></g><text x="747.2" y="381.5" font-size="14" fill="#1C1C1E" text-anchor="start">Kyutai TTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: MeloTTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 3
+Voice cloning: 1
+Timed track produced: 1
+Multilingual coverage: 4
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1"><circle cx="667.4" cy="259.0" r="7.36" fill="#AF52DE" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: MeloTTS
+Local and offline: 5
+Free or open source: 5
+Permissive commercial licence: 5
+Transcription accuracy: 1
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 3
+Voice cloning: 1
+Timed track produced: 1
+Multilingual coverage: 4
+Light install without torch: 2
+Speed on an ordinary machine: 4
+Streaming and real time: 2
+Maturity and ecosystem: 3
+Commercial support: 1</title></g><text x="679.9" y="263.9" font-size="14" fill="#1C1C1E" text-anchor="start">MeloTTS</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: ElevenLabs
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 2
+Speech synthesis: 5
+Voice cloning: 5
+Timed track produced: 5
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="477.2" cy="709.0" r="7.36" fill="#D1993E" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: ElevenLabs
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 2
+Speech synthesis: 5
+Voice cloning: 5
+Timed track produced: 5
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="489.7" y="713.9" font-size="14" fill="#1C1C1E" text-anchor="start">ElevenLabs</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Deepgram
+Local and offline: 2
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="386.2" cy="612.6" r="7.36" fill="#D97578" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Deepgram
+Local and offline: 2
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="398.7" y="648.2" font-size="14" fill="#1C1C1E" text-anchor="start">Deepgram</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: AssemblyAI
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="312.0" cy="606.0" r="7.36" fill="#A52A2A" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: AssemblyAI
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 5
+Speaker segmentation: 5
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 5
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="299.5" y="610.9" font-size="14" fill="#1C1C1E" text-anchor="end">AssemblyAI</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Azure Speech
+Local and offline: 3
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 4
+Speech synthesis: 5
+Voice cloning: 4
+Timed track produced: 4
+Multilingual coverage: 5
+Light install without torch: 4
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="562.8" cy="661.1" r="7.36" fill="#CCB14A" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Azure Speech
+Local and offline: 3
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 4
+Speech synthesis: 5
+Voice cloning: 4
+Timed track produced: 4
+Multilingual coverage: 5
+Light install without torch: 4
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="575.3" y="666.0" font-size="14" fill="#1C1C1E" text-anchor="start">Azure Speech</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Amazon Transcribe
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 5"><circle cx="374.0" cy="580.6" r="7.36" fill="#FF9DBD" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Amazon Transcribe
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 1
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 4
+Multilingual coverage: 4
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 5</title></g><text x="361.5" y="585.5" font-size="14" fill="#1C1C1E" text-anchor="end">Amazon Transcribe</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: OpenAI Audio API
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 4"><circle cx="470.0" cy="566.6" r="7.36" fill="#FA997B" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: OpenAI Audio API
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 2
+Transcription accuracy: 4
+Speaker segmentation: 1
+Named speaker identification: 1
+Speech synthesis: 4
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 5
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 4
+Maturity and ecosystem: 5
+Commercial support: 4</title></g><text x="482.5" y="571.5" font-size="14" fill="#1C1C1E" text-anchor="start">OpenAI Audio API</text><g class="sp-dot" tabindex="0" role="img" aria-label="Tools: Otter.ai
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 1
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 4
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 2
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 4
+Commercial support: 4"><circle cx="452.9" cy="599.5" r="7.36" fill="#CC7E3F" stroke="white" stroke-width="1" opacity="0.95"/><title>Tools: Otter.ai
+Local and offline: 1
+Free or open source: 1
+Permissive commercial licence: 1
+Transcription accuracy: 4
+Speaker segmentation: 4
+Named speaker identification: 4
+Speech synthesis: 1
+Voice cloning: 1
+Timed track produced: 3
+Multilingual coverage: 2
+Light install without torch: 5
+Speed on an ordinary machine: 4
+Streaming and real time: 5
+Maturity and ecosystem: 4
+Commercial support: 4</title></g><text x="465.4" y="604.4" font-size="14" fill="#1C1C1E" text-anchor="start">Otter.ai</text><text x="612.0" y="26" font-size="18" font-weight="bold" fill="#000" text-anchor="middle">Tools in the Quadrant</text></svg>
