@@ -53,7 +53,11 @@ Usage
     # Quality of speaker attribution
     python benchmark_stt.py --reference-rttm truth.rttm --hypothesis-rttm out.rttm
 
-    # Speed: time a command over a known audio duration
+    # Speed: time a command over the audio it processes, duration measured
+    python benchmark_stt.py --audio meeting.mp4 --time-command \\
+        "python captions_from_whisper.py meeting.mp4"
+
+    # Same, with the duration stated by hand (no audio-helper installed)
     python benchmark_stt.py --audio-seconds 3600 --time-command \\
         "python captions_from_whisper.py meeting.mp4"
 
@@ -390,6 +394,38 @@ def diarization_error_rate(
 # ── Speed ─────────────────────────────────────────────────────────────────
 
 
+def measure_audio_seconds(path: Path) -> float:
+    """
+    Duration of ``path`` in seconds, read off the file.
+
+    The real-time factor is ``elapsed / audio_seconds``, so the duration is
+    half of every speed number this tool prints — and until now the only way
+    to supply it was ``--audio-seconds``, typed by hand. A duration typed as
+    360 instead of 3600 does not look wrong anywhere: the report says RTF
+    0.84 as confidently as it would have said 0.084, and nothing in the run
+    disagrees. Asking the file is the only reading that cannot be mistyped.
+
+    Through ``audio_helper.get_audio_duration``, which probes with ffprobe
+    and so answers for the containers this benchmark actually times — mp4,
+    mkv, m4a, mp3 — none of which the standard library can open.
+
+    Raises
+    ------
+    SystemExit
+        When ``audio-helper`` is not installed, naming the extra that carries
+        it and the flag that does not need it.
+    """
+    try:
+        from audio_helper import get_audio_duration
+    except ImportError:
+        sys.exit(
+            "Measuring a duration needs audio-helper:\n"
+            "    pip install 'sprezzature-audio[captions]'\n"
+            "Or state it yourself with --audio-seconds."
+        )
+    return float(get_audio_duration(str(path)))
+
+
 def time_command(command: str, audio_seconds: float) -> dict[str, Any]:
     """
     Run `command` and report how long it took per second of audio.
@@ -458,7 +494,15 @@ def format_report(results: dict[str, Any]) -> str:
     if "speed" in results:
         s = results["speed"]
         lines.append("Speed")
-        lines.append(f"  elapsed        {s['elapsed_s']:6.1f} s for {s['audio_s']:.0f} s of audio")
+        # The console block and the JSON say the same thing about where the
+        # audio duration came from, because half the RTF is that number and a
+        # reader comparing two reports needs to know which one was typed.
+        origin = {"measured": " (measured)", "stated": " (stated)"}.get(
+            s.get("audio_s_source", ""), ""
+        )
+        lines.append(
+            f"  elapsed        {s['elapsed_s']:6.1f} s for {s['audio_s']:.0f} s of audio{origin}"
+        )
         lines.append(f"  RTF            {s['rtf']:6.3f}     processing seconds per audio second")
         lines.append(f"  speed-up       {s['speedup']:6.2f} x  faster than real time")
         if s["returncode"] != 0:
@@ -479,7 +523,7 @@ def main(argv: list[str] | None = None) -> int:
             "Examples:\n"
             "  sprezzature-audio-benchmark --reference truth.vtt --hypothesis whisper.vtt\n"
             "  sprezzature-audio-benchmark --reference-rttm truth.rttm --hypothesis-rttm out.rttm\n"
-            "  sprezzature-audio-benchmark --audio-seconds 3600 \\\n"
+            "  sprezzature-audio-benchmark --audio a.mp4 \\\n"
             "      --time-command 'sprezzature-audio-captions a.mp4'\n"
         ),
     )
@@ -489,7 +533,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--hypothesis-rttm", type=Path, help="System diarization to score.")
     parser.add_argument("--no-collar", action="store_true", help="Score DER without the 250 ms collar.")
     parser.add_argument("--time-command", help="Command to run and time.")
-    parser.add_argument("--audio-seconds", type=float, help="Audio duration, for the real-time factor.")
+    parser.add_argument(
+        "--audio",
+        type=Path,
+        help="The audio or video the timed command processes; its duration is measured.",
+    )
+    parser.add_argument("--audio-seconds", type=float, help="Audio duration, stated by hand.")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of the console report.")
     args = parser.parse_args(argv)
 
@@ -503,8 +552,11 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--reference and --hypothesis go together.")
     if bool(args.reference_rttm) != bool(args.hypothesis_rttm):
         parser.error("--reference-rttm and --hypothesis-rttm go together.")
-    if args.time_command and not args.audio_seconds:
-        parser.error("--time-command needs --audio-seconds to compute a real-time factor.")
+    if args.time_command and not (args.audio or args.audio_seconds):
+        parser.error(
+            "--time-command needs --audio (duration measured) or --audio-seconds "
+            "(duration stated) to compute a real-time factor."
+        )
 
     if args.reference:
         results["wer"] = word_error_rate(
@@ -517,7 +569,13 @@ def main(argv: list[str] | None = None) -> int:
             collar=not args.no_collar,
         )
     if args.time_command:
-        results["speed"] = time_command(args.time_command, args.audio_seconds)
+        # --audio wins when both are given: a measured duration beats a
+        # remembered one, and saying which of the two produced the number is
+        # part of the report rather than a detail of the run.
+        measured = args.audio is not None
+        seconds = measure_audio_seconds(args.audio) if measured else args.audio_seconds
+        results["speed"] = time_command(args.time_command, seconds)
+        results["speed"]["audio_s_source"] = "measured" if measured else "stated"
 
     if args.json:
         print(json.dumps(results, indent=2, ensure_ascii=False))
