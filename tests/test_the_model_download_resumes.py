@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import builtins
 import sys
+import types
 from pathlib import Path
 from typing import Any
 
@@ -38,11 +39,20 @@ def test_the_download_resumes_rather_than_restarting(monkeypatch, tmp_path) -> N
     """``_download`` hands the job to the suite's resumable primitive.
 
     Asserted on the call rather than on the bytes: a real transfer would need
-    the network and 325 MB. What matters here is that the three arguments the
+    the network and 325 MB. What matters here is that the four arguments the
     measurement chose are still being passed.
+
+    ``os_helper`` is **substituted into** ``sys.modules`` rather than imported
+    and patched, and the difference is not stylistic. What is under test here
+    is what *this* code asks for, which is true whether or not the helper is
+    installed — and this package's CI installs ``[api,mcp]`` and no helper at
+    all. The first version of this test did ``import os_helper`` to patch it,
+    passed on a laptop, and failed in CI with ``ModuleNotFoundError`` on the
+    one environment that installs nothing extra. Skipping there instead would
+    have been the same silence: the three measured arguments are exactly what
+    nothing else would notice going missing.
     """
     import install_narrate
-    import os_helper
 
     seen: dict[str, Any] = {}
 
@@ -53,7 +63,9 @@ def test_the_download_resumes_rather_than_restarting(monkeypatch, tmp_path) -> N
         Path(file_path).write_bytes(b"weights")
         return {"path": file_path, "bytes": 7, "resumed": False}
 
-    monkeypatch.setattr(os_helper, "download_file", fake_download_file)
+    stub = types.ModuleType("os_helper")
+    stub.download_file = fake_download_file  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "os_helper", stub)
 
     dest = tmp_path / "models" / "kokoro-v1.0.onnx"
     install_narrate._download("https://example.invalid/kokoro-v1.0.onnx", dest)

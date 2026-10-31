@@ -66,7 +66,14 @@ def _write_wav(path: Path, seconds: float, rate: int = 16000) -> Path:
 
 
 def test_the_duration_is_read_off_the_file(tmp_path) -> None:
-    """The measured duration matches the file that was written."""
+    """The measured duration matches the file that was written.
+
+    The one assertion here that genuinely needs the helper, so the one that
+    skips where it is absent — this package's CI installs ``[api,mcp]`` and no
+    helper at all. Everything *around* the reading is asserted without it
+    below, on purpose: a suite where the whole feature skips in CI reports
+    green for work it never did.
+    """
     pytest.importorskip("audio_helper")
     import benchmark_stt
 
@@ -74,21 +81,27 @@ def test_the_duration_is_read_off_the_file(tmp_path) -> None:
     assert benchmark_stt.measure_audio_seconds(wav) == pytest.approx(2.0, abs=0.01)
 
 
-def test_a_measured_duration_wins_over_a_stated_one(tmp_path, capsys, quiet_device_report) -> None:
+def test_a_measured_duration_wins_over_a_stated_one(
+    monkeypatch, capsys, quiet_device_report
+) -> None:
     """``--audio`` beats ``--audio-seconds``, and the report says which it used.
 
-    The stated value here is wrong by a factor of ten, which is exactly the
-    typo the flag exists to stop mattering: a report that used it would print
-    a real-time factor ten times too small and look entirely plausible.
+    The stated value is wrong by a factor of ten, which is exactly the typo
+    the flag exists to stop mattering: a report that used it would print a
+    real-time factor ten times too small and look entirely plausible.
+
+    ``measure_audio_seconds`` is stubbed rather than run, because which of the
+    two flags wins is a fact about this file's own argument handling and holds
+    with or without ffprobe on the machine. The test above is where the
+    reading itself is checked.
     """
-    pytest.importorskip("audio_helper")
     import benchmark_stt
 
-    wav = _write_wav(tmp_path / "two-seconds.wav", 2.0)
+    monkeypatch.setattr(benchmark_stt, "measure_audio_seconds", lambda path: 2.0)
     code = benchmark_stt.main(
         [
             "--audio",
-            str(wav),
+            "unread.mp4",
             "--audio-seconds",
             "20",
             "--time-command",
@@ -98,6 +111,34 @@ def test_a_measured_duration_wins_over_a_stated_one(tmp_path, capsys, quiet_devi
     assert code == 0
     out = capsys.readouterr().out
     assert "for 2 s of audio (measured)" in out
+
+
+def test_measuring_without_audio_helper_names_the_extra(tmp_path) -> None:
+    """The refusal has to read as an install line, and name the other flag.
+
+    Runs everywhere, installed or not: the helper is withheld by substituting
+    the import, so this asserts the message rather than the environment.
+    """
+    import builtins
+
+    import benchmark_stt
+
+    real_import = builtins.__import__
+
+    def refuse_audio_helper(name: str, *args, **kwargs):
+        if name == "audio_helper":
+            raise ImportError("no audio_helper for this test")
+        return real_import(name, *args, **kwargs)
+
+    builtins.__import__ = refuse_audio_helper
+    try:
+        with pytest.raises(SystemExit) as caught:
+            benchmark_stt.measure_audio_seconds(tmp_path / "whatever.mp4")
+    finally:
+        builtins.__import__ = real_import
+    message = str(caught.value)
+    assert "sprezzature-audio[captions]" in message
+    assert "--audio-seconds" in message
 
 
 def test_a_stated_duration_still_works_and_says_so(capsys, quiet_device_report) -> None:
