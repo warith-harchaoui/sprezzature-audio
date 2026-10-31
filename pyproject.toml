@@ -122,12 +122,14 @@ Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
-# The two front doors, over the same fifteen tools and the same table
-# (sprezzature_audio/cli.py). argparse because it is in the standard library
-# and therefore always there; click because its sub-commands carry the shape
-# without hand-rolling it. Fifteen commands is well past what anybody keeps
-# in their head, and until these existed there was no way to find out what
-# this package does except by reading its README.
+# One front door over the fifteen tools (sprezzature_audio/cli.py), under two
+# spellings. `make-audio` is kept because it is what the skill, the README and
+# years of notes tell people to type; both names land on the same callable, so
+# they cannot drift. There were two parsers until 2026-10-25, an argparse one
+# and a click one sharing a table, which meant every sub-command written twice.
+# Fifteen commands is well past what anybody keeps in their head, and until a
+# front door existed there was no way to find out what this package does except
+# by reading its README.
 make-audio = "sprezzature_audio.cli:main"
 sprezzature-audio = "sprezzature_audio.cli:main"
 sprezzature-audio-mcp = "sprezzature_audio.mcp:main"

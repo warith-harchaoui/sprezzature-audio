@@ -87,15 +87,21 @@ pip install "sprezzature-audio[all]"
 ## Quick start
 
 Fifteen tools ship here, each with its own command — which is what a script
-should call. The two front doors are how you find them:
+should call. One front door is how you find them, under two spellings:
 
 ```sh
-make-audio --help          # argparse: the catalogue, with a line per tool
-sprezzature-audio --help   # click: the same fifteen, the other parser
+sprezzature-audio --help   # the catalogue, with a line per tool
+make-audio --help          # the same command, under its older name
 
 make-audio audit subtitles.vtt
 make-audio narrate post.md --out post.mp3
 ```
+
+Both names resolve to the same callable, so they cannot drift. There were two
+parsers until 2026-10-25, an argparse one and a click one sharing a table, and
+every sub-command had to be written twice; click is the only one now, and a
+base dependency rather than an extra, because with argparse gone no parser
+ships with Python.
 
 Every argument after the tool name belongs to that tool, so
 `make-audio captions --help` shows the transcription flags, not these.
