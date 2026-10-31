@@ -99,6 +99,17 @@ all = [
 api = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
+    # Found by sweeping every import in this repository against this list, and
+    # it is the only one that came back real: `sprezzature_audio/api.py` does
+    # an unguarded `from pydantic import BaseModel, Field` and this extra did
+    # not name it. It resolves today because `fastapi` pulls it -- but
+    # fastapi 0.115.0's own window is `>=1.7.4,<3.0.0`, so a resolver is free
+    # to hand this package pydantic 1.x, a major nothing in this suite has
+    # ever run. The floor matches the sibling, `sprezzature-publish[api]`,
+    # which has always declared it. No breakage was measured on v1; what is
+    # fixed is the manifest not saying what the code imports, which is the
+    # defect a clean venv turns into somebody else's ImportError.
+    "pydantic>=2.0",
 ]
 # MCP surface: the same routes republished as agent tools, via fastapi-mcp.
 mcp = [
