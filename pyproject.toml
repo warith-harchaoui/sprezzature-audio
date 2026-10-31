@@ -32,17 +32,38 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# **Not installable on Python 3.14.** `vocal-helper`, `audio-helper` and
+# `video-helper` each declare `>=3.10,<3.14`, already at the floor versions
+# named here -- read off the PyPI simple index rather than inferred, because a
+# floor is not a pin and the copy installed on any one machine answers a
+# different question. `requires-python` above stays `>=3.10` with no ceiling
+# on purpose: the base install is `click` and `langdetect`, it resolves on
+# 3.14, and capping the whole package would refuse that interpreter to people
+# who never asked for a helper. The arrangement is fine; it being undeclared
+# was not. tests/test_a_capped_extra_says_so.py keeps this sentence honest.
 captions = [
     "vocal-helper>=0.6.0",
     "audio-helper>=1.6.0",
     "video-helper>=1.7.0",
 ]
+# **Not installable on Python 3.14**, same cause as `captions`:
+# `audio-helper>=1.6.0` and `video-helper>=1.7.0` are `>=3.10,<3.14` at those
+# very versions. `nemo_toolkit 1.23.0` declares no window at all and is not
+# the reason.
 diarize = [
     "nemo_toolkit[asr]>=1.23.0",
     "numpy>=1.24",
     "audio-helper>=1.6.0",
     "video-helper>=1.7.0",
 ]
+# **Not installable on Python 3.14**, and this one took two readings to state
+# correctly. `best-engine-ai-helper 0.4.0` -- the floor this line names --
+# declares plain `>=3.10` on the index, so by the test next door it looks
+# clean. Its own base dependency is `os-helper>=1.5.0`, and **no os-helper
+# release on PyPI has ever shipped without `<3.14`** (checked across the whole
+# simple index, not sampled). So the ceiling arrives one hop down and arrives
+# unavoidably. Worth writing out because the first draft of this comment said
+# the opposite.
 translate = [
     "best-engine-ai-helper>=0.4.0",
 ]
@@ -50,6 +71,8 @@ dev = [
     "pytest>=8.0",
     "ruff",
 ]
+# **Not installable on Python 3.14**, because it contains `captions` and
+# `diarize`, which are not.
 all = [
     "sprezzature-audio[captions,diarize,translate]",
 ]
@@ -98,10 +121,36 @@ mcp = [
 # narrates pages full of acronyms -- WebVTT, RTTM, OKLCH, GMTED2010 -- and
 # stating a pronunciation once beats hearing four engines each guess
 # differently.
-narrate = ["speaker-helper[kokoro,detect]>=0.11.0"]
-# Kept as a name, because EXAMPLES.md and the installer both say it.
+#
+# **Not installable on Python 3.14**, and the same goes for the three sibling
+# extras below: `speaker-helper 0.11.0` -- the floor, as named -- declares
+# `>=3.10,<3.14` on the PyPI simple index. Measured there rather than off the
+# installed copy, because a floor is not a pin. `requires-python` keeps no
+# ceiling: the base install resolves on 3.14 and should not be refused to
+# somebody who never asked for a voice.
+#
+# `os-helper` is declared even though `speaker-helper` already pulls it,
+# because `scripts/install_narrate.py` imports `download_file` from it by
+# name: the 325 MB Kokoro graph is fetched through the suite's resumable
+# primitive, so a dropped connection continues instead of starting over.
+# Same reason `sprezzature-video` names it alongside `audio-helper`. The floor
+# is the version that behaviour was measured against; `<3.14` on the index at
+# that very version, which is the other half of the sentence above.
+narrate = [
+    "speaker-helper[kokoro,detect]>=0.11.0",
+    "os-helper>=3.1.0,<4",
+]
+# Kept as a name, because EXAMPLES.md and the installer both say it. Inherits
+# `narrate`, so: not installable on Python 3.14.
 narrate-kokoro = ["sprezzature-audio[narrate]"]
-narrate-openvoice = ["speaker-helper[openvoice]>=0.11.0"]
+# Not installable on Python 3.14 — `speaker-helper 0.11.0` is `>=3.10,<3.14`.
+# `os-helper` for the same reason as above: this is the extra whose checkpoint
+# archive `install_narrate` downloads.
+narrate-openvoice = [
+    "speaker-helper[openvoice]>=0.11.0",
+    "os-helper>=3.1.0,<4",
+]
+# Not installable on Python 3.14 — same floor, same window.
 narrate-chatterbox = ["speaker-helper[chatterbox]>=0.11.0"]
 # French, natively. `speaker-helper`'s 2026-10 survey picked it for French --
 # a Paris lab's model, where the other three reach French through an
@@ -112,6 +161,8 @@ narrate-chatterbox = ["speaker-helper[chatterbox]>=0.11.0"]
 # weights CC-BY-4.0. Permissive, and not "Apache-2.0 in code *and* weights".
 # Ask for it by name and you get a better French voice; nobody gets a
 # different licence by surprise.
+#
+# Not installable on Python 3.14 — `speaker-helper 0.11.0` is `>=3.10,<3.14`.
 narrate-kyutai = ["speaker-helper[kyutai]>=0.11.0"]
 # OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
 # extras above and is installed by `sprezzature-audio-install-voice`, which is
