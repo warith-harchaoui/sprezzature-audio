@@ -14,8 +14,9 @@ The voice is somebody else's job now. ``speaker-helper`` owns the engines, the
 timeline, the cues and the refusals, and this module is the thin place where
 this package's wire format meets that library's API. What is left here is
 exactly what is *about captions and documents* rather than about speech:
-the ``--segments`` JSON file, the ``--out-dir`` convention, and the one-line
-JSON report ``sprezzature-publish`` reads back off stdout.
+the ``--segments`` JSON file, the ``--out-dir`` convention, the container the
+caller asks for, and the one-line JSON report ``sprezzature-publish`` reads
+back off stdout.
 
 What crossed over, and what did not
 -----------------------------------
@@ -110,7 +111,26 @@ def build_parser(engine: str) -> argparse.ArgumentParser:
         help="Exit 0 when this engine could synthesise here, 1 otherwise.",
     )
     parser.add_argument("--segments", type=Path, help="JSON list of blocks to read.")
-    parser.add_argument("--out-dir", type=Path, help="Where narration.wav and .vtt go.")
+    parser.add_argument("--out-dir", type=Path, help="Where the narration and its .vtt go.")
+    parser.add_argument(
+        "--audio-format",
+        default="wav",
+        help=(
+            "Container for the narration: wav (the default, lossless) or a "
+            "lossy one such as mp3. A forty-minute reading is over a hundred "
+            "megabytes as WAV and under twenty as a 64 kb/s mp3, and the page "
+            "that plays it downloads whichever was written."
+        ),
+    )
+    parser.add_argument(
+        "--bitrate",
+        default="",
+        help=(
+            "Bitrate for a lossy --audio-format, e.g. 64k. Left empty, "
+            "speaker-helper's own default applies; restating it here is how a "
+            "default drifts."
+        ),
+    )
     parser.add_argument(
         "--voice",
         default="",
@@ -144,8 +164,10 @@ def narrate(
     out_dir: Path,
     lang: str = "",
     lexicon: Path | None = None,
+    audio_format: str = "wav",
+    bitrate: str = "",
 ) -> dict[str, Any]:
-    """Read ``segments`` aloud and write ``narration.wav`` beside its cues.
+    """Read ``segments`` aloud and write the narration beside its cues.
 
     Returns the report ``sprezzature-publish`` reads back, whose keys are the
     ones it already consumed before the voice moved out — this is a change of
@@ -188,9 +210,37 @@ def narrate(
     result = asyncio.run(run())
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    audio_path = out_dir / "narration.wav"
+    audio_path = out_dir / f"narration.{audio_format.lstrip('.')}"
     cues_path = out_dir / "narration.vtt"
-    audio_path.write_bytes(result.wav_bytes)
+    # `result.write_audio` and not `write_bytes`: the extension then decides
+    # the container instead of merely labelling a WAV, and the encoding is
+    # `audio-helper`'s craft, reached through speaker-helper rather than by an
+    # ffmpeg command line written here. Every caller of this wrapper used to
+    # re-encode downstream, each with its own flags.
+    #
+    # The bitrate is forwarded only when asked. speaker-helper holds the
+    # default for speech, and a default restated in a second place is a
+    # default that drifts -- the same reason `--lang` is passed through rather
+    # than given a fallback here.
+    options: dict[str, Any] = {"bitrate": bitrate} if bitrate else {}
+    if hasattr(result, "write_audio"):
+        result.write_audio(audio_path, **options)
+    elif audio_path.suffix.lower() == ".wav":
+        # An older speaker-helper, and a WAV asked for: the bytes ARE the file,
+        # so this is the same result by a shorter road.
+        audio_path.write_bytes(result.wav_bytes)
+    else:
+        # Refused rather than written, because the silent version of this is
+        # the bug being removed: a WAV under an MP3 name plays, so nothing
+        # complains, and only its size tells.
+        raise RuntimeError(
+            f"--audio-format {audio_format} needs speaker-helper 0.14.0 or later, "
+            "which is where a result learned to land in the container it is "
+            "asked for. Installed here: "
+            f"{getattr(__import__('speaker_helper'), '__version__', 'unknown')}.\n"
+            "    pip install --upgrade 'speaker-helper>=0.14.0'\n"
+            "Or ask for --audio-format wav, which needs no encoder."
+        )
     cues_path.write_text(result.to_vtt(), encoding="utf-8")
 
     return {
@@ -226,6 +276,8 @@ def main(engine: str, argv: list[str] | None = None) -> int:
             out_dir=args.out_dir,
             lang=args.lang,
             lexicon=args.lexicon,
+            audio_format=args.audio_format,
+            bitrate=args.bitrate,
         )
     except (RuntimeError, ValueError, NotImplementedError) as exc:
         sys.stderr.write(f"{exc}\n")

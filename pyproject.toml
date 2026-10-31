@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.6.0"
+version = "1.7.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -121,6 +121,14 @@ mcp = [
 # narrates pages full of acronyms -- WebVTT, RTTM, OKLCH, GMTED2010 -- and
 # stating a pronunciation once beats hearing four engines each guess
 # differently.
+#
+# The floors stay at 0.11.0 even though `--audio-format mp3` needs
+# `write_audio`, which arrived in 0.14.0. A floor is a promise about what
+# installs, and raising it would refuse the install to everybody who only ever
+# asks for a WAV -- which is the default and most of the traffic. The lossy
+# path checks for the method at call time instead and names the version it
+# wants; `scripts/_speaker.py` holds that check. Raise the floors here the day
+# a lossy container becomes the default.
 #
 # **Not installable on Python 3.14**, and the same goes for the three sibling
 # extras below: `speaker-helper 0.11.0` -- the floor, as named -- declares

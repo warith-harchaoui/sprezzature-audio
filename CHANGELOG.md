@@ -1,5 +1,34 @@
 # Changelog: sprezzature-audio
 
+## v1.7.0 (2026-10-31): the container the caller asks for
+
+### Added
+
+- **`--audio-format` and `--bitrate` on every narration wrapper.** The
+  narration used to be written as `narration.wav` and nothing else, so a
+  caller who needed an MP3 re-encoded it afterwards with its own ffmpeg
+  command line. Sixteen narrations on the deraison site did exactly that,
+  which is how this surfaced: a shell script in another repository was
+  carrying `-codec:a libmp3lame -b:a 64k -ar 24000 -ac 1`, knowledge that has
+  no business living there.
+
+  The encoding is not this package's craft either. `--audio-format mp3` now
+  asks `speaker-helper` for the container, which asks `audio-helper` for the
+  codec, and each layer holds the part it owns. `--bitrate` is forwarded only
+  when given, so the default for speech stays in one place: speaker-helper.
+
+  The default is unchanged, `wav`, and a WAV target never goes near an
+  encoder.
+
+### Notes
+
+- A lossy `--audio-format` needs `speaker-helper 0.14.0` or later, where a
+  result learned `write_audio`. The extra floors stay at 0.11.0 on purpose: a
+  floor is a promise about what installs, and raising it would refuse the
+  install to everybody who only ever asks for a WAV. The lossy path checks
+  for the method at call time and names the version it wants, rather than
+  writing a WAV under an MP3 name, which plays and so says nothing.
+
 ## v1.6.0 (2026-10-26): speaker-helper 0.11 — a lexicon, and a French voice
 
 ### Added
