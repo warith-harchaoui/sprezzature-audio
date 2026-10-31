@@ -56,7 +56,6 @@ import argparse
 import importlib
 import json
 import sys
-import urllib.request
 import zipfile
 from pathlib import Path
 
@@ -79,30 +78,65 @@ OPENVOICE_CHECKPOINT_URL: str = (
 
 def _download(url: str, dest: Path) -> None:
     """
-    Download ``url`` to ``dest`` with a tiny progress line.
+    Download ``url`` to ``dest``, resuming a partial transfer rather than
+    restarting it.
 
-    Stdlib only — no ``requests`` so install_narrate.py runs before
-    the user has installed any extras.
+    Through ``os_helper.download_file``, which is this suite's one download
+    primitive: bytes accumulate in a ``<dest>.part`` sidecar, an interrupted
+    transfer is continued with an HTTP ``Range`` request, transient failures
+    are retried with exponential backoff, and only a *finished* sidecar is
+    renamed onto ``dest``.
+
+    That last property is the reason this stopped being a hand-rolled loop.
+    The Kokoro graph below is 325 MB and the loop wrote straight into
+    ``dest``: a dropped connection left a short file that exists, the only
+    thing telling it apart from a good one was the byte count hardcoded in
+    :data:`KOKORO_FILES`, and the repair was the whole 325 MB again from zero.
+    Resuming is the difference between finishing on a bad connection and
+    never finishing on one.
+
+    ``check_url=False`` is deliberate, and measured. ``download_file``'s
+    precondition is ``os_helper.is_working_url``, which answers **False** for
+    both Kokoro URLs: it probes with ``requests.head``, whose default is
+    ``allow_redirects=False``, and a GitHub release asset answers 302 towards
+    the CDN — a followed HEAD on each returns 200 with the right
+    ``Content-Length``. Leaving the precondition on would assert away the two
+    downloads that work.
+
+    (It also answers False for :data:`OPENVOICE_CHECKPOINT_URL`, and there it
+    is right for a different reason: that S3 object is a plain 404 today, with
+    or without redirects. Separate problem, upstream, and not one a
+    precondition would have fixed — it would only have renamed the failure.)
+
+    ``overwrite=True`` because the callers below have already decided to
+    fetch — ``install_kokoro`` calls this precisely when the file on disk is
+    the wrong size, and the idempotent fast path would hand that wrong file
+    back.
     """
+    try:
+        from os_helper import download_file
+    except ImportError as exc:
+        raise RuntimeError(
+            "os-helper is missing, so there is no resumable download. It comes "
+            "with any of the narration extras:\n"
+            "    pip install 'sprezzature-audio[narrate]'"
+        ) from exc
+
     dest.parent.mkdir(parents=True, exist_ok=True)
     print(f"→ downloading {url}")
     print(f"  into {dest}")
-    with urllib.request.urlopen(url) as resp:  # noqa: S310 — trusted upstream
-        total: int = int(resp.headers.get("Content-Length", "0"))
-        chunk: int = 1 << 20  # 1 MiB
-        read: int = 0
-        with open(dest, "wb") as out:
-            while True:
-                buf = resp.read(chunk)
-                if not buf:
-                    break
-                out.write(buf)
-                read += len(buf)
-                if total:
-                    pct: float = 100.0 * read / total
-                    print(f"  …{pct:5.1f}%  ({read / 1e6:.1f} / "
-                          f"{total / 1e6:.1f} MB)", end="\r")
-    print()
+    # progress=True draws a tqdm bar on a terminal and suppresses itself off
+    # one, which is the other thing the old loop got wrong: its `\r`
+    # percentage line wrote one record per megabyte into a CI log.
+    download_file(
+        url,
+        str(dest),
+        check_url=False,
+        resume=True,
+        retries=3,
+        overwrite=True,
+        progress=True,
+    )
 
 
 def _check_importable(modules: tuple[str, ...]) -> bool:
@@ -245,10 +279,13 @@ def install_kokoro() -> int:
     happens here, where the command is named "install", instead of in the
     middle of the first narration.
 
-    Already-downloaded files are skipped by size. A truncated download is the
-    normal way this fails (a dropped connection leaves a short file that
-    exists), and a size check is what tells the two apart; re-running the
-    command then repairs it instead of trusting the shorter file forever.
+    Already-downloaded files are skipped by size. The size check used to be
+    the only thing standing between a dropped connection and a short file
+    trusted forever; :func:`_download` now writes through a sidecar and
+    renames only a finished one, so a truncated file can no longer appear
+    here at all. What the check still catches is the other case — a file of
+    the wrong length because the upstream release was re-tagged under the
+    same name — and re-running the command then replaces it.
     """
     if not _check_importable(("kokoro_onnx",)):
         print(
