@@ -621,44 +621,64 @@ def test_diarize_cache_key_deterministic_and_sensitive() -> None:
     assert len(k1) == 32
 
 
-def test_diarize_cache_roundtrip(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """_cache_set writes turns to disk that _cache_get reads back unchanged."""
-    import diarize_from_nemo as dn
+def test_diarize_cache_roundtrip(tmp_path: Path) -> None:
+    """The second ask for one key does not run the diarization again.
 
-    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(dn, "NO_CACHE", False)
+    The read/write pair these three tests used to call is now one joint (see
+    ``scripts/_wallet.py``), so a round trip is no longer "what I wrote comes
+    back" but "the expensive callable runs once". That is the stronger
+    statement of the two: the pair could pass the old version of this test and
+    still let two processes both do the work, which it did.
+    """
+    from _wallet import memoized
+
     turns = [{"start": 0.0, "end": 1.0, "speaker": "0"}]
-    key = dn._cache_key(b"abc", "sortformer", 0)
-    assert dn._cache_get(key) is None  # miss before any write
-    dn._cache_set(key, turns)
-    assert dn._cache_get(key) == turns
+    runs: list[int] = []
+
+    def work() -> list[dict]:
+        runs.append(1)
+        return turns
+
+    assert memoized("diarize", "a1b2c3d4", work, cache_dir=tmp_path) == turns
+    assert memoized("diarize", "a1b2c3d4", work, cache_dir=tmp_path) == turns
+    assert len(runs) == 1
 
 
-def test_diarize_cache_disabled_by_no_cache_flag(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """NO_CACHE=True makes both _cache_get and _cache_set no-ops."""
-    import diarize_from_nemo as dn
+def test_diarize_cache_disabled_by_no_cache_flag(tmp_path: Path) -> None:
+    """``--no-cache`` skips the write as well as the read.
 
-    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(dn, "NO_CACHE", True)
-    key = dn._cache_key(b"abc", "sortformer", 0)
-    dn._cache_set(key, [{"start": 0.0, "end": 1.0, "speaker": "0"}])
-    assert dn._cache_get(key) is None
+    Reading only would still leave this run's answer behind for the next one,
+    which is the opposite of what a person asks the flag for.
+    """
+    from _wallet import memoized
+
+    runs: list[int] = []
+
+    def work() -> list[dict]:
+        runs.append(1)
+        return [{"start": 0.0, "end": 1.0, "speaker": "0"}]
+
+    memoized("diarize", "a1b2c3d4", work, cache_dir=tmp_path, enabled=False)
+    memoized("diarize", "a1b2c3d4", work, cache_dir=tmp_path, enabled=False)
+    assert len(runs) == 2
     assert list(tmp_path.iterdir()) == []  # nothing was written to disk
+    # And a later cached run is still a miss, so nothing leaked through.
+    memoized("diarize", "a1b2c3d4", work, cache_dir=tmp_path)
+    assert len(runs) == 3
 
 
-def test_diarize_cache_get_survives_corrupt_json(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """A cache file that fails to parse is treated as a miss, not an error."""
-    import diarize_from_nemo as dn
+def test_diarize_cache_survives_a_corrupt_store(tmp_path: Path) -> None:
+    """A store that fails to open is treated as a miss, not as an error.
 
-    monkeypatch.setattr(dn, "CACHE_DIR", tmp_path)
-    monkeypatch.setattr(dn, "NO_CACHE", False)
-    key = "deadbeef"
-    (tmp_path / f"{key}.json").write_text("not json", encoding="utf-8")
-    assert dn._cache_get(key) is None
+    The property kept from the pair this replaced, and worth keeping
+    deliberately: trading a cache for an exception is a worse deal than having
+    no cache at all, and a ledger file can be truncated by a full disk.
+    """
+    from _wallet import memoized
+
+    (tmp_path / "ledger.db").write_text("not a database", encoding="utf-8")
+    turns = [{"start": 0.0, "end": 2.0, "speaker": "0"}]
+    assert memoized("diarize", "deadbeef", lambda: turns, cache_dir=tmp_path) == turns
 
 
 def test_pick_device_explicit_beats_torch_detection(monkeypatch: pytest.MonkeyPatch) -> None:

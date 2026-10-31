@@ -51,7 +51,17 @@ Cache
 Successful diarization results are cached under
 ``~/.cache/sprezzature-skill/diarize/`` (override with ``SPREZZATURE_CACHE_DIR``,
 disable per-run with ``--no-cache``). The cache key is
-SHA-256 of the extracted-audio bytes + the resolved model tag.
+SHA-256 of the extracted-audio bytes + the resolved model tag, so the same
+recording reached by a different path hits -- which is the whole point here,
+since what is hashed is a WAV extracted into a fresh temporary directory on
+every run.
+
+The store is a `wallet-helper`_ ledger (see `_wallet.py`), which adds what
+the key alone cannot: two runs asking for the same recording *at the same
+time* load Sortformer once and the second waits on the first. Before that,
+three concurrent runs loaded it three times and threw two results away.
+
+.. _wallet-helper: https://github.com/warith-harchaoui/wallet-helper
 
 Usage
 -----
@@ -98,6 +108,7 @@ from typing import Any
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
 import click
 from _click import run_command, sprezzature_command  # noqa: E402
+from _wallet import memoized  # noqa: E402
 
 # ── Module-level configuration ──────────────────────────────────────────────
 
@@ -213,30 +224,16 @@ def _cache_key(audio: bytes, model: str, max_speakers: int) -> str:
     return h.hexdigest()[:32]
 
 
-def _cache_get(key: str) -> list[dict[str, Any]] | None:
-    """Return the cached turn list for ``key`` or ``None`` on miss."""
-    if NO_CACHE:
-        return None
-    path = CACHE_DIR / f"{key}.json"
-    if not path.is_file():
-        return None
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:  # noqa: BLE001 (cache miss on any parse error)
-        return None
-
-
-def _cache_set(key: str, turns: list[dict[str, Any]]) -> None:
-    """Store ``turns`` in the on-disk cache; swallow write errors."""
-    if NO_CACHE:
-        return
-    try:
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        (CACHE_DIR / f"{key}.json").write_text(
-            json.dumps(turns, indent=2, ensure_ascii=False), encoding="utf-8"
-        )
-    except OSError:
-        pass
+# The read/write pair is gone and :func:`_cache_key` above is unchanged: the
+# key already digested the extracted WAV's bytes, which is the right identity
+# and was never the defect. The defect was the gap between the two calls.
+# Three processes asking for one file at once each loaded Sortformer and each
+# diarized it, 2.6 ms apart in the sibling caption tool measured the same way;
+# :mod:`_wallet` replaces the pair with a claim the other two wait on.
+#
+# The old ``<key>.json`` entries are no longer read. They are left in place
+# rather than deleted, and the first run after this change re-diarizes what
+# they held — one entry, 4 kB, on the author's machine.
 
 
 # ── NeMo Sortformer runner ──────────────────────────────────────────────────
@@ -337,26 +334,36 @@ def diarize(
         audio_bytes = wav_path.read_bytes()
 
         key = _cache_key(audio_bytes, model, max_speakers)
-        cached = _cache_get(key)
-        if cached is not None:
-            return cached
 
-        dev = pick_device(device)
-        print(f"→ Loading {model} on {dev}…", file=sys.stderr)
-        m = _sortformer_model(model, dev)
+        # The model load and the diarization both live inside the closure,
+        # because a single-flight they sit outside of deduplicates nothing:
+        # it is the gigabyte of weights and the minutes of inference that the
+        # other callers have to be spared, not the lookup.
+        def run_sortformer() -> list[dict[str, Any]]:
+            """Load Sortformer and diarize the extracted WAV."""
+            dev = pick_device(device)
+            print(f"→ Loading {model} on {dev}…", file=sys.stderr)
+            m = _sortformer_model(model, dev)
 
-        # Sortformer's `diarize` returns either a list of RTTM-style lines
-        # or a list-of-lists depending on the NeMo version. Normalise
-        # both shapes to `List[List[str|float]]` before packing into
-        # dicts.
-        print("→ Running diarization…", file=sys.stderr)
-        predicted = m.diarize(audio=str(wav_path), batch_size=1)
-        turns = _normalise_predictions(predicted)
+            # Sortformer's `diarize` returns either a list of RTTM-style lines
+            # or a list-of-lists depending on the NeMo version. Normalise
+            # both shapes to `List[List[str|float]]` before packing into
+            # dicts.
+            print("→ Running diarization…", file=sys.stderr)
+            predicted = m.diarize(audio=str(wav_path), batch_size=1)
+            turns = _normalise_predictions(predicted)
 
-        if max_speakers > 0:
-            turns = _cap_speakers(turns, max_speakers)
+            if max_speakers > 0:
+                turns = _cap_speakers(turns, max_speakers)
+            return turns
 
-        _cache_set(key, turns)
+        turns = memoized(
+            "diarize",
+            key,
+            run_sortformer,
+            cache_dir=CACHE_DIR,
+            enabled=not NO_CACHE,
+        )
         return turns
 
 

@@ -32,9 +32,13 @@ or plain text.
 Repeated runs on the same file are cheap: the cache key is a SHA-256
 hash, a short fixed-length fingerprint computed from the extracted audio
 bytes together with the model, language, and output format, so the same
-input and settings always map to the same cache file. That cache lives
-under ``~/.cache/sprezzature-skill/captions/``, and the same scheme is used
-by a sibling repository's ``alt_from_ollama`` script.
+input and settings always map to the same entry -- and the same file reached
+by a different path maps there too, which matters because what is hashed is
+a WAV extracted into a fresh temporary directory on every run. That cache
+lives under ``~/.cache/sprezzature-skill/captions/`` as a `wallet-helper`_
+ledger (see `_wallet.py`), which adds the half the key alone cannot give:
+two runs asking for the same file *at the same time* produce one
+transcription and the second waits on it, where before they produced two.
 
 Usage
 -----
@@ -63,6 +67,7 @@ Notes
 
 .. _audio-helper: https://github.com/warith-harchaoui/audio-helper
 .. _video-helper: https://github.com/warith-harchaoui/video-helper
+.. _wallet-helper: https://github.com/warith-harchaoui/wallet-helper
 
 Author
 ------
@@ -95,6 +100,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import _vtt  # noqa: E402
 from _lang import detect_text_language  # noqa: E402
 from _vocab import resolve_vocab_terms  # noqa: E402
+from _wallet import memoized  # noqa: E402
 
 # ── Module-level configuration ────────────────────────────────────────────────
 
@@ -342,27 +348,20 @@ def _cache_key(audio: bytes, model_name: str, lang: str, fmt: str, prompt: str) 
     return h.hexdigest()[:32]
 
 
-def _cache_get(key: str) -> str | None:
-    """Return cached output for ``key``, or ``None`` on a miss."""
-    if NO_CACHE:
-        return None
-    for ext in ("vtt", "srt", "txt"):
-        path = CACHE_DIR / f"{key}.{ext}"
-        if path.is_file():
-            return path.read_text(encoding="utf-8")
-    return None
-
-
-def _cache_set(key: str, text: str, fmt: str) -> None:
-    """Store ``text`` in the cache. Failures are swallowed."""
-    if NO_CACHE:
-        return
-    try:
-        CACHE_DIR.mkdir(parents=True, exist_ok=True)
-        ext = "txt" if fmt == "text" else fmt
-        (CACHE_DIR / f"{key}.{ext}").write_text(text, encoding="utf-8")
-    except OSError:
-        pass
+# The read/write pair that used to sit here is gone; :func:`_cache_key` above
+# is unchanged, because the key was never the part that was wrong. What the
+# pair could not do is stop two processes from both deciding the entry was
+# missing. Three of them, started together on a cold cache and all asking for
+# one file, made three real transcriptions 2.6 ms apart: three whisper loads,
+# three model-sized allocations, three runs of minutes, and then two results
+# thrown away. :mod:`_wallet` puts the transcription inside a claim so the
+# second and third wait for the first.
+#
+# One consequence worth stating: the entries written by the old pair --
+# ``<key>.vtt`` / ``.srt`` / ``.txt`` beside this directory's other files --
+# are not read any more. They are left where they are rather than deleted,
+# and the first run after this change re-transcribes what they held. The real
+# cache on the author's machine held three of them, 12 kB.
 
 
 # ── Time formatting ─────────────────────────────────────────────────────────
@@ -673,34 +672,42 @@ def transcribe(
         audio_bytes: bytes = wav_path.read_bytes()
 
         key = _cache_key(audio_bytes, model, lang, fmt, initial_prompt)
-        cached = _cache_get(key)
-        if cached is not None:
-            return cached
 
-        # Resolve a local GGML path when we have one; otherwise pass the
-        # alias straight through and let vocal-helper / pywhispercpp manage
-        # the download.
-        model_arg: str = _resolve_model_arg(model)
+        # Everything expensive is inside this closure, which is the whole
+        # point of the arrangement: a single-flight that the model load and
+        # the transcription sit *outside* of leaves the second caller nothing
+        # to wait on, and it is minutes of waiting that it saves.
+        def run_whisper() -> str:
+            """Load the model and transcribe the extracted WAV."""
+            # Resolve a local GGML path when we have one; otherwise pass the
+            # alias straight through and let vocal-helper / pywhispercpp manage
+            # the download.
+            model_arg: str = _resolve_model_arg(model)
 
-        # Decode to a 16 kHz mono float32 buffer (audio-helper), then run it
-        # through vocal-helper's WhisperStage as a single whole-file segment.
-        pcm, sample_rate = _pcm_from_wav(wav_path)
-        segments = _run_whisper_stage(
-            pcm,
-            sample_rate,
-            model_arg=model_arg,
-            lang=lang,
-            initial_prompt=initial_prompt,
+            # Decode to a 16 kHz mono float32 buffer (audio-helper), then run it
+            # through vocal-helper's WhisperStage as a single whole-file segment.
+            pcm, sample_rate = _pcm_from_wav(wav_path)
+            segments = _run_whisper_stage(
+                pcm,
+                sample_rate,
+                model_arg=model_arg,
+                lang=lang,
+                initial_prompt=initial_prompt,
+            )
+
+            if fmt == "vtt":
+                return segments_to_vtt(segments)
+            if fmt == "srt":
+                return segments_to_srt(segments)
+            return segments_to_text(segments)
+
+        text: str = memoized(
+            "captions",
+            key,
+            run_whisper,
+            cache_dir=CACHE_DIR,
+            enabled=not NO_CACHE,
         )
-
-        if fmt == "vtt":
-            text = segments_to_vtt(segments)
-        elif fmt == "srt":
-            text = segments_to_srt(segments)
-        else:
-            text = segments_to_text(segments)
-
-        _cache_set(key, text, fmt)
         return text
 
 

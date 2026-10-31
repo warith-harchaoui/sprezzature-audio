@@ -102,6 +102,11 @@ MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
     ("video-helper", "1.7.0"): "<3.14,>=3.10",
     ("best-engine-ai-helper", "0.4.0"): ">=3.10",
     ("nemo_toolkit", "1.23.0"): "",
+    # `>=1.3` resolves to 1.3.0, the lowest published; 1.3.0 and 1.3.1 are the
+    # only 1.3.x files on the index and both read the same. It carries the
+    # ceiling directly, so `[captions]` and `[diarize]` keep exactly the
+    # window they already had — nothing about which extras are capped moves.
+    ("wallet-helper", "1.3"): "<3.14,>=3.10",
 }
 
 #: The ceiling one hop further down, for a dependency whose *own* window is

@@ -18,6 +18,10 @@
 #                    keeps its bespoke flow.
 #   - langdetect   : detect language from vocabulary source text so the
 #                    composed initial_prompt opener matches.
+#   - wallet-helper: the result cache (_wallet.py). Not only "don't transcribe
+#                    the same file twice" but "don't transcribe it twice at
+#                    once": three concurrent runs on one file each loaded
+#                    whisper and each transcribed it, 2.6 ms apart.
 #
 # The three ``*-helper`` packages are on PyPI, pinned with a lower bound so
 # their public API (function names, signatures) stays stable while still
@@ -32,3 +36,4 @@ langdetect>=1.0.9
 vocal-helper>=0.6.0
 audio-helper>=1.6.0
 video-helper>=1.7.0
+wallet-helper>=1.3,<2
