@@ -1,5 +1,117 @@
 # Changelog: sprezzature-audio
 
+## v1.9.0 (2026-11-01): one `pip install`, and the extras are gone
+
+### Changed — the whole packaging
+
+**`pip install sprezzature-audio` now installs everything this package does.**
+Captioning, diarization, speaker ID, translation, narration, the HTTP surface
+and the MCP surface. Eleven extras became **two**, and neither is a feature:
+`[dev]` is the test toolchain, and `[narrate]` is a deprecated empty alias.
+
+The state it replaces is worth writing down, because it is why this happened.
+The base install was **two** dependencies — `click` and `langdetect` — so
+`pip install sprezzature-audio` gave four packages and could not narrate,
+transcribe, diarize or translate. Choosing the right extra was a thing a
+reader had to know *before* the package could do its job. And `[all]` did not
+include narration, so "install everything" installed a package that could not
+do the thing it exists to do.
+
+Measured before and after: base 4 packages → **195**, resolving torch 2.15.0,
+numpy 2.5.4, onnxruntime 1.31.1, nemo-toolkit 3.0.0.
+
+### Two consequences, stated rather than discovered
+
+- **`requires-python` is now `>=3.10,<3.14`.** `vocal-helper`,
+  `audio-helper`, `video-helper` and `speaker-helper` all declare `<3.14` at
+  the floors this manifest names — read off the PyPI simple index, not off any
+  installed copy. While they sat behind extras the base resolved on 3.14 and a
+  reader who never asked for a voice was not refused the interpreter. One
+  `pip install` means the ceiling is the package's own, so the package
+  declares it instead of handing out
+  `ERROR: Could not find a version that satisfies the requirement`.
+
+- **torch comes with it**, through `speaker-helper[chatterbox]`. The router
+  answers chatterbox for `offline` and kokoro for `online_realtime`, and it
+  has **no notion of what is installed** — measured: `speaker_helper.router`
+  contains no `check_install`, no `find_spec`, no `importlib`. Shipping only
+  the light engine would have left the default offline path naming an engine
+  that is not there.
+
+  A guard removed in this release claimed the opposite, from a real incident:
+  installing `chatterbox-tts` once downgraded torch 2.8 to 2.6 and broke an
+  unrelated package. That risk was checked rather than assumed, and it does
+  not apply: `speaker-helper[chatterbox]` declares `torch>=2.0.0`, **a
+  floor**, and does not depend on `chatterbox-tts` at all — which declares
+  `torch==2.6.0`, an exact pin. Two packages with similar names and opposite
+  dependency shapes. The guard was replaced by one that asserts the property
+  that keeps the base safe: nothing this manifest names may pin or cap torch.
+
+### Removed
+
+- `[captions]`, `[diarize]`, `[translate]`, `[api]`, `[mcp]`,
+  `[narrate-chatterbox]`, `[narrate-openvoice]`, `[narrate-kokoro]`, `[all]`.
+  `[narrate-kokoro]` was a pure alias of `[narrate]` with no content of its
+  own. `[narrate-openvoice]`'s own comment claimed it *had* to stay an extra
+  because OpenVoice ships from GitHub with no wheel — true of the weights,
+  false of the line, which only ever named `speaker-helper[openvoice]`, an
+  ordinary PyPI extra. The git URL lives in
+  `scripts/requirements-narrate-openvoice.txt`, which
+  `sprezzature-audio-install-voice` reads.
+
+- `[narrate]` survives, **empty and deprecated**. `sprezzature-publish` and
+  `sprezzature-video` both ask for `sprezzature-audio[narrate]`, and the index
+  still serves 1.5.0, where `[narrate]` is the real thing and the base has no
+  voice. Removing the name would make pip print `does not provide the extra`
+  and **exit 0** — measured, not assumed — so those two would quietly install
+  without a voice. Delete it once 1.9.0 is on PyPI and both siblings name
+  `sprezzature-audio>=1.9.0` plain.
+
+### Fixed — six places that encoded the extras and would have lied
+
+Every one of these was found by a guard, which is the point of having them:
+
+- `_speaker.py`'s `INSTALL_HINT` named `[narrate-chatterbox]` and
+  `[narrate-openvoice]`, both now gone.
+  `tests/test_the_kokoro_voice.py` checks every `sprezzature-audio[...]`
+  string in that file against the manifest's real extras.
+- `__init__.py`'s `_LAZY` table carried `(module, extra)` and the extra was
+  used to build the install line. It is `name -> module` now, and the
+  ImportError says "broken install" instead of sending a reader after an extra
+  that does not exist. **The laziness is kept and is now the only thing
+  keeping the promise**: torch and nemo are installed on every machine that
+  has this package, so nothing but a test can notice an eager import creeping
+  into `import sprezzature_audio`.
+- `_tools.py`'s `TOOLS` table named an extra per tool; all eight are `""`,
+  which the message function already handled.
+- `api.py` and `mcp.py` told the reader to install `[api]` / `[api,mcp]`.
+- `install_narrate.py` carried four stale extra names and the sentence "it
+  comes with any of the narration extras".
+- `benchmark_stt.py` named `[captions]`.
+- The `Dockerfile` comment credited `[narrate-kokoro]` for declaring
+  `espeakng-loader`.
+
+### Changed — two guards whose premise dissolved
+
+- **`test_a_capped_extra_says_so.py` reads the base too.** It scanned
+  `EXTRAS` only, so the instant the floors moved, eight parametrised cases
+  went red saying "no extra names this any more" — true, and exactly the wrong
+  conclusion. The base is now read under a `_BASE` sentinel, and the ceiling
+  rule splits in two: an **extra** announces its ceiling in the comment above
+  it (the original rule), and the **base** announces it in `requires-python`,
+  where pip tells the reader before anything downloads. A second test catches
+  the opposite rot — a ceiling declared that the graph no longer needs, which
+  refuses an interpreter that would work and which nothing else would notice
+  because nothing fails. Both sabotage-checked: dropping the ceiling fails
+  with "a ceiling to declare", widening it to `<3.20` fails with "cannot be
+  installed on 3.14, 3.15".
+
+- **`test_the_library_surface.py`** checked that each lazy name pointed at a
+  real *extra*; it now checks it points at a real *module*, which is what can
+  be wrong. Its blocked-distribution list was "top-level distributions that
+  only an extra installs" and is now "the heavy half of this package's own
+  graph" — the same check, load bearing for a new reason.
+
 ## v1.8.0 (2026-11-01): kyutai leaves, and two floors stop describing versions nobody installs
 
 ### Removed

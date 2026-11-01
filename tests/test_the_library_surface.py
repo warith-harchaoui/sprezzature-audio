@@ -48,10 +48,16 @@ ROOT = Path(__file__).resolve().parent.parent
 PYPROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
 EXTRAS = set(PYPROJECT["project"].get("optional-dependencies", {}))
 
-#: Top-level distributions that only an extra installs. Blocked wholesale in
+#: The heavy half of this package's own dependency graph. Blocked wholesale in
 #: the subprocess below, which is the only way to check the promise on a
-#: machine where the extras happen to be installed — and this machine is one.
-OPTIONAL_DISTRIBUTIONS = (
+#: machine where they are all installed — and this machine is one.
+#:
+#: They were optional-extra distributions until 2026-11-01 and are base
+#: dependencies now, which makes this check **more** load bearing rather than
+#: less: the promise is no longer "you did not install this" but "importing
+#: the library does not touch it". `import sprezzature_audio` for a WebVTT
+#: parser must not reach torch, and after the fold nothing but this stops it.
+HEAVY_DISTRIBUTIONS = (
     "torch",
     "torchaudio",
     "numpy",
@@ -104,12 +110,23 @@ def test_an_unknown_name_is_an_attribute_error_not_an_import_error() -> None:
 
 
 @pytest.mark.parametrize(
-    ("name", "extra"),
-    sorted((n, e) for n, (_m, e) in sprezzature_audio._LAZY.items()),
+    ("name", "module"),
+    sorted(sprezzature_audio._LAZY.items()),
 )
-def test_every_lazy_name_names_a_real_extra(name: str, extra: str) -> None:
-    """The install line in the error has to be one pip can actually run."""
-    assert extra in EXTRAS, f"{name} points at `[{extra}]`, which pyproject does not declare"
+def test_every_lazy_name_names_a_real_module(name: str, module: str) -> None:
+    """A lazy name has to point at a file that ships.
+
+    This test used to check the *extra* each name pointed at, because the
+    error message named one. Every extra became part of the base install on
+    2026-11-01, so `_LAZY` holds modules alone and the thing that can now be
+    wrong is a module renamed or dropped while a lazy name still points at
+    it -- which surfaces as an AttributeError on a public name, at the call
+    site of whoever imported it.
+    """
+    assert (ROOT / "scripts" / f"{module}.py").is_file(), (
+        f"{name} is served from `{module}`, and scripts/{module}.py does not "
+        f"exist, so asking for it raises ImportError on a complete install"
+    )
 
 
 def test_an_ambiguous_name_is_not_exported() -> None:
@@ -131,7 +148,7 @@ def _run_with_optional_deps_blocked(body: str) -> subprocess.CompletedProcess[st
     code = textwrap.dedent(
         f"""
         import sys
-        BLOCKED = {OPTIONAL_DISTRIBUTIONS!r}
+        BLOCKED = {HEAVY_DISTRIBUTIONS!r}
         class Blocker:
             def find_spec(self, name, path=None, target=None):
                 if name.split(".")[0] in BLOCKED:
@@ -148,14 +165,20 @@ def _run_with_optional_deps_blocked(body: str) -> subprocess.CompletedProcess[st
     )
 
 
-def test_the_library_imports_with_no_extras_at_all() -> None:
+def test_the_library_imports_without_touching_the_heavy_half() -> None:
     """
-    ``import sprezzature_audio`` must work after a bare ``pip install``.
+    ``import sprezzature_audio`` must not reach torch, nemo or whisper.
 
     Reading a VTT file, auditing it and scoring a transcript are stdlib work
     — that is why they are worth reaching for from a pre-commit hook — and an
     ``__init__`` that imported Whisper eagerly would take that away from
     everyone who only reads captions.
+
+    This was "imports with no extras at all" until 2026-11-01, when the
+    extras became base dependencies. The subprocess still blocks them, and
+    that is now the *only* thing keeping the promise: they are installed on
+    every machine that has this package, so nothing else can notice an eager
+    import creeping in.
     """
     done = _run_with_optional_deps_blocked(
         """
@@ -194,11 +217,18 @@ def test_the_heavy_halves_are_not_pulled_in_by_the_import() -> None:
 # ── The install hints point at something a wheel user has ──────────────────
 
 
-#: A hint that names a requirements file must name an extra in the same
-#: message. The file ships in the repository and not in the wheel, so it is a
-#: fine *second* line and a useless only one.
+#: A hint that names a requirements file must also name the wheel install in
+#: the same message. The file ships in the repository and not in the wheel, so
+#: it is a fine *second* line and a useless only one -- a reader who installed
+#: from PyPI has no such file to point `-r` at.
+#:
+#: The wheel install used to have to be `sprezzature-audio[<extra>]`. Since
+#: the extras were folded into the base on 2026-11-01 a bare
+#: `pip install sprezzature-audio` is the honest line, so both spellings
+#: count: the bracketed form still appears in messages about
+#: `sprezzature-audio[narrate]`, which is kept as a compatibility alias.
 _REQUIREMENTS_HINT = re.compile(r"requirements-[a-z-]+\.txt")
-_EXTRA_HINT = re.compile(r"sprezzature-audio\[[a-z-]+\]")
+_EXTRA_HINT = re.compile(r"sprezzature-audio(\[[a-z-]+\])?")
 
 #: A raised error or a printed message, captured from `raise ...(` or
 #: `print(` up to the closing paren. Deliberately per *message*: a module may
@@ -211,10 +241,10 @@ _MESSAGE = re.compile(r"(?:raise \w+Error\(|print\()(.*?)\)(?:\s*from\s|\s*\n)",
     "script",
     sorted(p.name for p in (Path(__file__).resolve().parent.parent / "scripts").glob("*.py")),
 )
-def test_a_runtime_install_hint_names_an_extra_not_only_a_clone_path(script: str) -> None:
+def test_a_runtime_install_hint_names_the_wheel_not_only_a_clone_path(script: str) -> None:
     """
     Every ``pip install -r requirements-*.txt`` reachable at run time has to
-    sit beside the extra that does the same job from a wheel.
+    sit beside the wheel install that does the same job.
     """
     source = (ROOT / "scripts" / script).read_text(encoding="utf-8")
     offenders = [

@@ -20,7 +20,12 @@ from __future__ import annotations
 #: to reach for it). The table is the dispatcher *and* the help text, so a
 #: tool cannot be listed and unreachable, or reachable and undocumented.
 #:
-#: ``extra`` is the empty string for the tools that need nothing beyond a bare
+#: ``extra`` is now the empty string for **every** tool: the extras were
+#: folded into the base install on 2026-11-01, so a tool whose import fails is
+#: a broken install rather than a choice the reader did not make. The field is
+#: kept rather than removed because the shape is shared with the click twin
+#: and because an extra may legitimately come back -- and because the empty
+#: string already meant exactly this for the tools that need nothing beyond a bare
 #: install. Those are not the small ones by accident: reading a caption track,
 #: auditing it, attributing speakers over an existing transcript and scoring
 #: the result are exactly the jobs that should run in a hook, on any machine,
@@ -40,18 +45,18 @@ TOOLS: dict[str, tuple[str, str, str]] = {
     ),
     "captions": (
         "captions_from_whisper",
-        "captions",
+        "",
         "Recording → a timed transcript. The long job of this package: a "
         "multi-gigabyte model and minutes of work.",
     ),
     "diarize": (
         "diarize_from_nemo",
-        "diarize",
+        "",
         "Mark who spoke when, without yet knowing anyone's name.",
     ),
     "identify": (
         "identify_from_titanet",
-        "diarize",
+        "",
         "Match diarized speakers against labelled reference samples, so the turns get names.",
     ),
     "pipeline": (
@@ -68,29 +73,29 @@ TOOLS: dict[str, tuple[str, str, str]] = {
     ),
     "translate": (
         "translate_captions",
-        "translate",
+        "",
         "Translate a caption track with a local model, keeping its timings "
         "and dropping the <v> tags W3C reserves for one language.",
     ),
     "narrate": (
         "narrate_kokoro",
-        "narrate",
+        "",
         "Document → narration, with the timed track beside it. Kokoro, the "
         "default voice since 1.3.0.",
     ),
     "narrate-openvoice": (
         "narrate_openvoice",
-        "narrate-openvoice",
+        "",
         "The same narration through OpenVoice, when a cloned voice is what is wanted.",
     ),
     "narrate-chatterbox": (
         "narrate_chatterbox",
-        "narrate-chatterbox",
+        "",
         "The same narration through Chatterbox.",
     ),
     "voice": (
         "pick_voice",
-        "narrate",
+        "",
         "Hear the available voices and measure how flat each one is, before "
         "committing a long document to one of them.",
     ),
@@ -128,6 +133,9 @@ def missing_extra_message(tool: str, extra: str, exc: Exception) -> str:
             f"  ({exc})\n"
         )
     return (
-        f"{tool}: needs nothing optional, so this is not a missing extra — "
-        f"something else failed to import.\n  ({exc})\n"
+        f"{tool}: everything it needs is in the base install, so this is not "
+        f"a missing extra — something failed to import on a complete install. "
+        f"Reinstall with:\n"
+        f"    pip install sprezzature-audio\n"
+        f"  ({exc})\n"
     )

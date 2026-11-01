@@ -4,10 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.8.0"
+version = "1.9.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
-requires-python = ">=3.10"
+# `<3.14` since 2026-11-01, and it is the one real cost of putting everything
+# in the base. `vocal-helper`, `audio-helper`, `video-helper` and
+# `speaker-helper` each declare `>=3.10,<3.14` at the floor versions named
+# below -- read off the PyPI simple index, not off any installed copy, because
+# a floor is not a pin. While they sat behind extras the base install was
+# `click` and `langdetect` and resolved on 3.14; a reader who never asked for
+# a voice was not refused the interpreter. One `pip install` means the
+# ceiling is the package's, so the package says so. The alternative was to
+# keep promising 3.14 and hand the reader
+# `ERROR: Could not find a version that satisfies the requirement`.
+requires-python = ">=3.10,<3.14"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{name = "Warith HARCHAOUI", email = "warithmetics@deraison.ai"}]
@@ -29,197 +39,133 @@ classifiers = [
 dependencies = [
     "click>=8.1",
     "langdetect>=1.0.9",
-]
 
-[project.optional-dependencies]
-# **Not installable on Python 3.14.** `vocal-helper`, `audio-helper` and
-# `video-helper` each declare `>=3.10,<3.14`, already at the floor versions
-# named here -- read off the PyPI simple index rather than inferred, because a
-# floor is not a pin and the copy installed on any one machine answers a
-# different question. `requires-python` above stays `>=3.10` with no ceiling
-# on purpose: the base install is `click` and `langdetect`, it resolves on
-# 3.14, and capping the whole package would refuse that interpreter to people
-# who never asked for a helper. The arrangement is fine; it being undeclared
-# was not. tests/test_a_capped_extra_says_so.py keeps this sentence honest.
-captions = [
+    # ---------------------------------------------------------------- la voix
+    # Narration is what this package is *for*, so it installs with the
+    # package. It sat behind `[narrate]` until 2026-11-01, which meant
+    # `pip install sprezzature-audio` gave four packages and no voice -- and
+    # `[all]` did not even include it, so "install everything" installed a
+    # package that could not do the thing it exists to do.
+    #
+    # **Both engines the router can answer, not just the light one.** The
+    # router has no notion of what is installed -- measured:
+    # `speaker_helper.router` contains no `check_install`, no `find_spec` and
+    # no `importlib` -- it ranks on quality and RTF alone. It answers
+    # **chatterbox** for `offline` and **kokoro** for `online_realtime`, in
+    # both languages. Shipping kokoro alone would have left the default
+    # offline path naming an engine that is not there.
+    #
+    # The cost is stated rather than hidden: `chatterbox` pulls torch and
+    # torchaudio, so every install of this package is a torch install. That is
+    # the owner's call, made on 2026-11-01 against the alternative of a voice
+    # that is absent when asked for.
+    #
+    # `detect` is the language detector the router uses to pick a voice per
+    # page. Without it a French page is read by an English phonemiser, which
+    # is not an accent but an American spelling the words out.
+    #
+    # The floor is 0.14.1 and the reason is the router's *answer*, not its
+    # API. `route()` and `RouteRequest` have existed since 0.8.0, so every
+    # earlier floor imported and resolved fine -- and routed differently.
+    # `OFFLINE_RATIFIED_ENGINE` arrives in 0.12.0; below it the owner's
+    # ratified choice of chatterbox for offline French is not pinned at all,
+    # so an install satisfying the old `>=0.11.0` could narrate French in
+    # another voice while every import and every test passed. 0.14.1 rather
+    # than 0.12.0 because 0.14.1 is the version actually measured: asked for
+    # both languages offline it answers chatterbox. Capped `<1` and not
+    # `<0.15` because a 0.x minor breaks as freely as a major.
+    # `openvoice` joins them, folded in from `[narrate-openvoice]` on
+    # 2026-11-01. The extra's own comment used to claim it *had* to stay an
+    # extra because OpenVoice ships from GitHub with no wheel of its own --
+    # which is true of the *weights* and false of this line: the extra only
+    # ever named `speaker-helper[openvoice]`, a perfectly ordinary PyPI extra.
+    # The git URL lives in `scripts/requirements-narrate-openvoice.txt`, which
+    # `sprezzature-audio-install-voice` reads, and a direct URL is still not
+    # allowed in a published wheel's dependencies.
+    #
+    # Worth recording while folding it, because it is the same shape as the
+    # kyutai case closed this morning: `openvoice` is **not in
+    # `speaker-helper`'s catalogue at all** -- `default_operating_points()`
+    # returns chatterbox, kokoro and kyutai -- so the router can never answer
+    # it. It is reachable only by `--engine openvoice`, by hand.
+    "speaker-helper[kokoro,detect,chatterbox,openvoice]>=0.14.1,<1",
+    # Declared even though `speaker-helper` already pulls it, because
+    # `scripts/install_narrate.py` imports `download_file` from it by name:
+    # the 325 MB Kokoro graph is fetched through the suite's resumable
+    # primitive, so a dropped connection continues instead of starting over.
+    # Same reason `sprezzature-video` names it alongside `audio-helper`.
+    "os-helper>=4.0.0,<5",
+
+    # ------------------------------------------- l'autre sens : lire la parole
+    # Captions and diarisation, folded in from `[captions]` and `[diarize]` on
+    # 2026-11-01. `wallet-helper` is the result cache (`scripts/_wallet.py`),
+    # and it is here for the one property a hand-rolled read/write pair cannot
+    # have: three processes asking to transcribe one file on a cold cache made
+    # three whisper loads and three runs of minutes, 2.6 ms apart, and threw
+    # two results away. A Sortformer load is a gigabyte of weights and two
+    # runs on one recording used to each pay for it.
     "vocal-helper>=0.6.0",
     "audio-helper>=2.6.1,<3",
     "video-helper>=1.7.0",
-    # The result cache (scripts/_wallet.py). Here for the one property the
-    # hand-rolled read/write pair could not have: three processes asking to
-    # transcribe one file on a cold cache made three whisper loads and three
-    # runs of minutes, 2.6 ms apart, and threw two results away. On top of
-    # this list it is ~272 kB and no new transitive package -- `os-helper`,
-    # `click`, `requests`, `PyYAML` and `tqdm` all arrive through
-    # `vocal-helper` / `audio-helper` already. The major is capped because an
-    # unbounded ceiling on a tool is a red suite waiting for somebody else's
-    # release day, the same reason `mypy>=1.11,<3` is bounded in
-    # requirements-dev.txt. Its window at this floor is `<3.14,>=3.10`, which
-    # is the ceiling this extra already had and so changes nothing above.
     "wallet-helper>=1.3,<2",
-]
-# **Not installable on Python 3.14**, same cause as `captions`:
-# `audio-helper>=2.6.1` and `video-helper>=1.7.0` are `>=3.10,<3.14` at those
-# very versions, and `wallet-helper 1.3.0` is too. `nemo_toolkit 1.23.0`
-# declares no window at all and is not the reason.
-diarize = [
     "nemo_toolkit[asr]>=1.23.0",
     "numpy>=1.24",
-    "audio-helper>=2.6.1,<3",
-    "video-helper>=1.7.0",
-    # Same cache, same reason, and the stake is larger here: a Sortformer load
-    # is a gigabyte of weights, and two runs on one recording used to each pay
-    # for it.
-    "wallet-helper>=1.3,<2",
-]
-# **Not installable on Python 3.14**, and this one took two readings to state
-# correctly. `best-engine-ai-helper 0.4.0` -- the floor this line names --
-# declares plain `>=3.10` on the index, so by the test next door it looks
-# clean. Its own base dependency is `os-helper>=1.5.0`, and **no os-helper
-# release on PyPI has ever shipped without `<3.14`** (checked across the whole
-# simple index, not sampled). So the ceiling arrives one hop down and arrives
-# unavoidably. Worth writing out because the first draft of this comment said
-# the opposite.
-translate = [
+
+    # ----------------------------------------------------------- la traduction
+    # From `[translate]`. Worth one note that took two readings to get right:
+    # `best-engine-ai-helper 0.4.0` declares plain `>=3.10` on the index, so
+    # it looks clean -- but its own base names `os-helper>=1.5.0`, and **no
+    # os-helper release on PyPI has ever shipped without `<3.14`** (checked
+    # across the whole simple index, not sampled). The ceiling arrives one hop
+    # down and arrives unavoidably.
     "best-engine-ai-helper>=0.4.0",
+
+    # ------------------------------------------------- les surfaces HTTP et MCP
+    # From `[api]` and `[mcp]`. `pydantic` is named because
+    # `sprezzature_audio/api.py` does an unguarded
+    # `from pydantic import BaseModel, Field`: it resolves today only because
+    # fastapi pulls it, and fastapi 0.115.0's own window is `>=1.7.4,<3.0.0`,
+    # so a resolver is free to hand this package pydantic 1.x -- a major
+    # nothing in this suite has ever run.
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.0",
+    "fastapi-mcp>=0.3",
+    # fastapi-mcp 0.4.0 declares `mcp>=1.12.0` with no upper bound but calls
+    # `Server(name, description)` positionally; mcp 2.0.0 made `description`
+    # keyword-only, so an unconstrained resolve breaks `FastApiMCP(...)` at
+    # construction. Verified: pip installs mcp 2.2.0 alongside fastapi-mcp
+    # 0.4.0 and `sprezzature_audio.mcp` then raises TypeError on import.
+    "mcp<2.0",
 ]
+
+[project.optional-dependencies]
+# Two, and neither is a feature.
+#
+# Everything else was folded into the base install on 2026-11-01. The suite
+# had 59 extras across eleven repositories and six bricks whose base was a
+# single dependency, so `pip install <brick>` installed almost nothing and did
+# almost nothing. Choosing the right extra was a thing a reader had to know
+# before the package could do its job. One `pip install` now does it.
+
+# The test toolchain. Not part of the product, and putting pytest in the base
+# would ship a test runner to every user.
 dev = [
     "pytest>=8.0",
     "ruff",
 ]
-# **Not installable on Python 3.14**, because it contains `captions` and
-# `diarize`, which are not.
-all = [
-    "sprezzature-audio[captions,diarize,translate]",
-]
 
-# HTTP surface (sprezzature_audio/api.py): caption conversion, speaker
-# attribution and the WER/DER metrics. Transcription is NOT exposed — it
-# loads gigabytes and runs for minutes, which belongs behind a job queue.
-api = [
-    "fastapi>=0.115",
-    "uvicorn[standard]>=0.30",
-    # Found by sweeping every import in this repository against this list, and
-    # it is the only one that came back real: `sprezzature_audio/api.py` does
-    # an unguarded `from pydantic import BaseModel, Field` and this extra did
-    # not name it. It resolves today because `fastapi` pulls it -- but
-    # fastapi 0.115.0's own window is `>=1.7.4,<3.0.0`, so a resolver is free
-    # to hand this package pydantic 1.x, a major nothing in this suite has
-    # ever run. The floor matches the sibling, `sprezzature-publish[api]`,
-    # which has always declared it. No breakage was measured on v1; what is
-    # fixed is the manifest not saying what the code imports, which is the
-    # defect a clean venv turns into somebody else's ImportError.
-    "pydantic>=2.0",
-]
-# MCP surface: the same routes republished as agent tools, via fastapi-mcp.
-mcp = [
-    "sprezzature-audio[api]",
-    "fastapi-mcp>=0.3",
-    # fastapi-mcp 0.4.0 (the latest as of 2026-08) declares mcp>=1.12.0 with
-    # no upper bound, but calls mcp's Server(name, description) positionally
-    # -- mcp 2.0.0 made `description` keyword-only, so an unconstrained
-    # resolve breaks FastApiMCP(...) at construction time (verified: pip
-    # happily installs mcp 2.2.0 alongside fastapi-mcp 0.4.0, and
-    # `sprezzature_audio.mcp` then raises TypeError on import). Pin below
-    # 2.0 until fastapi-mcp ships a fix.
-    "mcp<2.0",
-]
-# Text into speech — the other direction of this package's modality.
+# Deprecated and deliberately empty. Narration moved into the base above, so
+# there is nothing left for this to add -- but the name has to keep resolving.
+# `sprezzature-publish` and `sprezzature-video` both ask for
+# `sprezzature-audio[narrate]`, and the index still serves 1.5.0, where
+# `[narrate]` is the real thing and the base has no voice. Removing the name
+# would make pip print `does not provide the extra` and **exit 0** -- measured,
+# not assumed -- so those two would quietly install without a voice.
 #
-# Three engines, and they split along a line worth naming: Kokoro *reads*,
-# the other two *impersonate*. Reading a page aloud and sounding like a
-# particular person are different jobs with different costs, and for years
-# the second one's price was charged for both.
-#
-# `narrate` is Kokoro, and that is the whole extra: 82 M parameters through
-# ONNX Runtime, no torch, about 340 MB of weights fetched by
-# `sprezzature-audio-install-voice`. Apache-2.0 in code *and* weights, which
-# is the bar that ruled out F5-TTS and XTTS-v2.
-# The voice lives in `speaker-helper` now: the engines, the espeak-ng
-# resolution, the timeline, the cues and the refusals are all there, and this
-# package drives them through `scripts/_speaker.py`. Three wrappers of some
-# 350 lines each became three of thirty, and the hard-won behaviour is tested
-# over there against a backend that needs no model — more coverage than it
-# had here.
-#
-# The floors name 0.14.1, and the reason is the router's *answer* rather than
-# its API. `route()` and `RouteRequest` have existed since 0.8.0, so every
-# earlier floor imported fine and resolved fine -- and routed differently.
-# `OFFLINE_RATIFIED_ENGINE` arrives in 0.12.0; below it the owner's ratified
-# choice of chatterbox for offline French is not pinned at all, so an install
-# satisfying the old `>=0.11.0` floor could narrate French in another voice
-# while every import and every test passed. Read off the published wheels on
-# 2026-11-01, version by version, not off the editable installed here.
-#
-# 0.14.1 rather than 0.12.0 because 0.14.1 is the version actually measured:
-# asked for both languages offline it answers chatterbox, which is the matrix
-# this suite narrates with. 0.12 and 0.13 carry the table and were not run.
-#
-# Capped at the next major for the reason `mypy>=1.11,<3` is: a floor with no
-# ceiling gives somebody else's release day a vote on whether this installs.
-# A 0.x minor can break as freely as a major, hence `<1` and not `<0.15` --
-# the suite's convention is the next major, and 0.14 resolves inside it.
-#
-# The floors stay at 0.11.0 even though `--audio-format mp3` needs
-# `write_audio`, which arrived in 0.14.0. A floor is a promise about what
-# installs, and raising it would refuse the install to everybody who only ever
-# asks for a WAV -- which is the default and most of the traffic. The lossy
-# path checks for the method at call time instead and names the version it
-# wants; `scripts/_speaker.py` holds that check. Raise the floors here the day
-# a lossy container becomes the default.
-#
-# **Not installable on Python 3.14**, and the same goes for the three sibling
-# extras below: `speaker-helper 0.11.0` -- the floor, as named -- declares
-# `>=3.10,<3.14` on the PyPI simple index. Measured there rather than off the
-# installed copy, because a floor is not a pin. `requires-python` keeps no
-# ceiling: the base install resolves on 3.14 and should not be refused to
-# somebody who never asked for a voice.
-#
-# `os-helper` is declared even though `speaker-helper` already pulls it,
-# because `scripts/install_narrate.py` imports `download_file` from it by
-# name: the 325 MB Kokoro graph is fetched through the suite's resumable
-# primitive, so a dropped connection continues instead of starting over.
-# Same reason `sprezzature-video` names it alongside `audio-helper`. The floor
-# is the version that behaviour was measured against; `<3.14` on the index at
-# that very version, which is the other half of the sentence above.
-narrate = [
-    "speaker-helper[kokoro,detect]>=0.14.1,<1",
-    # Plancher à 4.0.0 le 2026-11-01, et c'est une décision à deux moitiés.
-    #
-    # La 4.0.0 d'os-helper est une release majeure parce qu'elle a cessé de mentir :
-    # `hashfile` ne rend plus de digest pour un fichier qu'il n'a pas lu (il
-    # hachait le chemin en silence), un répertoire est refusé, `hashfolder` ne rend
-    # plus le digest de la chaîne vide, et `date=True` prend la mtime de la cible
-    # au lieu de l'heure courante. C'est exactement l'empreinte dont ce dépôt a
-    # besoin : une empreinte de contenu qui échoue au lieu d'inventer.
-    #
-    # Et c'est devenu possible seulement maintenant : les seize paquets ai-helpers
-    # plafonnaient `os-helper<4`, donc demander la 4 rendait l'installation
-    # insoluble. Les seize sont republiés en `<5`, vérifié sur les métadonnées
-    # PUBLIÉES (pas sur le dépôt local ni sur l'éditable installé, qui m'ont
-    # trompé deux fois).
-    #
-    # Vérifié avant de l'écrire : cette machine exécute déjà le contrat 4.0.0 par
-    # un éditable, et les onze suites de la suite y sont vertes ; et un venv vierge
-    # résout `os-helper==4.0.0` avec audio 2.6.1, speaker 0.14.1, video 2.9.0,
-    # standpoint 0.13.1, best-engine 1.11.1, wallet 1.3.1 et elbow 0.4.1.
-    "os-helper>=4.0.0,<5",
-]
-# Kept as a name, because EXAMPLES.md and the installer both say it. Inherits
-# `narrate`, so: not installable on Python 3.14.
-narrate-kokoro = ["sprezzature-audio[narrate]"]
-# Not installable on Python 3.14 — `speaker-helper 0.11.0` is `>=3.10,<3.14`.
-# `os-helper` for the same reason as above: this is the extra whose checkpoint
-# archive `install_narrate` downloads.
-narrate-openvoice = [
-    "speaker-helper[openvoice]>=0.14.1,<1",
-    "os-helper>=4.0.0,<5",
-]
-# Not installable on Python 3.14 — same floor, same window.
-narrate-chatterbox = ["speaker-helper[chatterbox]>=0.14.1,<1"]
-# OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
-# extras above and is installed by `sprezzature-audio-install-voice`, which is
-# what that command is for.
+# Delete this line once 1.9.0 is on PyPI and both siblings name
+# `sprezzature-audio>=1.9.0` plain.
+narrate = []
 
 [project.urls]
 Homepage = "https://sprezzature.ai/"

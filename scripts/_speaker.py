@@ -49,13 +49,22 @@ BACKEND_FOR: dict[str, str] = {
     "chatterbox": "chatterbox",
 }
 
-#: The install line to print when ``speaker-helper`` is not there. Named per
-#: engine, because they do not cost the same: Kokoro is an ONNX runtime, the
-#: other two pull torch.
+#: The install line to print when ``speaker-helper`` is not there. One line
+#: for all three since 2026-11-01: the engines moved into the base install, so
+#: there is no extra left to name and no choice left for the reader to get
+#: wrong. The mapping is kept rather than collapsed to a constant because
+#: ``openvoice`` needs a second step nothing else does -- its weights come
+#: from GitHub, fetched by ``sprezzature-audio-install-voice``.
+#:
+#: ``tests/test_the_kokoro_voice.py`` checks every ``sprezzature-audio[...]``
+#: string in this file against the manifest's real extras, which is what
+#: caught the three stale hints the day the extras were folded in.
 INSTALL_HINT: dict[str, str] = {
-    "kokoro": "pip install 'sprezzature-audio[narrate]'",
-    "openvoice": "pip install 'sprezzature-audio[narrate-openvoice]'",
-    "chatterbox": "pip install 'sprezzature-audio[narrate-chatterbox]'",
+    "kokoro": "pip install sprezzature-audio",
+    "chatterbox": "pip install sprezzature-audio",
+    "openvoice": (
+        "pip install sprezzature-audio && sprezzature-audio-install-voice --engine openvoice"
+    ),
 }
 
 

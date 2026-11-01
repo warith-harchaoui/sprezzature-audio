@@ -10,7 +10,7 @@ WORKDIR /app
 # ffmpeg: every path that starts from a media file goes through it, directly
 # or through audio-helper / video-helper, which fall back to it.
 #
-# espeak-ng: Kokoro phonemises through it. The `narrate-kokoro` extra declares
+# espeak-ng: Kokoro phonemises through it. The base install declares
 # `espeakng-loader`, a wheel carrying a built copy, and that copy is the
 # fallback, not the plan — the system package is what the code looks for
 # first. It is GPL, and it is reached as a separate binary through ctypes, the

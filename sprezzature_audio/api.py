@@ -33,9 +33,10 @@ like one that did not, only slower. Every speed number this project reports
 carries the device that produced it, and this route is how a remote caller
 gets that same answer before trusting a benchmark.
 
-Install the extra to get the runtime dependencies::
+FastAPI, uvicorn and pydantic are base dependencies since 2026-11-01, so
+there is no extra to ask for::
 
-    pip install 'sprezzature-audio[api]'
+    pip install sprezzature-audio
 
 Then run the app with any ASGI server::
 
@@ -57,8 +58,10 @@ try:
     from fastapi.responses import PlainTextResponse, RedirectResponse
 except ImportError as exc:  # pragma: no cover - dependency guard
     raise ImportError(
-        "The FastAPI HTTP surface requires the [api] extra. "
-        "Install with: pip install 'sprezzature-audio[api]'"
+        "The FastAPI HTTP surface could not import fastapi, which is a "
+        "base dependency of this package since 2026-11-01 -- so this is a "
+        "broken install rather than a missing extra. Reinstall with: "
+        "pip install sprezzature-audio"
     ) from exc
 
 from pydantic import BaseModel, Field

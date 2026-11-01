@@ -54,7 +54,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
-__version__ = "1.8.0"
+__version__ = "1.9.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"
 __license__ = "BSD-3-Clause"
@@ -112,37 +112,42 @@ from sprezzature_audio_scripts.caption_diarize import (  # noqa: E402
 # either one bare would make the other invisible, so only the one the API
 # already serves comes through here.
 
-#: Names served lazily, each with the extra that installs it. The value is
-#: ``(module, extra)``: the module to import on first use, and the extra to
-#: name in the error when that import fails.
+#: Names served lazily: ``name -> module to import on first use``.
 #:
-#: The import-time cost of these six modules is small today — they defer
-#: their own model imports — so the extra named here is mostly for the day
-#: one of them does not. What the extra *is* good for right now is the
-#: message: a caller who asks for ``synthesise`` is told about ``[narrate]``
-#: and not about whichever extra the package happened to mention first.
-_LAZY: dict[str, tuple[str, str]] = {
-    # transcription — [captions]
-    "transcribe": ("captions_from_whisper", "captions"),
-    "compose_prompt": ("captions_from_whisper", "captions"),
-    "resolve_vocab": ("captions_from_whisper", "captions"),
-    "segments_to_srt": ("captions_from_whisper", "captions"),
-    "segments_to_text": ("captions_from_whisper", "captions"),
-    "segments_to_vtt": ("captions_from_whisper", "captions"),
-    # diarization and identification — [diarize]
-    "diarize": ("diarize_from_nemo", "diarize"),
-    "turns_to_json": ("diarize_from_nemo", "diarize"),
-    "turns_to_rttm": ("diarize_from_nemo", "diarize"),
-    "build_reference_centroids": ("identify_from_titanet", "diarize"),
-    "build_speaker_centroids": ("identify_from_titanet", "diarize"),
-    "embed_clip": ("identify_from_titanet", "diarize"),
-    "match_speakers": ("identify_from_titanet", "diarize"),
-    # translation — [translate]
-    "detect_source_language": ("translate_captions", "translate"),
-    "make_ollama_translator": ("translate_captions", "translate"),
-    "resolve_target_language": ("translate_captions", "translate"),
-    "translate_cues": ("translate_captions", "translate"),
-    # narration — [narrate]
+#: The value was ``(module, extra)`` until 2026-11-01, so that a caller asking
+#: for ``synthesise`` without ``[narrate]`` was told about *that* extra rather
+#: than whichever one the package mentioned first. Every one of those extras
+#: is now part of the base install, so there is no extra left to name and the
+#: second half of the tuple said something that was no longer true.
+#:
+#: **The laziness itself is kept, and it is the half that was always load
+#: bearing.** These modules reach nemo, whisper and torch; importing
+#: ``sprezzature_audio`` for a WebVTT parser must not pay for a gigabyte of
+#: weights. What changed is only the failure story: an ImportError here used
+#: to mean "you did not ask for this part" and now means "this install is
+#: broken", and the message says so.
+_LAZY: dict[str, str] = {
+    # transcription
+    "transcribe": "captions_from_whisper",
+    "compose_prompt": "captions_from_whisper",
+    "resolve_vocab": "captions_from_whisper",
+    "segments_to_srt": "captions_from_whisper",
+    "segments_to_text": "captions_from_whisper",
+    "segments_to_vtt": "captions_from_whisper",
+    # diarization and identification
+    "diarize": "diarize_from_nemo",
+    "turns_to_json": "diarize_from_nemo",
+    "turns_to_rttm": "diarize_from_nemo",
+    "build_reference_centroids": "identify_from_titanet",
+    "build_speaker_centroids": "identify_from_titanet",
+    "embed_clip": "identify_from_titanet",
+    "match_speakers": "identify_from_titanet",
+    # translation
+    "detect_source_language": "translate_captions",
+    "make_ollama_translator": "translate_captions",
+    "resolve_target_language": "translate_captions",
+    "translate_cues": "translate_captions",
+    # narration
     #
     # The voice itself is not re-exported here, and that is deliberate. It
     # lives in `speaker-helper` now; forwarding its names through this package
@@ -151,11 +156,11 @@ _LAZY: dict[str, tuple[str, str]] = {
     # turns a document's segments into the files a page needs, and the
     # measurement that says how flat a voice is before a long text is
     # committed to it. For the engine, `import speaker_helper`.
-    "narrate": ("_speaker", "narrate"),
-    "check_narration_install": ("_speaker", "narrate"),
-    "engine_is_available": ("pick_voice", "narrate"),
-    "pitch_span_semitones": ("pick_voice", "narrate"),
-    "sample_one_voice": ("pick_voice", "narrate"),
+    "narrate": "_speaker",
+    "check_narration_install": "_speaker",
+    "engine_is_available": "pick_voice",
+    "pitch_span_semitones": "pick_voice",
+    "sample_one_voice": "pick_voice",
 }
 
 # `extract_audio` is in neither list, and that is the point. Two modules
@@ -167,13 +172,17 @@ _LAZY: dict[str, tuple[str, str]] = {
 def __getattr__(name: str) -> Any:
     """Resolve one of the model-backed names on first use, per :pep:`562`.
 
-    A caller who stays inside the no-extra set never reaches this. A caller
-    who asks for ``synthesise`` without ``[narrate]`` installed gets the
-    install line for *that* extra — not for whichever one the package
-    happened to mention first.
+    A caller who stays inside the eagerly-exported set never reaches this.
+    The names here reach nemo, whisper and torch, so they load on first use
+    and not on ``import sprezzature_audio``.
+
+    Until 2026-11-01 a failure here meant a missing extra and the message
+    named it. Everything is in the base install now, so a failure means a
+    broken install instead, and the message has to say that rather than send
+    the reader after an extra that does not exist.
     """
     try:
-        module, extra = _LAZY[name]
+        module = _LAZY[name]
     except KeyError:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}") from None
     try:
@@ -182,9 +191,12 @@ def __getattr__(name: str) -> Any:
         )
     except ImportError as exc:
         raise ImportError(
-            f"`{name}` comes from the {extra} half of this package, which is "
-            f"an optional extra so that importing the library stays free. "
-            f"Install it with: pip install 'sprezzature-audio[{extra}]'"
+            f"`{name}` loads `{module}` on first use, so that importing this "
+            f"library does not pay for a gigabyte of weights. That import "
+            f"failed, which on a complete install should not happen: "
+            f"everything it needs is in the base. Reinstall with "
+            f"`pip install sprezzature-audio`, and if it still fails the "
+            f"chained error below names what is actually missing."
         ) from exc
     return getattr(engine, name)
 
@@ -223,7 +235,7 @@ __all__ = [
     "detect_text_language",
     "extract_body_text",
     "language_name",
-    # served lazily, behind their extras
+    # served lazily, to keep `import sprezzature_audio` cheap
     *sorted(_LAZY),
     "__version__",
 ]

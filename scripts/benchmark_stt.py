@@ -420,7 +420,7 @@ def measure_audio_seconds(path: Path) -> float:
     except ImportError:
         sys.exit(
             "Measuring a duration needs audio-helper:\n"
-            "    pip install 'sprezzature-audio[captions]'\n"
+            "    pip install sprezzature-audio\n"
             "Or state it yourself with --audio-seconds."
         )
     return float(get_audio_duration(str(path)))

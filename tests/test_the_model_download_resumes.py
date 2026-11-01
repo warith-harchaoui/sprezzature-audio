@@ -84,7 +84,7 @@ def test_the_download_resumes_rather_than_restarting(monkeypatch, tmp_path) -> N
     assert seen["overwrite"] is True
 
 
-def test_the_download_names_the_extra_when_the_helper_is_missing(monkeypatch, tmp_path) -> None:
+def test_the_download_names_the_install_when_the_helper_is_missing(monkeypatch, tmp_path) -> None:
     """A missing os-helper has to read as an install line, not an ImportError."""
     import install_narrate
 
@@ -99,4 +99,14 @@ def test_the_download_names_the_extra_when_the_helper_is_missing(monkeypatch, tm
 
     with pytest.raises(RuntimeError) as caught:
         install_narrate._download("https://example.invalid/x.bin", tmp_path / "x.bin")
-    assert "sprezzature-audio[narrate]" in str(caught.value)
+    # The install line, not the extra. `[narrate]` survives as a deprecated
+    # empty alias so that siblings naming it keep resolving, but pointing a
+    # reader at it would be telling them to install nothing.
+    message = str(caught.value)
+    assert "pip install sprezzature-audio" in message, (
+        f"the refusal does not carry a line pip can run: {message!r}"
+    )
+    assert "extras" not in message, (
+        f"the refusal still talks about extras, which this package has none "
+        f"of in the feature sense: {message!r}"
+    )

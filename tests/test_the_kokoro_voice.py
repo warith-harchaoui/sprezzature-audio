@@ -61,6 +61,28 @@ def _extras() -> dict[str, list[str]]:
     return out
 
 
+def _base() -> list[str]:
+    """The base install, from ``dependencies = [...]`` in ``[project]``.
+
+    Comments are stripped **before** the brackets are counted. The base block
+    carries prose that names extras and requirement-extras -- ``[narrate]``,
+    ``speaker-helper[kokoro,detect]`` -- and a counter that reads those would
+    close the array in the middle of a sentence and return a fragment. That is
+    the same mistake :func:`_extras` documents having made with a lazy regex,
+    arriving from the other direction.
+    """
+    text = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    stripped = "\n".join(line.split("#", 1)[0] for line in text.splitlines())
+    start = re.search(r"^dependencies\s*=\s*\[", stripped, re.M)
+    if not start:
+        return []
+    depth, index = 1, start.end()
+    while index < len(stripped) and depth:
+        depth += {"[": 1, "]": -1}.get(stripped[index], 0)
+        index += 1
+    return re.findall(r'"([^"]+)"', stripped[start.end() : index - 1])
+
+
 def _scripts() -> dict[str, str]:
     """``command -> target``, from ``[project.scripts]``."""
     return dict(re.findall(r'^([A-Za-z0-9._-]+)\s*=\s*"([^"]+)"', _section("scripts"), re.M))
@@ -71,25 +93,38 @@ def _scripts() -> dict[str, str]:
 #: failed collection of this whole file, and CI said so on three runs in a row
 #: before anybody looked. Two sibling packages already read pyproject this way
 #: and say why in their own comments; this file had not followed.
-PYPROJECT = {"project": {"optional-dependencies": _extras(), "scripts": _scripts()}}
+PYPROJECT = {
+    "project": {
+        "dependencies": _base(),
+        "optional-dependencies": _extras(),
+        "scripts": _scripts(),
+    }
+}
 
 
 # ── The packaging says what the code needs ─────────────────────────────────
 
 
-def test_the_engine_has_its_own_extra_and_its_own_command() -> None:
+def test_the_engine_ships_with_the_package_and_has_its_own_command() -> None:
     """
     An engine reachable only from a clone is not shipped. Both halves are
-    checked because they fail apart: a missing extra installs nothing, a
-    missing console script installs it and leaves no way to run it.
+    checked because they fail apart: a dependency nobody declares installs
+    nothing, and a declared dependency with no console script installs a voice
+    with no way to run it.
+
+    Until 2026-11-01 the first half was "the engine has its own extra". The
+    engines moved into the base install that day -- narration is what this
+    package is *for*, and `pip install sprezzature-audio` used to give four
+    packages and no voice -- so the half that still means something is that
+    the **base** names the release carrying the API this adapter calls. An
+    older one installs a package that does not have it.
     """
-    extras = PYPROJECT["project"]["optional-dependencies"]
-    assert "narrate-kokoro" in extras
-    packages = " ".join(extras["narrate"])
-    # The engine arrives through speaker-helper now, and the extra has to name
-    # a release carrying the API this adapter calls — an older one installs a
-    # package that does not have it.
-    #
+    base = " ".join(PYPROJECT["project"]["dependencies"])
+    assert "speaker-helper" in base, (
+        "the base install names no speaker-helper, so `pip install "
+        "sprezzature-audio` ships a package with no voice -- which is the "
+        "state this was folded in to end"
+    )
     # A floor, compared as a version, not the literal string it was. The
     # literal turned this test red on the 0.8.0 -> 0.11.0 bump, which is the
     # wrong failure: the question is "is the floor high enough", and a test
@@ -97,42 +132,78 @@ def test_the_engine_has_its_own_extra_and_its_own_command() -> None:
     # cannot tell a correct bump from a regression.
     #
     # 0.11.0 is the release that brought the pronunciation lexicon, which
-    # `scripts/_speaker.py` now passes through as `settings.lexicon`. Against
-    # 0.10 that key is accepted and ignored, so the failure would be a
-    # narration that quietly mispronounces every acronym — no traceback.
-    assert "speaker-helper" in packages
-    floor = re.search(r"speaker-helper\[[^\]]*\]>=([0-9][0-9.]*)", packages)
-    assert floor, f"the narrate extra names no speaker-helper floor: {packages}"
+    # `scripts/_speaker.py` passes through as `settings.lexicon`. Against 0.10
+    # that key is accepted and ignored, so the failure would be a narration
+    # that quietly mispronounces every acronym -- no traceback.
+    floor = re.search(r"speaker-helper\[[^\]]*\]>=([0-9][0-9.]*)", base)
+    assert floor, f"the base names no speaker-helper floor: {base}"
     need = (0, 11, 0)
     got = tuple(int(n) for n in floor.group(1).split("."))
     assert got >= need, (
-        f"narrate pins speaker-helper>={floor.group(1)}, but this package "
+        f"the base pins speaker-helper>={floor.group(1)}, but this package "
         f"passes settings.lexicon, which landed in "
         f"{'.'.join(str(n) for n in need)}. Older releases accept the key "
         f"and ignore it, so the symptom is a mispronunciation, not an error."
     )
-    # No torch. That is the whole reason this engine exists alongside the
-    # other two, and an innocent-looking edit to the extra would undo it.
-    assert "torch" not in packages
+    # Every engine the router can answer, or the default path names one that
+    # is not installed. Measured: `speaker_helper.router` holds no
+    # `check_install`, no `find_spec` and no `importlib`, so it ranks on
+    # quality and RTF alone and cannot route around an absence.
+    for engine in ("kokoro", "chatterbox"):
+        assert engine in base, (
+            f"the router answers {engine} -- offline for chatterbox, "
+            f"online_realtime for kokoro, in both languages -- and the base "
+            f"does not name it, so the default path asks for a voice that is "
+            f"not there"
+        )
 
     scripts = PYPROJECT["project"]["scripts"]
     assert scripts["sprezzature-audio-narrate-kokoro"].endswith("narrate_kokoro:main")
 
 
-def test_the_default_narration_extra_is_the_light_one() -> None:
+def test_torch_in_the_base_is_a_floor_and_not_a_pin() -> None:
     """
-    ``[narrate]`` is what a site generator asks for when it wants a page read
-    aloud. It used to mean torch, and installing chatterbox-tts into a
-    working environment once downgraded torch 2.8 to 2.6 and broke an
-    unrelated package that depended on it. Reading an article aloud must not
-    be able to do that.
+    The one thing that made the old light/heavy split worth having.
+
+    This test used to assert ``"torch" not in extras["narrate"]``, and the
+    reason was an incident: installing ``chatterbox-tts`` into a working
+    environment downgraded torch 2.8 to 2.6 and broke an unrelated package
+    that depended on it. Reading an article aloud must not be able to do that.
+
+    Putting chatterbox in the base on 2026-11-01 looks like it reopens exactly
+    that. Measured, it does not, and the measurement is the test: the base
+    reaches torch through ``speaker-helper[chatterbox]``, which declares
+    ``torch>=2.0.0`` -- **a floor** -- and does not depend on
+    ``chatterbox-tts`` at all. ``chatterbox-tts 0.1.7``, the package from the
+    incident, declares ``torch==2.6.0``: an exact pin, which is what made a
+    downgrade certain rather than possible. Two different packages with
+    similar names and opposite dependency shapes.
+
+    So what is asserted is the property that keeps the base safe rather than
+    the old prohibition that no longer applies: nothing this manifest names
+    may pin or cap torch. A resolved base gives torch 2.15.0 and numpy 2.5.4
+    across 195 packages.
     """
-    extras = PYPROJECT["project"]["optional-dependencies"]
-    light = " ".join(extras["narrate"])
-    assert "torch" not in light
-    # And the cloning extras are the ones that do pull it, so the split is
-    # real rather than a name.
-    assert "speaker-helper[openvoice]" in " ".join(extras["narrate-openvoice"])
+    base = PYPROJECT["project"]["dependencies"]
+    assert any("chatterbox" in req for req in base), (
+        "no chatterbox in the base, so this test is checking a risk that is "
+        "not being taken -- which is fine, and means it should be deleted "
+        "rather than left looking like coverage"
+    )
+    offenders = [
+        req
+        for req in base
+        if "torch" in req and ("==" in req or "<" in req or "~=" in req)
+    ]
+    assert offenders == [], (
+        f"{offenders} pins or caps torch from this package's own manifest. "
+        f"That is the shape that downgraded torch 2.8 to 2.6 once already, "
+        f"and from the base it would do it to every install"
+    )
+    assert "chatterbox-tts" not in " ".join(base), (
+        "chatterbox-tts declares torch==2.6.0, an exact pin. The engine is "
+        "reached through speaker-helper[chatterbox], which declares a floor"
+    )
 
 
 def test_the_install_hint_names_an_extra_that_exists() -> None:

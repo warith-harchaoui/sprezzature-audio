@@ -48,35 +48,45 @@ spelling the words out.
 
 ## Install
 
+One line. Everything this package does — captioning, diarization, speaker ID,
+translation, narration, the HTTP and MCP surfaces — installs with it.
+
 ```sh
-# Base (no ML dependencies)
 pip install sprezzature-audio
-
-# Add captioning (Whisper via vocal-helper)
-pip install "sprezzature-audio[captions]"
-
-# Add diarization and speaker ID (NeMo; install torch first, since the right
-# build depends on your hardware: CUDA, Apple-silicon MPS, or plain CPU)
-pip install torch
-pip install "sprezzature-audio[diarize]"
-
-# Add LLM translation (best-engine-ai-helper + a local Ollama server)
-pip install "sprezzature-audio[translate]"
-
-# Add narration. No torch: Kokoro is 82 M parameters through ONNX Runtime,
-# Apache-2.0 in code and weights. espeak-ng is the one half pip cannot
-# supply — `brew install espeak-ng`, or `apt install espeak-ng`.
-pip install "sprezzature-audio[narrate]"
-sprezzature-audio-install-voice --engine kokoro
-
-# The cloning engines, if you want to sound like a particular person rather
-# than to have a page read aloud. These are the ones that pull torch.
-pip install "sprezzature-audio[narrate-openvoice]"
-pip install "sprezzature-audio[narrate-chatterbox]"
-
-# Everything
-pip install "sprezzature-audio[all]"
 ```
+
+Until 2026-11-01 this section listed eight extras and you had to know which
+one you wanted before the package could do its job. `pip install
+sprezzature-audio` gave four packages and no voice, and `[all]` did not even
+include narration. The extras are gone; the two that remain are not features
+(`[dev]` is the test toolchain, `[narrate]` is a deprecated empty alias kept
+so that siblings asking for it keep resolving).
+
+Two things pip cannot do for you:
+
+```sh
+# espeak-ng is the one half pip cannot supply. Kokoro needs it to phonemise.
+brew install espeak-ng          # or: apt install espeak-ng
+
+# Model weights are fetched on demand, not shipped in the wheel.
+sprezzature-audio-install-voice --engine kokoro       # ~340 MB
+sprezzature-audio-install-voice --engine openvoice    # weights from GitHub
+```
+
+Two consequences worth stating rather than discovering:
+
+- **Python 3.10 to 3.13.** `requires-python` is `>=3.10,<3.14`, because
+  `vocal-helper`, `audio-helper`, `video-helper` and `speaker-helper` all
+  declare `<3.14` at the versions named in the manifest. While they sat behind
+  extras the base resolved on 3.14; one `pip install` means the ceiling is the
+  package's own, so the package says so instead of handing you a resolver
+  dump.
+- **torch comes with it**, through `speaker-helper[chatterbox]` — the engine
+  the router answers for offline narration. It is a floor (`torch>=2.0.0`),
+  not a pin: a resolved install gives torch 2.15 and numpy 2.5 across 195
+  packages. Importing the library does not load it; `import
+  sprezzature_audio` to parse a WebVTT file touches no model at all, and a
+  test enforces that.
 
 ## Quick start
 

@@ -74,6 +74,14 @@ PROJECT = tomllib.loads(PYPROJECT_TEXT)["project"]
 DISTRIBUTION: str = PROJECT["name"]
 EXTRAS: dict[str, list[str]] = PROJECT.get("optional-dependencies", {})
 
+#: The base install, read as if it were an extra with no name. Added on
+#: 2026-11-01, when every feature extra was folded into the base: before that
+#: this whole file scanned ``EXTRAS`` only, so the moment the floors moved the
+#: eight parametrised cases went red saying "no extra names this any more" --
+#: which was true, and exactly the wrong conclusion. The question the file
+#: asks is about requirements this manifest states, and the base states them.
+_BASE = ""
+
 #: ``Requires-Python`` as the PyPI index declares it **for the exact version
 #: each line below names**, which is the floor this manifest asks for.
 #:
@@ -166,7 +174,8 @@ def _direct_requirements(extra: str, seen: set[str] | None = None) -> list[Requi
     """
     seen = set() if seen is None else seen
     out: list[Requirement] = []
-    for raw in EXTRAS.get(extra, []):
+    source = PROJECT.get("dependencies", []) if extra == _BASE else EXTRAS.get(extra, [])
+    for raw in source:
         req = Requirement(raw)
         if _canonical(req.name) != _canonical(DISTRIBUTION):
             out.append(req)
@@ -234,9 +243,13 @@ def _comment_for(extra: str) -> str:
 
 
 def _capped_extras() -> dict[str, tuple[str, ...]]:
-    """Every extra reaching a measured-capped floor, and the versions it loses."""
+    """Every extra reaching a measured-capped floor, and the versions it loses.
+
+    The base is included under :data:`_BASE`, and since 2026-11-01 it is the
+    one that matters: the narrowing lives there now.
+    """
     out: dict[str, tuple[str, ...]] = {}
-    for extra in EXTRAS:
+    for extra in (_BASE, *EXTRAS):
         windows: list[str] = []
         for req in _direct_requirements(extra):
             key = (req.name, _floor(req.specifier))
@@ -306,12 +319,15 @@ def test_a_measured_floor_is_still_the_floor_the_manifest_names(name: str, versi
     entry was added and the stale one left behind, and only this caught it.
     """
     named = {
-        (req.name, _floor(req.specifier)) for extra in EXTRAS for req in _direct_requirements(extra)
+        (req.name, _floor(req.specifier))
+        for extra in (_BASE, *EXTRAS)
+        for req in _direct_requirements(extra)
     }
 
     assert (name, version) in named, (
-        f"MEASURED_AT_THEIR_FLOOR records {name} {version}, which no extra in "
-        "pyproject.toml names any more. Re-read the simple index — "
+        f"MEASURED_AT_THEIR_FLOOR records {name} {version}, which neither the "
+        "base nor any extra in pyproject.toml names any more. Re-read the "
+        "simple index — "
         f"https://pypi.org/simple/{name}/ with "
         "Accept: application/vnd.pypi.simple.v1+json, and take the "
         "requires-python off the files of the *new* floor — then update the "
@@ -322,16 +338,52 @@ def test_a_measured_floor_is_still_the_floor_the_manifest_names(name: str, versi
 
 
 def test_every_capped_extra_names_its_ceiling() -> None:
-    """The narrowing is allowed. Shipping it unannounced is not."""
+    """The narrowing is allowed. Shipping it unannounced is not.
+
+    Two rules now, because the base and an extra announce a ceiling in
+    different places and only one of them is prose.
+
+    **The base announces it in ``requires-python``.** Since 2026-11-01 the
+    engines, the readers and the HTTP surface all live in the base, so the
+    ceiling they carry is the package's own and the manifest has to say so at
+    the top rather than in a comment -- a reader who never opens the file
+    still gets told, by pip, before anything downloads. The hub asserts the
+    same cross from the other side, in
+    ``test_no_brick_promises_a_python_its_dependencies_exclude.py``; this is
+    the half that runs here.
+
+    **An extra announces it in the comment above it**, which is the original
+    rule and the reason this file exists: before it,
+    ``grep -c 3.14 pyproject.toml`` returned 0 while seven of twelve extras
+    could not be installed on it, and what a reader got instead was
+    ``ERROR: Could not find a version that satisfies the requirement`` with
+    nothing having warned them.
+    """
     capped = _capped_extras()
     assert capped, (
-        "no extra reaches a capped floor, so this assertion checked nothing — "
+        "nothing reaches a capped floor, so this assertion checked nothing — "
         "which would be good news, and is worth confirming rather than "
         "assuming. Check MEASURED_AT_THEIR_FLOOR against the manifest."
     )
 
+    promised = SpecifierSet(PROJECT["requires-python"])
     silent: dict[str, tuple[str, ...]] = {}
     for extra, lost in sorted(capped.items()):
+        if extra == _BASE:
+            # A base ceiling has to be in the promise itself: every version
+            # the graph excludes must already be outside requires-python.
+            still_promised = tuple(v for v in lost if promised.contains(v))
+            if still_promised:
+                pytest.fail(
+                    f"{DISTRIBUTION} promises requires-python = "
+                    f"{PROJECT['requires-python']!r}, and its **base** install "
+                    f"cannot be installed on " + ", ".join(still_promised) + ".\n"
+                    "  This is not a comment to write, it is a ceiling to "
+                    "declare: put it in requires-python, so pip refuses the "
+                    "interpreter with a sentence instead of a resolver dump. "
+                    "Folding an extra into the base moves its ceiling with it."
+                )
+            continue
         comment = _comment_for(extra)
         if not all(version in comment for version in boundaries(lost)):
             silent[extra] = lost
@@ -351,3 +403,26 @@ def test_every_capped_extra_names_its_ceiling() -> None:
             "each one in pyproject.toml. The base install is unaffected, which "
             "is exactly why nothing else would ever catch this."
         )
+
+
+def test_the_promise_is_not_wider_than_the_base_can_keep() -> None:
+    """The other direction: a ceiling declared and no longer needed.
+
+    ``requires-python = ">=3.10,<3.14"`` refuses 3.14 to everybody. If the day
+    comes that every floor in the base publishes a 3.14 wheel, that refusal
+    becomes a lie in the generous direction -- a package that would install
+    and is declined. Nothing else would notice, because nothing fails.
+    """
+    lost = _capped_extras().get(_BASE, ())
+    if not lost:
+        pytest.fail(
+            "no version of Python is excluded by the base graph, yet "
+            f"requires-python is {PROJECT['requires-python']!r}. Either a "
+            "floor started publishing for the whole window -- in which case "
+            "widen the promise -- or MEASURED_AT_THEIR_FLOOR has gone stale."
+        )
+    ceiling = [spec for spec in SpecifierSet(PROJECT["requires-python"]) if spec.operator == "<"]
+    assert ceiling, (
+        f"the base graph excludes {', '.join(lost)} and requires-python "
+        f"{PROJECT['requires-python']!r} carries no ceiling at all"
+    )

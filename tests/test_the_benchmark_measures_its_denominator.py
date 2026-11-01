@@ -113,7 +113,7 @@ def test_a_measured_duration_wins_over_a_stated_one(
     assert "for 2 s of audio (measured)" in out
 
 
-def test_measuring_without_audio_helper_names_the_extra(tmp_path) -> None:
+def test_measuring_without_audio_helper_names_the_install(tmp_path) -> None:
     """The refusal has to read as an install line, and name the other flag.
 
     Runs everywhere, installed or not: the helper is withheld by substituting
@@ -137,7 +137,17 @@ def test_measuring_without_audio_helper_names_the_extra(tmp_path) -> None:
     finally:
         builtins.__import__ = real_import
     message = str(caught.value)
-    assert "sprezzature-audio[captions]" in message
+    # The install line, not the extra name. It read `sprezzature-audio[captions]`
+    # until 2026-11-01, when the extras were folded into the base: a message
+    # naming an extra that no longer exists sends the reader to a pip that
+    # warns `does not provide the extra` and **exits 0**, so they would think
+    # they had fixed it.
+    assert "pip install sprezzature-audio" in message, (
+        f"the refusal does not carry a line pip can run: {message!r}"
+    )
+    assert "[captions]" not in message, (
+        f"the refusal names an extra this package no longer declares: {message!r}"
+    )
     assert "--audio-seconds" in message
 
 

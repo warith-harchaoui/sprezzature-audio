@@ -28,25 +28,48 @@ Six scripts, chacun une étape du pipeline. Quelques termes reviennent tout au l
 
 ## Installation
 
+Une ligne. Tout ce que fait ce paquet — sous-titres, diarisation,
+identification des locuteurs, traduction, narration, les surfaces HTTP et
+MCP — s'installe avec lui.
+
 ```sh
-# Base (sans dépendance d'apprentissage automatique)
 pip install sprezzature-audio
-
-# Avec la transcription (Whisper via vocal-helper)
-pip install "sprezzature-audio[captions]"
-
-# Avec la diarisation et l'identification de locuteurs (NeMo ; installer
-# torch d'abord, la version adaptée dépend du matériel : CUDA, Apple
-# silicon MPS ou simple CPU)
-pip install torch
-pip install "sprezzature-audio[diarize]"
-
-# Avec la traduction par LLM (best-engine-ai-helper et un serveur Ollama local)
-pip install "sprezzature-audio[translate]"
-
-# Tout
-pip install "sprezzature-audio[all]"
 ```
+
+Jusqu'au 2026-11-01 cette section listait huit extras et il fallait savoir
+lequel on voulait avant que le paquet puisse faire son travail. `pip install
+sprezzature-audio` donnait quatre paquets et aucune voix, et `[all]`
+n'incluait même pas la narration. Les extras sont partis ; les deux qui
+restent ne sont pas des fonctionnalités (`[dev]` est l'outillage de test,
+`[narrate]` un alias vide déprécié, gardé pour que les dépôts voisins qui le
+nomment continuent de résoudre).
+
+Deux choses que pip ne peut pas faire à votre place :
+
+```sh
+# espeak-ng est la moitié que pip ne fournit pas. Kokoro en a besoin pour
+# phonémiser.
+brew install espeak-ng          # ou : apt install espeak-ng
+
+# Les poids se téléchargent à la demande, ils ne sont pas dans la roue.
+sprezzature-audio-install-voice --engine kokoro       # ~340 Mo
+sprezzature-audio-install-voice --engine openvoice    # poids depuis GitHub
+```
+
+Deux conséquences à énoncer plutôt qu'à découvrir :
+
+- **Python 3.10 à 3.13.** `requires-python` vaut `>=3.10,<3.14`, parce que
+  `vocal-helper`, `audio-helper`, `video-helper` et `speaker-helper` déclarent
+  tous `<3.14` aux versions que nomme le manifeste. Tant qu'ils étaient
+  derrière des extras, la base résolvait sur 3.14 ; un seul `pip install` fait
+  que le plafond est celui du paquet, donc le paquet le dit au lieu de vous
+  rendre une trace de résolveur.
+- **torch vient avec**, par `speaker-helper[chatterbox]` — le moteur que le
+  routeur répond pour la narration hors ligne. C'est un plancher
+  (`torch>=2.0.0`) et non une épingle : une installation résolue donne torch
+  2.15 et numpy 2.5 sur 195 paquets. Importer la bibliothèque ne le charge
+  pas : `import sprezzature_audio` pour lire un WebVTT ne touche aucun
+  modèle, et un test l'impose.
 
 ## Démarrage rapide
 

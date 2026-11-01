@@ -117,9 +117,10 @@ def _download(url: str, dest: Path) -> None:
         from os_helper import download_file
     except ImportError as exc:
         raise RuntimeError(
-            "os-helper is missing, so there is no resumable download. It comes "
-            "with any of the narration extras:\n"
-            "    pip install 'sprezzature-audio[narrate]'"
+            "os-helper is missing, so there is no resumable download. It is "
+            "a base dependency, so this is a broken install rather than a "
+            "missing extra:\n"
+            "    pip install sprezzature-audio"
         ) from exc
 
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -164,7 +165,7 @@ def install_openvoice() -> int:
     if not _check_importable(("openvoice",)):
         print(
             "openvoice not installed. From a wheel:\n"
-            "    pip install 'sprezzature-audio[narrate-openvoice]'\n"
+            "    pip install sprezzature-audio\n"
             "From a clone:\n"
             "    pip install -r requirements-narrate-openvoice.txt",
             file=sys.stderr,
@@ -230,7 +231,7 @@ def install_chatterbox() -> int:
         except ImportError:
             print(
                 "chatterbox-tts not installed. From a wheel:\n"
-                "    pip install 'sprezzature-audio[narrate-chatterbox]'\n"
+                "    pip install sprezzature-audio\n"
                 "From a clone:\n"
                 "    pip install -r requirements-narrate-chatterbox.txt",
                 file=sys.stderr,
@@ -290,7 +291,7 @@ def install_kokoro() -> int:
     if not _check_importable(("kokoro_onnx",)):
         print(
             "kokoro-onnx not installed. From a wheel:\n"
-            "    pip install 'sprezzature-audio[narrate]'\n"
+            "    pip install sprezzature-audio\n"
             "From a clone:\n"
             "    pip install -r requirements-narrate-kokoro.txt",
             file=sys.stderr,
