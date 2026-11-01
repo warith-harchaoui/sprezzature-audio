@@ -42,13 +42,23 @@ jobs:
           # install, because narration is what it is *for* and `pip install
           # sprezzature-audio` used to give four packages and no voice.
           #
-          # **That makes this step heavy, and the trade is deliberate.** The
-          # comment here used to say the opposite -- "the heavy extras stay
-          # out on purpose: they pull torch and model weights, and none of the
-          # deterministic tests need them" -- and it was right about the
-          # tests. It is no longer available: a base install is a base
-          # install, and a runner that installs this package installs torch,
-          # nemo and whisper whether the tests touch them or not.
+          # **The cost, measured rather than feared: this workflow went from
+          # under a minute to two.** The first version of this comment called
+          # the step "heavy" and left it at that, which is the kind of warning
+          # that cannot be acted on. Two minutes. The sibling numbers from the
+          # same day, for scale: `sprezzature-accessibility` did not move at
+          # all, `sprezzature-figures` went from 2 to 6 -- and four of those
+          # four extra minutes are its wheel-install job, not its tests.
+          #
+          # The comment here used to say the opposite -- "the heavy extras
+          # stay out on purpose: they pull torch and model weights, and none
+          # of the deterministic tests need them" -- and it was right about
+          # the tests. That option is no longer available: a base install is a
+          # base install, and a runner that installs this package installs
+          # torch, nemo and whisper whether the tests touch them or not. At
+          # two minutes against a 20-minute ceiling, it is not worth buying
+          # the option back with a `--no-deps` install that would stop CI
+          # checking the base resolves at all.
           #
           # What keeps the suite honest regardless is
           # `test_the_library_surface.py`, which blocks every heavy
