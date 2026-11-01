@@ -20,6 +20,7 @@ Author
 from __future__ import annotations
 
 import math
+import shutil
 import struct
 import sys
 import wave
@@ -69,12 +70,33 @@ def test_the_duration_is_read_off_the_file(tmp_path) -> None:
     """The measured duration matches the file that was written.
 
     The one assertion here that genuinely needs the helper, so the one that
-    skips where it is absent — this package's CI installs ``[api,mcp]`` and no
-    helper at all. Everything *around* the reading is asserted without it
-    below, on purpose: a suite where the whole feature skips in CI reports
-    green for work it never did.
+    skips where it is absent. Everything *around* the reading is asserted
+    without it below, on purpose: a suite where the whole feature skips in CI
+    reports green for work it never did.
+
+    Why there are two guards and not one
+    ------------------------------------
+    This docstring used to say "this package's CI installs ``[api,mcp]`` and no
+    helper at all", and that sentence held the test up. On 2026-11-01 every
+    extra was folded into the base install, so ``audio-helper`` arrives with
+    the package — and **this test woke up on a runner for the first time** and
+    failed with ``FileNotFoundError: 'ffprobe'``.
+
+    Worth naming because it is the mirror of the usual defect. The usual one is
+    a test that skips and reads like a pass; this was a test that had never run
+    anywhere but a laptop, and the thing that changed was not the test but
+    whether its dependency was installed.
+
+    ``audio-helper`` reads a duration by calling ``ffprobe``, which pip cannot
+    supply. So the second guard: present on a developer machine, absent on a
+    runner, and named rather than left to be discovered. Installing a static
+    ffmpeg build in CI is the other answer — ``audio-helper``'s own CI does
+    exactly that — and it is not this repository's: the gate here is meant to
+    stay gentle.
     """
     pytest.importorskip("audio_helper")
+    if shutil.which("ffprobe") is None:
+        pytest.skip("ffprobe is not on PATH; audio-helper reads the duration through it")
     import benchmark_stt
 
     wav = _write_wav(tmp_path / "two-seconds.wav", 2.0)
