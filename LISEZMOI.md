@@ -122,9 +122,9 @@ installés :
 
 ```python
 audio.synthesise(...)      # [narrate]  — Kokoro
-audio.transcribe(...)      # [captions] — Whisper
-audio.diarize(...)         # [diarize]  — NeMo Sortformer
-audio.translate_cues(...)  # [translate]
+audio.transcribe(...)      # Whisper, par vocal-helper
+audio.diarize(...)         # NeMo Sortformer
+audio.translate_cues(...)  # un modèle local, par best-engine-ai-helper
 ```
 
 Demandez-en un sans son extra, et l'erreur nomme le `pip install` qui répare

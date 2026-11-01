@@ -561,7 +561,7 @@ audible, and each lands as a timed track beside an audio file.
 
 ### Added
 
-- **An HTTP API and an MCP server.** `pip install 'sprezzature-audio[api]'`
+- **An HTTP API and an MCP server.** `pip install 'sprezzature-audio'`
   mounts the caption / diarize / identify / translate scripts as routes;
   `[mcp]` derives the MCP tools from them. With a benchmark command and a
   device report, so the machine you are on is a fact rather than a guess.

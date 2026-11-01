@@ -37,12 +37,26 @@ jobs:
       - name: Install
         run: |
           python -m pip install --upgrade pip
-          # The package editable, with the two light surfaces it advertises.
-          # Without [api,mcp] every test of api.py and mcp.py skipped and CI
-          # was green on code nobody ran. The heavy extras (captions,
-          # diarize, translate) stay out on purpose: they pull torch and
-          # model weights, and none of the deterministic tests need them.
-          pip install -e ".[api,mcp]" -r requirements-dev.txt
+          # The package editable. There are no extras left to name: on
+          # 2026-11-01 everything this package does moved into the base
+          # install, because narration is what it is *for* and `pip install
+          # sprezzature-audio` used to give four packages and no voice.
+          #
+          # **That makes this step heavy, and the trade is deliberate.** The
+          # comment here used to say the opposite -- "the heavy extras stay
+          # out on purpose: they pull torch and model weights, and none of the
+          # deterministic tests need them" -- and it was right about the
+          # tests. It is no longer available: a base install is a base
+          # install, and a runner that installs this package installs torch,
+          # nemo and whisper whether the tests touch them or not.
+          #
+          # What keeps the suite honest regardless is
+          # `test_the_library_surface.py`, which blocks every heavy
+          # distribution in a subprocess and proves `import sprezzature_audio`
+          # reaches none of them. That check was about extras a reader had not
+          # asked for; it is now the only thing standing between a WebVTT
+          # parser and a gigabyte of weights.
+          pip install -e . -r requirements-dev.txt
       - name: Ruff
         run: ruff check .
       # The type half of the gate. Added after running mypy by hand found

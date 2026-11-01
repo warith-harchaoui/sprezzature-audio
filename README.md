@@ -157,9 +157,9 @@ nothing even on a machine with Whisper, NeMo and Kokoro installed:
 
 ```python
 audio.synthesise(...)      # [narrate]  — Kokoro
-audio.transcribe(...)      # [captions] — Whisper
-audio.diarize(...)         # [diarize]  — NeMo Sortformer
-audio.translate_cues(...)  # [translate]
+audio.transcribe(...)      # Whisper, through vocal-helper
+audio.diarize(...)         # NeMo Sortformer
+audio.translate_cues(...)  # a local model, through best-engine-ai-helper
 ```
 
 Ask for one without its extra and the error names the `pip install` that
