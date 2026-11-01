@@ -34,9 +34,16 @@ canonical channel and we don't want to wrap it. Install with:
 
 ::
 
-    pip install -r requirements-narrate-openvoice.txt
-    # or
-    pip install -r requirements-narrate-chatterbox.txt
+    pip install sprezzature-audio      # from a wheel
+    pip install -e .                   # from a clone
+
+Chatterbox and Kokoro arrive with the base since the extras were folded in on
+2026-11-01 -- ``speaker-helper[kokoro,detect,chatterbox,openvoice]``. OpenVoice
+needs one more step, and only it: the package itself ships from GitHub with no
+wheel of its own, and a direct URL is not allowed in a published wheel's
+dependencies, so the URL lives in a file of its own::
+
+    pip install -r scripts/requirements-narrate-openvoice.txt
 
 Then run:
 
@@ -167,7 +174,7 @@ def install_openvoice() -> int:
             "openvoice not installed. From a wheel:\n"
             "    pip install sprezzature-audio\n"
             "From a clone:\n"
-            "    pip install -r requirements-narrate-openvoice.txt",
+            "    pip install -r scripts/requirements-narrate-openvoice.txt",
             file=sys.stderr,
         )
         return 1
@@ -233,7 +240,7 @@ def install_chatterbox() -> int:
                 "chatterbox-tts not installed. From a wheel:\n"
                 "    pip install sprezzature-audio\n"
                 "From a clone:\n"
-                "    pip install -r requirements-narrate-chatterbox.txt",
+                "    pip install -e .",
                 file=sys.stderr,
             )
             return 1
@@ -293,7 +300,7 @@ def install_kokoro() -> int:
             "kokoro-onnx not installed. From a wheel:\n"
             "    pip install sprezzature-audio\n"
             "From a clone:\n"
-            "    pip install -r requirements-narrate-kokoro.txt",
+            "    pip install -e .",
             file=sys.stderr,
         )
         return 1

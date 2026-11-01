@@ -17,7 +17,7 @@ The companion installer, ``install_captions.py``, pre-downloads the model
 weights (in GGML format, the compact file format whisper.cpp reads) into
 a shared cache directory, so this script never blocks on a download mid-run.
 ``vocal-helper`` itself, and the ``pywhispercpp`` package it pulls in, are
-declared in ``requirements-captions.txt``.
+declared in ``pyproject.toml``'s base dependencies.
 
 The script accepts any common container format (mp4, mov, mp3, wav, m4a,
 and others), extracts a 16 kHz mono WAV audio stream (the exact format
@@ -59,7 +59,7 @@ Usage
 Notes
 -----
 * Python 3.10+. ``vocal-helper`` (pulling ``pywhispercpp``) is declared in
-  ``requirements-captions.txt``; :mod:`install_captions` pre-downloads the
+  the base dependencies; :mod:`install_captions` pre-downloads the
   GGML weights.
 * Audio extraction and decoding use ``video-helper`` / ``audio-helper``
   from the project author's GitHub (hard dependencies of this tier),

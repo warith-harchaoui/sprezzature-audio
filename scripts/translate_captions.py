@@ -56,7 +56,7 @@ Notes
 * Python 3.10+. Needs a reachable local Ollama daemon
   (``http://localhost:11434``) serving ``qwen3-vl:8b``, the one model this
   project authorizes for this task (it is not user-selectable).
-  ``langdetect`` (declared in ``requirements-captions.txt``) sharpens
+  ``langdetect`` (a base dependency) sharpens
   language detection, but the script still works, a little less
   precisely, without it.
 * No audio dependency at all: this script only parses and re-emits

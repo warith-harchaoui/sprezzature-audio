@@ -1,3 +1,18 @@
-# Base runtime (no ML).
-click>=8.1
-langdetect>=1.0.9
+# Runtime dependencies, as a selector rather than a copy.
+#
+# `pyproject.toml` is the single source of truth for what this package needs
+# and for every version bound. This file installs that, and nothing of its
+# own, so there is nothing here to fall out of step when a bound changes.
+#
+# It did fall out of step. Until 2026-11-01 this file listed two packages —
+# `click` and `langdetect` — under the heading "Base runtime (no ML)", while
+# the manifest declared sixteen. That heading described a tiering that stopped
+# existing when the extras were folded into the base: `pip install -r
+# requirements.txt` built an environment that could not transcribe, diarise or
+# narrate, while `pip install sprezzature-audio` built one that could. Nothing
+# compared the two files, and a missing requirement only fails when something
+# imports it.
+#
+# The form is `sprezzature-figures`' and it is the reason that package never
+# had the problem: a selector cannot drift.
+-e .
