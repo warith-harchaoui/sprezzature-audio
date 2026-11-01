@@ -96,7 +96,12 @@ EXTRAS: dict[str, list[str]] = PROJECT.get("optional-dependencies", {})
 #: already did, twice, over ``scipy`` and ``pyproj``.
 MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
     ("speaker-helper", "0.11.0"): "<3.14,>=3.10",
-    ("os-helper", "3.1.0"): "<3.14,>=3.10",
+    # Relevé le 2026-11-01 sur l'index simple en JSON, sur les fichiers de la
+    # 4.0.0 elle-même -- les deux (roue et sdist) disent "<3.14,>=3.10", soit la
+    # même fenêtre que la 3.1.0 qu'elle remplace. Le plancher est monté parce que
+    # les seize paquets ai-helpers ont lever leur `os-helper<4` en `<5` : jusque-là
+    # demander la 4 rendait l'installation insoluble.
+    ("os-helper", "4.0.0"): "<3.14,>=3.10",
     ("vocal-helper", "0.6.0"): "<3.14,>=3.10",
     ("audio-helper", "1.6.0"): "<3.14,>=3.10",
     ("video-helper", "1.7.0"): "<3.14,>=3.10",
