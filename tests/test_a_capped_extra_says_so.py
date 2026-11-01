@@ -126,7 +126,12 @@ MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
     # only 1.3.x files on the index and both read the same. It carries the
     # ceiling directly, so `[captions]` and `[diarize]` keep exactly the
     # window they already had — nothing about which extras are capped moves.
-    ("wallet-helper", "1.3"): "<3.14,>=3.10",
+    # Moved from 1.3 to 1.3.2 on 2026-11-01, when 1.3.2 was published: up to
+    # 1.3.1 the SQLite ledger could refuse to open on a cold start under
+    # concurrency, and `scripts/_wallet.py` worked around it. Re-read off the
+    # simple index for the files of the *new* floor, as this table demands --
+    # the window is unchanged.
+    ("wallet-helper", "1.3.2"): "<3.14,>=3.10",
 }
 
 #: The ceiling one hop further down, for a dependency whose *own* window is

@@ -27,4 +27,4 @@ video-helper>=1.7.0
 # load is a gigabyte of weights; before this, two runs on one recording each
 # paid for it because nothing stood between "the cache says no" and "write the
 # cache".
-wallet-helper>=1.3,<2
+wallet-helper>=1.3.2,<2

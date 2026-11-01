@@ -31,4 +31,4 @@ httpx2>=2.0.0
 # which mattered most: mypy.ini explains at length that a numpy in the
 # environment stops mypy inside a third-party stub under `python_version =
 # 3.10`, and CI being numpy-free is what keeps that gate green.
-wallet-helper>=1.3,<2
+wallet-helper>=1.3.2,<2
