@@ -1,5 +1,72 @@
 # Changelog: sprezzature-audio
 
+## v1.8.0 (2026-11-01): kyutai leaves, and two floors stop describing versions nobody installs
+
+### Removed
+
+- **The `kyutai` narration engine, entirely.** Gone: the `[narrate-kyutai]`
+  extra, the `sprezzature-audio-narrate-kyutai` console script,
+  `scripts/narrate_kyutai.py`, and its entries in `_speaker.py`'s
+  `BACKEND_FOR` and `INSTALL_HINT`. If you installed the extra or called the
+  script, both are gone in this release — the remaining engines are `kokoro`,
+  `chatterbox` and `openvoice`.
+
+  The licence was never the reason, whatever `LANDSCAPE.md` used to imply. The
+  reason is that nothing selected it. For the voices, this package goes
+  through `speaker-helper`, and `speaker-helper`'s router answers **chatterbox
+  offline** (Turbo for English, Multilingual elsewhere) and **kokoro
+  streaming**. A fourth engine behind an extra is a surface that exists, costs
+  a wrapper, a script, an extra and four lines of mapping to keep coherent,
+  and is never the router's answer.
+
+  `LANDSCAPE.md` and `PAYSAGE.md` keep their Kyutai row: it is a survey of the
+  field, and dropping a real engine from a survey because this package no
+  longer wraps it would make the survey lie. The sentence claiming the extra
+  exists was corrected instead.
+
+### Changed
+
+- **`speaker-helper>=0.11.0` becomes `>=0.14.1,<1`, in all three narration
+  extras.** The old floor imported fine, resolved fine, and *routed
+  differently* — which is the hard kind of wrong. `route()` and `RouteRequest`
+  have been there since 0.8.0, so nothing about the API forced a move;
+  `OFFLINE_RATIFIED_ENGINE` arrives in **0.12.0**, and below it the ratified
+  choice of chatterbox for offline French is not pinned at all. An install
+  satisfying `>=0.11.0` could narrate French in another voice while every
+  import succeeded and every test passed.
+
+  Read off the published wheels, version by version — 0.8.0, 0.11.0, 0.12.0,
+  0.13.0, 0.14.0, 0.14.1 — not off the editable installed here, whose
+  `dist-info` says 0.13.0 while its source says 0.14.1.
+
+  The floor is 0.14.1 and not 0.12.0 because 0.14.1 is the version actually
+  *measured*: asked for both languages offline it answers chatterbox. 0.12 and
+  0.13 carry the table and were not run.
+
+- **`audio-helper>=1.6.0` becomes `>=2.6.1,<3`**, in `[captions]`,
+  `[diarize]`, and the two `requirements-*.txt` that mirror them. The index
+  serves 2.6.1; the floor named a version a major behind that nobody has
+  installed for months. The three names this package actually calls —
+  `get_audio_duration`, `sound_converter`, `load_audio` — were checked in the
+  wheels of both 1.6.0 and 2.6.1 and are exported by both, so the old floor
+  was not *broken*; it was unverified, which is the state this repository has
+  a whole test file to refuse.
+
+  Both get a ceiling at the next major, for the reason `mypy>=1.11,<3` has
+  one: a floor with no ceiling hands somebody else's release day a vote on
+  whether this installs. `speaker-helper` is capped `<1` rather than `<0.15`
+  because a 0.x minor may break as freely as a major and the suite's
+  convention is the next major.
+
+### Fixed
+
+- **`MEASURED_AT_THEIR_FLOOR` had the new reading and kept the stale one.**
+  Raising `audio-helper` added the 2.6.1 entry and left 1.6.0 behind, so the
+  table recorded a `requires-python` for a version no extra names.
+  `test_a_measured_floor_is_still_the_floor_the_manifest_names` caught it on
+  the first run and printed the method to redo the reading. Its docstring used
+  exactly this case as a hypothetical; it is now the record of what happened.
+
 ## v1.7.0 (2026-10-31): the container the caller asks for
 
 ### Added

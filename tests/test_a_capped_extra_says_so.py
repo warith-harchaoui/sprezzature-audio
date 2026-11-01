@@ -95,15 +95,22 @@ EXTRAS: dict[str, list[str]] = PROJECT.get("optional-dependencies", {})
 #: two come apart the wrong evidence will give the wrong answer; next door it
 #: already did, twice, over ``scipy`` and ``pyproj``.
 MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
-    ("speaker-helper", "0.11.0"): "<3.14,>=3.10",
+    # Relevés le 2026-11-01 sur l'index simple en JSON, sur les fichiers des
+    # versions plancher elles-mêmes. Les deux planchers sont montés le même
+    # jour : speaker-helper parce que la table de ratification hors ligne
+    # n'existe qu'à partir de la 0.12.0 -- en dessous, le français n'était pas
+    # épinglé sur chatterbox et l'installation passait quand même ; et
+    # audio-helper parce que `>=1.6.0` annonçait une majeure que plus personne
+    # ne vérifie, alors que l'index sert la 2.6.1.
+    ("speaker-helper", "0.14.1"): "<3.14,>=3.10",
     # Relevé le 2026-11-01 sur l'index simple en JSON, sur les fichiers de la
     # 4.0.0 elle-même -- les deux (roue et sdist) disent "<3.14,>=3.10", soit la
     # même fenêtre que la 3.1.0 qu'elle remplace. Le plancher est monté parce que
-    # les seize paquets ai-helpers ont lever leur `os-helper<4` en `<5` : jusque-là
+    # les seize paquets ai-helpers ont levé leur `os-helper<4` en `<5` : jusque-là
     # demander la 4 rendait l'installation insoluble.
     ("os-helper", "4.0.0"): "<3.14,>=3.10",
     ("vocal-helper", "0.6.0"): "<3.14,>=3.10",
-    ("audio-helper", "1.6.0"): "<3.14,>=3.10",
+    ("audio-helper", "2.6.1"): "<3.14,>=3.10",
     ("video-helper", "1.7.0"): "<3.14,>=3.10",
     ("best-engine-ai-helper", "0.4.0"): ">=3.10",
     ("nemo_toolkit", "1.23.0"): "",
@@ -291,10 +298,12 @@ def test_the_measured_table_is_not_empty() -> None:
 def test_a_measured_floor_is_still_the_floor_the_manifest_names(name: str, version: str) -> None:
     """The reading is of the version this manifest asks for, or it is of nothing.
 
-    The floor moving is the way this table rots: raise ``audio-helper>=1.6.0``
-    to ``>=2.0.0`` and the recorded ``<3.14`` is a reading of a version nobody
-    installs any more. It may well still hold — but "probably" is what this
-    whole file exists to refuse.
+    The floor moving is the way this table rots, and it happened on
+    2026-11-01: ``audio-helper>=1.6.0`` became ``>=2.6.1,<3`` and the recorded
+    ``<3.14`` was suddenly a reading of a version nobody installs any more. It
+    did still hold — both versions read the same — but "probably" is what this
+    whole file exists to refuse, and this test is what refused it: the new
+    entry was added and the stale one left behind, and only this caught it.
     """
     named = {
         (req.name, _floor(req.specifier)) for extra in EXTRAS for req in _direct_requirements(extra)

@@ -45,17 +45,15 @@ from typing import Any
 #: selecting the wrong voice there.
 BACKEND_FOR: dict[str, str] = {
     "kokoro": "kokoro",
-    "kyutai": "kyutai",
     "openvoice": "openvoice",
     "chatterbox": "chatterbox",
 }
 
 #: The install line to print when ``speaker-helper`` is not there. Named per
-#: engine, because the three do not cost the same: Kokoro is an ONNX runtime,
-#: the other two pull torch.
+#: engine, because they do not cost the same: Kokoro is an ONNX runtime, the
+#: other two pull torch.
 INSTALL_HINT: dict[str, str] = {
     "kokoro": "pip install 'sprezzature-audio[narrate]'",
-    "kyutai": "pip install 'sprezzature-audio[narrate-kyutai]'",
     "openvoice": "pip install 'sprezzature-audio[narrate-openvoice]'",
     "chatterbox": "pip install 'sprezzature-audio[narrate-chatterbox]'",
 }
@@ -71,8 +69,6 @@ def check_narration_install(engine: str) -> int:
     try:
         if engine == "kokoro":
             from speaker_helper.backends.kokoro import check_install as probe
-        elif engine == "kyutai":
-            from speaker_helper.backends.kyutai import check_install as probe
         elif engine == "openvoice":
             from speaker_helper.backends.openvoice import check_install as probe
         elif engine == "chatterbox":

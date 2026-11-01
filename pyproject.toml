@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.7.0"
+version = "1.8.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -43,7 +43,7 @@ dependencies = [
 # was not. tests/test_a_capped_extra_says_so.py keeps this sentence honest.
 captions = [
     "vocal-helper>=0.6.0",
-    "audio-helper>=1.6.0",
+    "audio-helper>=2.6.1,<3",
     "video-helper>=1.7.0",
     # The result cache (scripts/_wallet.py). Here for the one property the
     # hand-rolled read/write pair could not have: three processes asking to
@@ -59,13 +59,13 @@ captions = [
     "wallet-helper>=1.3,<2",
 ]
 # **Not installable on Python 3.14**, same cause as `captions`:
-# `audio-helper>=1.6.0` and `video-helper>=1.7.0` are `>=3.10,<3.14` at those
+# `audio-helper>=2.6.1` and `video-helper>=1.7.0` are `>=3.10,<3.14` at those
 # very versions, and `wallet-helper 1.3.0` is too. `nemo_toolkit 1.23.0`
 # declares no window at all and is not the reason.
 diarize = [
     "nemo_toolkit[asr]>=1.23.0",
     "numpy>=1.24",
-    "audio-helper>=1.6.0",
+    "audio-helper>=2.6.1,<3",
     "video-helper>=1.7.0",
     # Same cache, same reason, and the stake is larger here: a Sortformer load
     # is a gigabyte of weights, and two runs on one recording used to each pay
@@ -142,12 +142,23 @@ mcp = [
 # over there against a backend that needs no model — more coverage than it
 # had here.
 #
-# The floors name 0.11.0, the release that brought the pronunciation lexicon
-# and the kyutai backend. They were 0.8.0, the release that first carried
-# `Speaker.narrate`; the lexicon is the reason to move, because this suite
-# narrates pages full of acronyms -- WebVTT, RTTM, OKLCH, GMTED2010 -- and
-# stating a pronunciation once beats hearing four engines each guess
-# differently.
+# The floors name 0.14.1, and the reason is the router's *answer* rather than
+# its API. `route()` and `RouteRequest` have existed since 0.8.0, so every
+# earlier floor imported fine and resolved fine -- and routed differently.
+# `OFFLINE_RATIFIED_ENGINE` arrives in 0.12.0; below it the owner's ratified
+# choice of chatterbox for offline French is not pinned at all, so an install
+# satisfying the old `>=0.11.0` floor could narrate French in another voice
+# while every import and every test passed. Read off the published wheels on
+# 2026-11-01, version by version, not off the editable installed here.
+#
+# 0.14.1 rather than 0.12.0 because 0.14.1 is the version actually measured:
+# asked for both languages offline it answers chatterbox, which is the matrix
+# this suite narrates with. 0.12 and 0.13 carry the table and were not run.
+#
+# Capped at the next major for the reason `mypy>=1.11,<3` is: a floor with no
+# ceiling gives somebody else's release day a vote on whether this installs.
+# A 0.x minor can break as freely as a major, hence `<1` and not `<0.15` --
+# the suite's convention is the next major, and 0.14 resolves inside it.
 #
 # The floors stay at 0.11.0 even though `--audio-format mp3` needs
 # `write_audio`, which arrived in 0.14.0. A floor is a promise about what
@@ -172,7 +183,7 @@ mcp = [
 # is the version that behaviour was measured against; `<3.14` on the index at
 # that very version, which is the other half of the sentence above.
 narrate = [
-    "speaker-helper[kokoro,detect]>=0.11.0",
+    "speaker-helper[kokoro,detect]>=0.14.1,<1",
     # Plancher à 4.0.0 le 2026-11-01, et c'est une décision à deux moitiés.
     #
     # La 4.0.0 d'os-helper est une release majeure parce qu'elle a cessé de mentir :
@@ -201,23 +212,11 @@ narrate-kokoro = ["sprezzature-audio[narrate]"]
 # `os-helper` for the same reason as above: this is the extra whose checkpoint
 # archive `install_narrate` downloads.
 narrate-openvoice = [
-    "speaker-helper[openvoice]>=0.11.0",
+    "speaker-helper[openvoice]>=0.14.1,<1",
     "os-helper>=4.0.0,<5",
 ]
 # Not installable on Python 3.14 — same floor, same window.
-narrate-chatterbox = ["speaker-helper[chatterbox]>=0.11.0"]
-# French, natively. `speaker-helper`'s 2026-10 survey picked it for French --
-# a Paris lab's model, where the other three reach French through an
-# English-first pipeline -- and on a Mac it is served through Kyutai's own MLX
-# build, RTF 0.84 against 7.8 on torch-CPU.
-#
-# An extra rather than the default, and the bar above says why: code MIT,
-# weights CC-BY-4.0. Permissive, and not "Apache-2.0 in code *and* weights".
-# Ask for it by name and you get a better French voice; nobody gets a
-# different licence by surprise.
-#
-# Not installable on Python 3.14 — `speaker-helper 0.11.0` is `>=3.10,<3.14`.
-narrate-kyutai = ["speaker-helper[kyutai]>=0.11.0"]
+narrate-chatterbox = ["speaker-helper[chatterbox]>=0.14.1,<1"]
 # OpenVoice ships from git rather than PyPI, so it stays out of the resolvable
 # extras above and is installed by `sprezzature-audio-install-voice`, which is
 # what that command is for.
@@ -247,7 +246,6 @@ sprezzature-audio-audit = "sprezzature_audio_scripts.audit_captions:main"
 sprezzature-audio-narrate-kokoro = "sprezzature_audio_scripts.narrate_kokoro:main"
 sprezzature-audio-narrate-openvoice = "sprezzature_audio_scripts.narrate_openvoice:main"
 sprezzature-audio-narrate-chatterbox = "sprezzature_audio_scripts.narrate_chatterbox:main"
-sprezzature-audio-narrate-kyutai = "sprezzature_audio_scripts.narrate_kyutai:main"
 sprezzature-audio-voice = "sprezzature_audio_scripts.pick_voice:main"
 sprezzature-audio-install-voice = "sprezzature_audio_scripts.install_narrate:main"
 sprezzature-audio-captions = "sprezzature_audio_scripts.captions_from_whisper:main"

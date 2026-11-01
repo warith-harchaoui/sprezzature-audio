@@ -34,6 +34,6 @@
 click>=8.1
 langdetect>=1.0.9
 vocal-helper>=0.6.0
-audio-helper>=1.6.0
+audio-helper>=2.6.1,<3
 video-helper>=1.7.0
 wallet-helper>=1.3,<2
