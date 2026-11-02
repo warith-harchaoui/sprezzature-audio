@@ -58,9 +58,8 @@ pip install sprezzature-audio
 Until 2026-11-01 this section listed eight extras and you had to know which
 one you wanted before the package could do its job. `pip install
 sprezzature-audio` gave four packages and no voice, and `[all]` did not even
-include narration. The extras are gone; the two that remain are not features
-(`[dev]` is the test toolchain, `[narrate]` is a deprecated empty alias kept
-so that siblings asking for it keep resolving).
+include narration. The extras are gone. One remains, and it is not a feature:
+`[dev]` is the test toolchain.
 
 Two things pip cannot do for you:
 
@@ -156,7 +155,7 @@ The model-backed half resolves on first use, so the import above costs
 nothing even on a machine with Whisper, NeMo and Kokoro installed:
 
 ```python
-audio.synthesise(...)      # [narrate]  — Kokoro
+audio.synthesise(...)      # Kokoro, through speaker-helper
 audio.transcribe(...)      # Whisper, through vocal-helper
 audio.diarize(...)         # NeMo Sortformer
 audio.translate_cues(...)  # a local model, through best-engine-ai-helper

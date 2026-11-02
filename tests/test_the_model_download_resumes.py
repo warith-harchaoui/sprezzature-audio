@@ -99,9 +99,9 @@ def test_the_download_names_the_install_when_the_helper_is_missing(monkeypatch, 
 
     with pytest.raises(RuntimeError) as caught:
         install_narrate._download("https://example.invalid/x.bin", tmp_path / "x.bin")
-    # The install line, not the extra. `[narrate]` survives as a deprecated
-    # empty alias so that siblings naming it keep resolving, but pointing a
-    # reader at it would be telling them to install nothing.
+    # The install line, and there is no longer any other: narration moved
+    # into the base, and the empty alias that outlived it was deleted once
+    # both siblings named the package plain.
     message = str(caught.value)
     assert "pip install sprezzature-audio" in message, (
         f"the refusal does not carry a line pip can run: {message!r}"

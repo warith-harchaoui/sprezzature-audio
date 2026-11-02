@@ -42,7 +42,7 @@ dependencies = [
 
     # ---------------------------------------------------------------- la voix
     # Narration is what this package is *for*, so it installs with the
-    # package. It sat behind `[narrate]` until 2026-11-01, which meant
+    # package. It sat behind an extra until 2026-11-01, which meant
     # `pip install sprezzature-audio` gave four packages and no voice -- and
     # `[all]` did not even include it, so "install everything" installed a
     # package that could not do the thing it exists to do.
@@ -165,18 +165,6 @@ dev = [
     "pytest>=8.0",
     "ruff",
 ]
-
-# Deprecated and deliberately empty. Narration moved into the base above, so
-# there is nothing left for this to add -- but the name has to keep resolving.
-# `sprezzature-publish` and `sprezzature-video` both ask for
-# `sprezzature-audio[narrate]`, and the index still serves 1.5.0, where
-# `[narrate]` is the real thing and the base has no voice. Removing the name
-# would make pip print `does not provide the extra` and **exit 0** -- measured,
-# not assumed -- so those two would quietly install without a voice.
-#
-# Delete this line once 1.9.0 is on PyPI and both siblings name
-# `sprezzature-audio>=1.9.0` plain.
-narrate = []
 
 [project.urls]
 Homepage = "https://sprezzature.ai/"

@@ -39,10 +39,8 @@ pip install sprezzature-audio
 Jusqu'au 2026-11-01 cette section listait huit extras et il fallait savoir
 lequel on voulait avant que le paquet puisse faire son travail. `pip install
 sprezzature-audio` donnait quatre paquets et aucune voix, et `[all]`
-n'incluait même pas la narration. Les extras sont partis ; les deux qui
-restent ne sont pas des fonctionnalités (`[dev]` est l'outillage de test,
-`[narrate]` un alias vide déprécié, gardé pour que les dépôts voisins qui le
-nomment continuent de résoudre).
+n'incluait même pas la narration. Les extras sont partis. Il en reste un, et
+ce n'est pas une fonctionnalité : `[dev]` est l'outillage de test.
 
 Deux choses que pip ne peut pas faire à votre place :
 
@@ -121,7 +119,7 @@ ci-dessus ne coûte rien, même sur une machine où Whisper, NeMo et Kokoro sont
 installés :
 
 ```python
-audio.synthesise(...)      # [narrate]  — Kokoro
+audio.synthesise(...)      # Kokoro, par speaker-helper
 audio.transcribe(...)      # Whisper, par vocal-helper
 audio.diarize(...)         # NeMo Sortformer
 audio.translate_cues(...)  # un modèle local, par best-engine-ai-helper

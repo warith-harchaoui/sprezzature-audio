@@ -224,9 +224,10 @@ def test_the_heavy_halves_are_not_pulled_in_by_the_import() -> None:
 #:
 #: The wheel install used to have to be `sprezzature-audio[<extra>]`. Since
 #: the extras were folded into the base on 2026-11-01 a bare
-#: `pip install sprezzature-audio` is the honest line, so both spellings
-#: count: the bracketed form still appears in messages about
-#: `sprezzature-audio[narrate]`, which is kept as a compatibility alias.
+#: `pip install sprezzature-audio` is the honest line. The bracketed form is
+#: still matched because a message may legitimately name `[dev]`, and because
+#: a pattern that stopped recognising it would quietly stop checking the
+#: messages that use it.
 _REQUIREMENTS_HINT = re.compile(r"requirements-[a-z-]+\.txt")
 _EXTRA_HINT = re.compile(r"sprezzature-audio(\[[a-z-]+\])?")
 

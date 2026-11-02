@@ -65,7 +65,7 @@ def _base() -> list[str]:
     """The base install, from ``dependencies = [...]`` in ``[project]``.
 
     Comments are stripped **before** the brackets are counted. The base block
-    carries prose that names extras and requirement-extras -- ``[narrate]``,
+    carries prose that names requirement-extras --
     ``speaker-helper[kokoro,detect]`` -- and a counter that reads those would
     close the array in the middle of a sentence and return a fragment. That is
     the same mistake :func:`_extras` documents having made with a lazy regex,

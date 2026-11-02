@@ -115,10 +115,10 @@ from sprezzature_audio_scripts.caption_diarize import (  # noqa: E402
 #: Names served lazily: ``name -> module to import on first use``.
 #:
 #: The value was ``(module, extra)`` until 2026-11-01, so that a caller asking
-#: for ``synthesise`` without ``[narrate]`` was told about *that* extra rather
-#: than whichever one the package mentioned first. Every one of those extras
-#: is now part of the base install, so there is no extra left to name and the
-#: second half of the tuple said something that was no longer true.
+#: for ``synthesise`` was told which extra to install rather than whichever
+#: one the package mentioned first. Every one of those extras is now part of
+#: the base install, so there is no extra left to name and the second half of
+#: the tuple said something that was no longer true.
 #:
 #: **The laziness itself is kept, and it is the half that was always load
 #: bearing.** These modules reach nemo, whisper and torch; importing

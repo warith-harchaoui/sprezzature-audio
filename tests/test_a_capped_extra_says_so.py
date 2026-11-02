@@ -12,9 +12,9 @@ file does not repeat it.
 
 What that one deliberately leaves alone is the extras, because an extra only
 breaks itself: the base install staying good on 3.14 while ``pip install
-"sprezzature-audio[narrate]"`` does not resolve there is a legitimate
-arrangement — the base is ``click`` and ``langdetect`` on purpose, and the
-weight is opt-in. The defect is not the narrowing. The defect is that nobody
+"sprezzature-audio[dev]"`` does not resolve there is a legitimate
+arrangement — an extra is opt-in, and nothing that only a contributor
+installs should narrow what a reader can run. The defect is not the narrowing. The defect is that nobody
 knows about it: before this file, ``grep -c 3.14 pyproject.toml`` returned
 **0** while seven of the twelve extras could not be installed on it. What a
 reader of the manifest gets instead is
