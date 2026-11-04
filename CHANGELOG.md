@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## v1.10.0 (2026-11-04): click everywhere, and a front door that passes --help on
+
 ### Changed
 
 - **No argparse left in the command lines.** The last eight parsers are click now, through `scripts/_click.py`: `sprezzature-audio-audit`, `-benchmark`, `-voice`, `-install`, `-install-diarize`, `-install-voice`, the three `-narrate-*` commands (their shared parser in `scripts/_speaker.py`) and `sprezzature-audio-mcp`. Option names, defaults, choices and exit codes are unchanged; usage errors still exit 2. Every `main` takes an optional `argv`. The help reads the click way (`Usage:`, `-h`, `-V`), and `sprezzature-audio-mcp` gained `-V`. `scripts/_argparse.py` stays, unused here, because it is the canonical copy the hub syncs to the other bricks.

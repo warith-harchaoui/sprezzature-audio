@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sprezzature-audio"
-version = "1.9.0"
+version = "1.10.0"
 description = "Speech-to-text, speaker diarization, speaker identification, multilingual caption translation, and narration. Local-first: Whisper, NeMo Sortformer, TitaNet, Kokoro, local LLM."
 readme = "README.md"
 # `<3.14` since 2026-11-01, and it is the one real cost of putting everything
