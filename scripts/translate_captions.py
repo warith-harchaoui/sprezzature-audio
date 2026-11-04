@@ -89,12 +89,11 @@ from caption_diarize import parse_caption_cues  # noqa: E402
 # (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
 # at each call site below is a per-call override on top of that.
 #
-# ``best-engine-ai-helper`` is an optional extra (the ``[translate]`` extra
-# in pyproject.toml), so the import is deferred to inside the translator
-# closure built by ``make_ollama_translator``, the same policy CODING.md
-# sets for NeMo / pywhispercpp / numpy, rather than done here at module
-# scope, so this module (and its pure cue-handling functions) stay
-# importable on a base install with no extras.
+# ``best-engine-ai-helper`` is a base dependency since 2026-11-01, but the
+# import is still deferred to inside the translator closure built by
+# ``make_ollama_translator``, the same policy CODING.md sets for NeMo /
+# vocal-helper / numpy, so that importing this module (and its pure
+# cue-handling functions) does not pay for the LLM client.
 
 # ── Module-level configuration ────────────────────────────────────────────────
 

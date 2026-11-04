@@ -23,16 +23,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY . .
 
-# Which extras this image carries, declared rather than fixed. The default is
-# everything except speaker diarization: `nemo_toolkit[asr]` pulls torch and
-# several gigabytes with it, and the API deliberately does not expose any
-# route that needs it (see the module docstring in api.py — transcription and
-# diarization belong behind a job queue, not a synchronous HTTP call).
-#
-# The compose file beside this one declares the heavier build as its own
-# service rather than leaving the next reader to guess the argument.
-ARG EXTRAS=captions,translate,narrate,api,mcp
-RUN pip install --no-cache-dir ".[${EXTRAS}]"
+# One install, no extras: since 2026-11-01 everything this package does is in
+# the base, nemo_toolkit[asr] and torch included. The API still serves only
+# the fast, model-free routes (see the module docstring in api.py:
+# transcription and diarization belong behind a job queue, not a synchronous
+# HTTP call); the long tools run as commands in this same image.
+RUN pip install --no-cache-dir .
 
 EXPOSE 8000
 

@@ -40,7 +40,7 @@ Shell completion:
   eval "$(_SPREZZATURE_AUDIO_COMPLETE=zsh_source sprezzature-audio)"    # zsh
 
 Run `sprezzature-audio tools` to see which tools are ready on this machine
-and which need an extra installed.
+and which fail to import. A tool's own flags: `sprezzature-audio TOOL -- --help`.
 """
 
 

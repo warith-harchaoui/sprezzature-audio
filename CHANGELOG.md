@@ -1,5 +1,23 @@
 # Changelog: sprezzature-audio
 
+## [Unreleased]
+
+### Docs
+
+README, LISEZMOI, TRIGGERS and EXAMPLES rewritten against the code as it stands, and the smaller docs corrected where they described the extras that 1.9.0 removed.
+
+- **Every tool is documented.** The README listed seven speech tools and five narration ones as "six scripts"; it now lists all fifteen, with the console script and the front-door sub-command of each, plus `sprezzature-audio tools` and `sprezzature-audio-mcp`. LISEZMOI had lost the audit and narration tables entirely; it now has the same sections and facts as the README.
+- **Narration examples that could not run.** `make-audio narrate post.md --out post.mp3` does not exist: the narration commands take `--segments` (a JSON list of blocks) and `--out-dir`, and write `narration.wav` and `narration.vtt`. The examples now say so.
+- **A library name that does not exist.** `audio.synthesise(...)` was shown; there is no such attribute. The model-backed names are `transcribe`, `diarize`, `translate_cues`, `narrate` and the others in `_LAZY`, now shown with their real signatures. `word_error_rate` takes word lists, not strings, and the example now calls `normalise_words` first.
+- **`make-audio captions --help`** was said to show the tool's flags. The front door answers `--help` itself; `sprezzature-audio captions -- --help` or `sprezzature-audio-captions --help` reach the tool. The click epilog now says so too.
+- **`NEMO_DIAR_MODEL`** was listed as an environment variable. Nothing reads it; the checkpoint is chosen with `--model`. Removed from the README, LISEZMOI, LANDSCAPE, PAYSAGE and the `diarize_from_nemo` docstring. `OLLAMA_URL`, `SPREZZATURE_AUDIO_HOST` and `SPREZZATURE_AUDIO_PORT`, which the code does read, were missing and are now listed.
+- **`sprezzature-audio-name`** was described (in its front-door help) as asking a local model. It matches introduction and vocative patterns, and calls a local model only with `--ollama`. Its default output name for `meeting.speakers.vtt` is `meeting.speakers.speakers.json`, so the examples now pass `--out`.
+- **The voice engine.** The docs now say that this package does not choose it and neither should the caller: `speaker-helper`'s router decides, `sprezzature-publish` asks it, and Kokoro is the default.
+- **Install.** One `pip install`, `[dev]` as the only extra, ffmpeg alongside espeak-ng, the Chatterbox weights (about 1 GB) and the OpenVoice requirements file that a wheel cannot carry. The Kokoro download is two files, about 354 MB.
+- **Surfaces.** The README and LISEZMOI now document the HTTP routes with their `operation_id`, the MCP endpoint at `/mcp`, Docker and compose, and the skill. TRIGGERS now routes on the domain's vocabulary rather than on phrasings, lists every tool and the six MCP tools, and has one table of what to call on every surface.
+- **The MCP module docstring** described colour tools (`check_contrast`, `simulate_color_blindness`, `get_palette`) copied from another brick. It now names the six tools this server publishes.
+- **CODING, CONTRIBUTING, LANDSCAPE, PAYSAGE** no longer describe optional extras, a torch-free caption tier, or a base install of `click` and `langdetect`.
+
 ## v1.9.0 (2026-11-01): one `pip install`, and the extras are gone
 
 ### Changed — the whole packaging

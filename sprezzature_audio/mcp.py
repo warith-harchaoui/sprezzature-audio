@@ -3,9 +3,9 @@ sprezzature-audio — Model Context Protocol (MCP) surface.
 
 Adapter that republishes the FastAPI app in :mod:`sprezzature_audio.api`
 as MCP tools, so any MCP-aware host — an agent runtime, an IDE integration,
-a custom shell — can call ``check_contrast`` / ``simulate_color_blindness``
-/ ``get_palette`` as first-class tools instead of guessing at a shell
-command. Uses :mod:`fastapi_mcp` (https://github.com/tadata-org/fastapi_mcp):
+a custom shell — can call ``convert_captions`` / ``merge_speakers`` /
+``measure_wer`` / ``measure_der`` as first-class tools instead of guessing
+at a shell command. Uses :mod:`fastapi_mcp` (https://github.com/tadata-org/fastapi_mcp):
 one wrapper over the whole existing HTTP surface, so the routes serve both
 plain HTTP callers and MCP hosts without being written twice.
 
@@ -18,13 +18,13 @@ the disagreement only shows up at call time. Deriving the tools from the
 FastAPI signatures means the two cannot disagree: the ``operation_id`` on
 each route *is* the tool name, and the Pydantic model *is* the schema.
 
-Why colour checks are worth giving an agent
---------------------------------------------
-These are questions with defensible answers rather than opinions. A contrast
-ratio is defined by WCAG; a colour-vision simulation is a published matrix.
-An assistant asked "is this palette accessible?" can now answer with a
-number it computed instead of an impression it formed — and be wrong in a
-way that is checkable.
+Why these tools are worth giving an agent
+-----------------------------------------
+They work on text the pipeline already produced, so they answer in
+milliseconds and need no model. The two metrics are questions with
+defensible answers rather than opinions: a word error rate or a diarization
+error rate against a reference is a number the assistant computed, and it
+is wrong, when it is wrong, in a way that is checkable.
 
 ``fastapi-mcp`` is a base dependency since 2026-11-01, so there is no extra
 to ask for::
@@ -59,16 +59,16 @@ except ImportError:  # pragma: no cover - dependency guard
 
     def main(argv: list[str] | None = None) -> None:
         """
-        Entry point when the MCP extra is not installed.
+        Entry point when ``fastapi-mcp`` cannot be imported.
 
         Takes the same ``argv`` as the real entry point and ignores it:
         the two variants are reached through the same console script, so
         a caller that passes arguments must not get a ``TypeError`` from
         the branch that happens to be missing a dependency.
 
-        Says which extra is missing and stops. Reaching an MCP
-        command without the ``[mcp]`` extra needs a one-line fix,
-        not a stack trace.
+        Says the install is broken and stops. ``fastapi-mcp`` is a base
+        dependency, so the fix is a reinstall, and it deserves one line
+        rather than a stack trace.
         """
         print(
             "sprezzature-audio MCP surface could not import fastapi-mcp, "

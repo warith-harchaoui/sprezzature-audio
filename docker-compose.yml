@@ -7,8 +7,10 @@
 #   curl -s localhost:8000/health
 #   curl -s localhost:8000/v1/device          # which accelerator this host uses
 #   docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
-#   docker compose run --rm api sprezzature-audio-narrate-kokoro /work/post.md --out /work/post.mp3
-#   docker compose --profile diarize run --rm diarize sprezzature-audio-pipeline /work/talk.mp4
+#   docker compose run --rm api sprezzature-audio-narrate-kokoro --segments /work/segments.json --out-dir /work/out
+#   docker compose --profile diarize run --rm diarize sprezzature-audio-diarize /work/talk.mp4
+#   docker compose --profile diarize run --rm diarize sprezzature-audio-pipeline \
+#       --captions /work/talk.vtt --diarization /work/talk.diarization.json
 #   docker compose --profile translate up -d  # + the model the translator needs
 #
 # Three services, and the split is the point.
@@ -19,10 +21,9 @@
 # synchronous route is a timeout with extra steps. So the long tools stay
 # command lines, run through this same image.
 #
-# `diarize` is the same build with one more extra. `nemo_toolkit[asr]` pulls
-# torch and several gigabytes with it, and nothing the API serves needs it —
-# so the default image does not carry it, and this service declares the build
-# argument rather than leaving it in a comment for someone to retype.
+# `diarize` is the same image, run rather than served. Since 2026-11-01 there
+# are no extras, so `nemo_toolkit[asr]` is in every build; what this service
+# adds is the shape of a batch job: no port, no restart, a command per run.
 
 services:
   api:
@@ -50,11 +51,8 @@ services:
     restart: unless-stopped
 
   diarize:
-    build:
-      context: .
-      args:
-        EXTRAS: all,api,mcp
-    image: sprezzature-audio-diarize:local
+    build: .
+    image: sprezzature-audio:local
     profiles: ["diarize"]
     environment:
       SPREZZATURE_CACHE_DIR: /cache

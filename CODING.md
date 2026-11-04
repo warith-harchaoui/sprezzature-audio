@@ -20,11 +20,11 @@ Between a quarter and a third of non-blank lines carry a comment. A comment earn
 
 ## Tests
 
-`pytest` runs the suite. Every public function gets at least one test. The heavy machine-learning dependencies (NeMo, pywhispercpp) must be optional: importing them only inside the function that actually needs them, guarded so their absence does not crash anything, and the test suite must pass even on a machine where neither is installed.
+`pytest` runs the suite. Every public function gets at least one test. The suite needs no model, no network and no GPU: the heavy machine-learning libraries (NeMo, whisper.cpp through `vocal-helper`, torch) are installed with the package but never loaded by a test, and `tests/test_the_library_surface.py` blocks them in a subprocess to prove that `import sprezzature_audio` does not reach them.
 
-## Optional imports
+## Deferred imports
 
-Following on from the point above: `vocal-helper`, `nemo_toolkit`, and `numpy` are always imported inside the function that uses them, never at the top of the module. That keeps the module itself importable on a bare Python 3.10 install, before any of the optional extras are added, which is what lets `pip install sprezzature-audio` (with no extras) still work for anything that does not touch machine learning.
+Following on from the point above: `vocal-helper`, `nemo_toolkit`, `numpy` and the narration engines are always imported inside the function that uses them, never at the top of the module. They are base dependencies since 2026-11-01 (there are no feature extras), so this is not about a missing package any more. It is about cost: parsing a WebVTT file, auditing it or answering `--help` must not load a gigabyte of weights. The package's own `__init__` serves the model-backed names lazily for the same reason.
 
 ## Versioning
 

@@ -68,8 +68,8 @@ TOOLS: dict[str, tuple[str, str, str]] = {
     "name": (
         "name_from_transcript",
         "",
-        "Ask a local model to name the speakers from what they say. Needs "
-        "Ollama running; no extra to install.",
+        "Guess the speakers' names from what they say: introduction and "
+        "vocative patterns, plus a local-model pass with --ollama.",
     ),
     "translate": (
         "translate_captions",

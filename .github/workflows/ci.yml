@@ -1,8 +1,9 @@
 name: ci
 
-# Gentle, deterministic gate: ruff lint + pytest on the supported Python
-# versions. The heavy ML extras (captions / diarize) are not installed or
-# exercised here — the tests cover the light, model-free helpers only.
+# Gentle, deterministic gate: ruff, mypy and pytest on one Python, plus an
+# install-and-import job on the 3.10 floor. Everything is in the base install
+# since 2026-11-01, so the heavy ML libraries are installed here, but no test
+# loads a model: the suite covers the model-free paths only.
 
 "on":
   push:

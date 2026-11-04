@@ -24,7 +24,7 @@ Default model
 
 ``nvidia/diar_sortformer_4spk-v1``: a Sortformer checkpoint trained end
 to end to handle up to **4 concurrent speakers**. Override it with
-``--model`` or the ``NEMO_DIAR_MODEL`` environment variable. Checkpoints
+``--model``. Checkpoints
 for larger meetings (up to 8 speakers) exist in the same model family;
 the default here is the one built for small, everyday conversations.
 

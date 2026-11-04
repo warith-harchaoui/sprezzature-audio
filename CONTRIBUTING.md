@@ -36,4 +36,6 @@ Follow [CODING.md](CODING.md): NumPy-style docstrings, full type annotations, a 
 3. Keep each commit atomic: one commit should correspond to one coherent change, not a mix of unrelated edits.
 4. Open a pull request against `main`.
 
-The heavy machine-learning dependencies (NeMo, pywhispercpp) are optional extras, not requirements. Any new script must still degrade gracefully, meaning it should give a clear error message rather than a confusing traceback, when those extras are not installed.
+The heavy machine-learning dependencies (NeMo, whisper.cpp through `vocal-helper`, the narration engines) are part of the base install; there are no feature extras. A new script still imports them inside the function that needs them, so that `--help` and the model-free paths stay instant, and it gives a clear error message rather than a confusing traceback when one of them fails to import.
+
+A new command goes in three places: a `[project.scripts]` line in `pyproject.toml`, an entry in `TOOLS` in `sprezzature_audio/_tools.py` (which gives it a front-door sub-command), and a row in `README.md`, `LISEZMOI.md` and `TRIGGERS.md`. Command lines use click.

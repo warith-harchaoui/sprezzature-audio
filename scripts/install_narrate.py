@@ -4,8 +4,8 @@ install_narrate
 ===============
 
 One-stop install / model-pull helper for the narration engines
-(``openvoice``, ``chatterbox``). Mirrors the pattern of
-``install_alt_ai.py`` and ``install_captions.py`` from sprezzature-accessibility:
+(``kokoro``, ``openvoice``, ``chatterbox``). Mirrors the pattern of
+``install_captions.py`` and ``install_diarize.py`` in this package:
 the script does the boring downloads so the user does not have to
 read the upstream README.
 
@@ -367,9 +367,10 @@ def parse_args() -> argparse.Namespace:
         prog="sprezzature-audio-install-voice",
         description=(
             "Download model checkpoints for the narration engines "
-            "(kokoro, openvoice, chatterbox). The Python packages themselves "
-            "are installed via pip — see the per-engine requirements "
-            "files in ."
+            "(kokoro, openvoice, chatterbox). The Python packages come with "
+            "`pip install sprezzature-audio`, except OpenVoice's, which a wheel "
+            "cannot carry: from a clone, "
+            "`pip install -r scripts/requirements-narrate-openvoice.txt`."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
