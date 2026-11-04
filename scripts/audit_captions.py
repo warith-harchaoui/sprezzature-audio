@@ -61,7 +61,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _argparse import make_parser  # noqa: E402
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 from _vtt import Cue, parse  # noqa: E402
 
 #: Netflix Timed Text Style Guide, adult content. Named rather than inlined
@@ -111,163 +112,228 @@ def audit(
     # scrubbing a timeline actually counts.
     for index, cue in enumerate(cues, start=1):
         if cue.end <= cue.start:
-            findings.append(Finding(
-                "cue-reversed", index, cue.start,
-                f"ends at {cue.end:.3f}s, which is not after it starts",
-            ))
+            findings.append(
+                Finding(
+                    "cue-reversed",
+                    index,
+                    cue.start,
+                    f"ends at {cue.end:.3f}s, which is not after it starts",
+                )
+            )
         if previous is not None and cue.start < previous.end:
-            findings.append(Finding(
-                "cue-overlap", index, cue.start,
-                f"starts {previous.end - cue.start:.3f}s before cue "
-                f"{previous_index} ends; players either stack the two or drop "
-                f"one, and neither is what was meant",
-            ))
+            findings.append(
+                Finding(
+                    "cue-overlap",
+                    index,
+                    cue.start,
+                    f"starts {previous.end - cue.start:.3f}s before cue "
+                    f"{previous_index} ends; players either stack the two or drop "
+                    f"one, and neither is what was meant",
+                )
+            )
         if not cue.text.strip():
-            findings.append(Finding(
-                "cue-empty", index, cue.start,
-                "a timed cue with no text: a blank caption box, on screen, "
-                "for its full duration",
-            ))
+            findings.append(
+                Finding(
+                    "cue-empty",
+                    index,
+                    cue.start,
+                    "a timed cue with no text: a blank caption box, on screen, "
+                    "for its full duration",
+                )
+            )
             previous, previous_index = cue, index
             continue
 
         duration = max(cue.duration, 0.0)
         if 0 < duration < min_seconds:
-            findings.append(Finding(
-                "cue-too-brief", index, cue.start,
-                f"{duration:.3f}s on screen, under the {min_seconds:.3f}s "
-                f"floor; the eye registers a flash, not a sentence",
-            ))
+            findings.append(
+                Finding(
+                    "cue-too-brief",
+                    index,
+                    cue.start,
+                    f"{duration:.3f}s on screen, under the {min_seconds:.3f}s "
+                    f"floor; the eye registers a flash, not a sentence",
+                )
+            )
         if duration > max_seconds:
-            findings.append(Finding(
-                "cue-too-long", index, cue.start,
-                f"{duration:.1f}s on screen, over the {max_seconds:.0f}s "
-                f"ceiling; a cue that lingers has usually swallowed a "
-                f"sentence boundary",
-            ))
+            findings.append(
+                Finding(
+                    "cue-too-long",
+                    index,
+                    cue.start,
+                    f"{duration:.1f}s on screen, over the {max_seconds:.0f}s "
+                    f"ceiling; a cue that lingers has usually swallowed a "
+                    f"sentence boundary",
+                )
+            )
         if duration > 0:
             speed = _characters(cue) / duration
             if speed > cps:
-                findings.append(Finding(
-                    "cue-too-fast", index, cue.start,
-                    f"{speed:.1f} characters per second, over the {cps:.0f} "
-                    f"ceiling: accurate and still unreadable at the speed it "
-                    f"goes by",
-                ))
+                findings.append(
+                    Finding(
+                        "cue-too-fast",
+                        index,
+                        cue.start,
+                        f"{speed:.1f} characters per second, over the {cps:.0f} "
+                        f"ceiling: accurate and still unreadable at the speed it "
+                        f"goes by",
+                    )
+                )
         for line in cue.lines:
             if len(line) > line_chars:
-                findings.append(Finding(
-                    "line-too-wide", index, cue.start,
-                    f"a line of {len(line)} characters, over the "
-                    f"{line_chars}-character budget; wider lines wrap "
-                    f"differently in every player",
-                ))
+                findings.append(
+                    Finding(
+                        "line-too-wide",
+                        index,
+                        cue.start,
+                        f"a line of {len(line)} characters, over the "
+                        f"{line_chars}-character budget; wider lines wrap "
+                        f"differently in every player",
+                    )
+                )
                 break
         if len(cue.lines) > max_lines:
-            findings.append(Finding(
-                "too-many-lines", index, cue.start,
-                f"{len(cue.lines)} lines in one cue, over {max_lines}; the "
-                f"extra lines cover the picture they are describing",
-            ))
+            findings.append(
+                Finding(
+                    "too-many-lines",
+                    index,
+                    cue.start,
+                    f"{len(cue.lines)} lines in one cue, over {max_lines}; the "
+                    f"extra lines cover the picture they are describing",
+                )
+            )
         previous, previous_index = cue, index
 
     return findings
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Audit one caption file. Returns the process exit code."""
-    parser = make_parser(
-        prog="sprezzature-audio-audit",
-        description=(
-            "Check that a caption track can be read at the speed it goes by: "
-            "no overlapping or reversed cues, nothing too fast, too brief, "
-            "too long, too wide or too tall. Reads WebVTT or SubRip."
-        ),
-        epilog=(
-            "Examples:\n"
-            "  sprezzature-audio-audit talk.vtt\n"
-            "  sprezzature-audio-audit talk.srt --cps 20\n"
-            "  sprezzature-audio-audit talk.vtt --format json\n"
-            "\n"
-            "Defaults follow the Netflix Timed Text Style Guide for adult "
-            "content (17 cps, 5/6 s minimum, 7 s maximum, 42 characters per "
-            "line) and the two-line convention BBC and Netflix share. They "
-            "are conventions, not laws: a children's programme or a dense "
-            "technical talk justifies different numbers, which is why each "
-            "one is a flag.\n"
-        ),
-    )
-    parser.add_argument("track", type=Path, help="A .vtt or .srt file.")
-    parser.add_argument(
-        "--cps", type=float, default=DEFAULT_CPS, metavar="N",
-        help=f"Reading-speed ceiling, characters per second (default: {DEFAULT_CPS:.0f}).",
-    )
-    parser.add_argument(
-        "--min-seconds", type=float, default=DEFAULT_MIN_SECONDS, metavar="S",
-        help="Shortest a cue may stay on screen (default: 5/6 s).",
-    )
-    parser.add_argument(
-        "--max-seconds", type=float, default=DEFAULT_MAX_SECONDS, metavar="S",
-        help=f"Longest a cue may stay on screen (default: {DEFAULT_MAX_SECONDS:.0f} s).",
-    )
-    parser.add_argument(
-        "--line-chars", type=int, default=DEFAULT_LINE_CHARS, metavar="N",
-        help=f"Characters per line (default: {DEFAULT_LINE_CHARS}).",
-    )
-    parser.add_argument(
-        "--max-lines", type=int, default=DEFAULT_MAX_LINES, metavar="N",
-        help=f"Lines per cue (default: {DEFAULT_MAX_LINES}).",
-    )
-    parser.add_argument(
-        "--format", choices=("text", "json"), default="text",
-        help="Output shape (default: text).",
-    )
-    args = parser.parse_args(argv)
-
-    if not args.track.is_file():
-        sys.stderr.write(f"{args.track}: no such file\n")
+@sprezzature_command(
+    "sprezzature-audio-audit",
+    help=(
+        "Check that a caption track can be read at the speed it goes by: "
+        "no overlapping or reversed cues, nothing too fast, too brief, "
+        "too long, too wide or too tall. Reads WebVTT or SubRip."
+    ),
+    epilog=(
+        "\b\n"
+        "Examples:\n"
+        "  sprezzature-audio-audit talk.vtt\n"
+        "  sprezzature-audio-audit talk.srt --cps 20\n"
+        "  sprezzature-audio-audit talk.vtt --format json\n"
+        "\n"
+        "Defaults follow the Netflix Timed Text Style Guide for adult "
+        "content (17 cps, 5/6 s minimum, 7 s maximum, 42 characters per "
+        "line) and the two-line convention BBC and Netflix share. They "
+        "are conventions, not laws: a children's programme or a dense "
+        "technical talk justifies different numbers, which is why each "
+        "one is a flag.\n"
+    ),
+)
+@click.argument("track", type=click.Path(path_type=Path))
+@click.option(
+    "--cps",
+    type=float,
+    default=DEFAULT_CPS,
+    metavar="N",
+    help=f"Reading-speed ceiling, characters per second (default: {DEFAULT_CPS:.0f}).",
+)
+@click.option(
+    "--min-seconds",
+    type=float,
+    default=DEFAULT_MIN_SECONDS,
+    metavar="S",
+    help="Shortest a cue may stay on screen (default: 5/6 s).",
+)
+@click.option(
+    "--max-seconds",
+    type=float,
+    default=DEFAULT_MAX_SECONDS,
+    metavar="S",
+    help=f"Longest a cue may stay on screen (default: {DEFAULT_MAX_SECONDS:.0f} s).",
+)
+@click.option(
+    "--line-chars",
+    type=int,
+    default=DEFAULT_LINE_CHARS,
+    metavar="N",
+    help=f"Characters per line (default: {DEFAULT_LINE_CHARS}).",
+)
+@click.option(
+    "--max-lines",
+    type=int,
+    default=DEFAULT_MAX_LINES,
+    metavar="N",
+    help=f"Lines per cue (default: {DEFAULT_MAX_LINES}).",
+)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output shape (default: text).",
+)
+def _cli(
+    track: Path,
+    cps: float,
+    min_seconds: float,
+    max_seconds: float,
+    line_chars: int,
+    max_lines: int,
+    fmt: str,
+) -> int:
+    """Click command body: audit one track and return the exit code."""
+    if not track.is_file():
+        sys.stderr.write(f"{track}: no such file\n")
         return 2
 
-    cues = parse(args.track.read_text(encoding="utf-8", errors="replace"))
+    cues = parse(track.read_text(encoding="utf-8", errors="replace"))
     if not cues:
-        sys.stderr.write(
-            f"{args.track}: no cues found — is this a WebVTT or SubRip file?\n"
-        )
+        sys.stderr.write(f"{track}: no cues found — is this a WebVTT or SubRip file?\n")
         return 2
 
     findings = audit(
         cues,
-        cps=args.cps,
-        min_seconds=args.min_seconds,
-        max_seconds=args.max_seconds,
-        line_chars=args.line_chars,
-        max_lines=args.max_lines,
+        cps=cps,
+        min_seconds=min_seconds,
+        max_seconds=max_seconds,
+        line_chars=line_chars,
+        max_lines=max_lines,
     )
 
-    if args.format == "json":
+    if fmt == "json":
         json.dump(
             {
                 "cues": len(cues),
                 "findings_total": len(findings),
                 "findings": [
                     {
-                        "rule": f.rule, "cue": f.cue,
-                        "start": round(f.start, 3), "message": f.message,
+                        "rule": f.rule,
+                        "cue": f.cue,
+                        "start": round(f.start, 3),
+                        "message": f.message,
                     }
                     for f in findings
                 ],
             },
-            sys.stdout, indent=2, ensure_ascii=False,
+            sys.stdout,
+            indent=2,
+            ensure_ascii=False,
         )
         sys.stdout.write("\n")
     else:
         for finding in findings:
             print(finding)
         print(
-            f"{len(cues)} cue(s), {len(findings)} finding(s)." if findings
+            f"{len(cues)} cue(s), {len(findings)} finding(s)."
+            if findings
             else f"{len(cues)} cue(s), all readable."
         )
     return 1 if findings else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Audit one caption file. Returns the process exit code."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

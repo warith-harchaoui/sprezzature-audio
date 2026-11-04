@@ -33,12 +33,16 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import asyncio
 import json
 import sys
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 
 #: What each engine is called on both sides. The names happen to match today;
 #: naming the mapping anyway is what keeps a rename here from silently
@@ -89,35 +93,43 @@ def check_narration_install(engine: str) -> int:
     return probe()
 
 
-def build_parser(engine: str) -> argparse.ArgumentParser:
+def build_command(engine: str) -> click.Command:
     """The command line ``sprezzature-publish`` drives these wrappers with.
 
     Kept identical across the three engines on purpose: the orchestrator picks
     an engine by module name and then speaks the same flags to whichever it
     got, so a flag that exists on one and not another would fail only for the
-    people who switched.
+    people who switched. Built per engine because the program name and the
+    help text name the engine.
     """
-    parser = argparse.ArgumentParser(
-        prog=f"sprezzature-audio-narrate-{engine}",
-        description=(
+
+    @sprezzature_command(
+        f"sprezzature-audio-narrate-{engine}",
+        help=(
             f"Narrate a document with the {engine} voice, through "
             f"speaker-helper, and write the audio and its timed track."
         ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
-            "Driven by sprezzature-publish-narrate when a page is being "
+            "\b\n"
+            "Driven by sprezzature-publish-narrate when a page is being\n"
             "narrated, and runnable on its own:\n"
             f"  sprezzature-audio-narrate-{engine} --segments s.json --out-dir ./out\n"
         ),
     )
-    parser.add_argument(
+    @click.option(
         "--check",
-        action="store_true",
+        is_flag=True,
         help="Exit 0 when this engine could synthesise here, 1 otherwise.",
     )
-    parser.add_argument("--segments", type=Path, help="JSON list of blocks to read.")
-    parser.add_argument("--out-dir", type=Path, help="Where the narration and its .vtt go.")
-    parser.add_argument(
+    @click.option(
+        "--segments", type=click.Path(path_type=Path), help="JSON list of blocks to read."
+    )
+    @click.option(
+        "--out-dir",
+        type=click.Path(path_type=Path),
+        help="Where the narration and its .vtt go.",
+    )
+    @click.option(
         "--audio-format",
         default="wav",
         help=(
@@ -127,7 +139,7 @@ def build_parser(engine: str) -> argparse.ArgumentParser:
             "that plays it downloads whichever was written."
         ),
     )
-    parser.add_argument(
+    @click.option(
         "--bitrate",
         default="",
         help=(
@@ -136,28 +148,69 @@ def build_parser(engine: str) -> argparse.ArgumentParser:
             "default drifts."
         ),
     )
-    parser.add_argument(
+    @click.option(
         "--voice",
         default="",
         help="A built-in voice. Empty means: detect the language and pick one.",
     )
-    parser.add_argument(
+    @click.option(
         "--voice-sample",
-        type=Path,
+        type=click.Path(path_type=Path),
         default=None,
         help="Reference recording to clone (the cloning engines only).",
     )
-    parser.add_argument("--lang", default="", help="Override the language. Rarely needed.")
-    parser.add_argument(
+    @click.option("--lang", default="", help="Override the language. Rarely needed.")
+    @click.option(
         "--lexicon",
-        type=Path,
+        type=click.Path(path_type=Path),
         default=None,
         help=(
             "A pronunciation lexicon (YAML). State once how a word is said and "
             "every synthesis honours it -- which is what an acronym needs."
         ),
     )
-    return parser
+    def _cli(
+        check: bool,
+        segments: Path | None,
+        out_dir: Path | None,
+        audio_format: str,
+        bitrate: str,
+        voice: str,
+        voice_sample: Path | None,
+        lang: str,
+        lexicon: Path | None,
+    ) -> int:
+        """Click command body: check the install, or narrate the segments."""
+        if check:
+            return check_narration_install(engine)
+
+        if not segments or not out_dir:
+            sys.stderr.write("--segments and --out-dir are both required\n")
+            return 2
+
+        try:
+            blocks = json.loads(segments.read_text(encoding="utf-8"))
+            report = narrate(
+                engine,
+                blocks,
+                voice=voice,
+                voice_sample=voice_sample,
+                out_dir=out_dir,
+                lang=lang,
+                lexicon=lexicon,
+                audio_format=audio_format,
+                bitrate=bitrate,
+            )
+        except (RuntimeError, ValueError, NotImplementedError) as exc:
+            sys.stderr.write(f"{exc}\n")
+            return 1
+
+        # The last non-empty stdout line is the report, by the orchestrator's
+        # contract. Nothing else may be printed after it.
+        sys.stdout.write(json.dumps(report, ensure_ascii=False) + "\n")
+        return 0
+
+    return _cli
 
 
 def narrate(
@@ -262,33 +315,4 @@ def narrate(
 
 def main(engine: str, argv: list[str] | None = None) -> int:
     """Run one engine's wrapper; the three console scripts are one line each."""
-    args = build_parser(engine).parse_args(argv)
-
-    if args.check:
-        return check_narration_install(engine)
-
-    if not args.segments or not args.out_dir:
-        sys.stderr.write("--segments and --out-dir are both required\n")
-        return 2
-
-    try:
-        segments = json.loads(args.segments.read_text(encoding="utf-8"))
-        report = narrate(
-            engine,
-            segments,
-            voice=args.voice,
-            voice_sample=args.voice_sample,
-            out_dir=args.out_dir,
-            lang=args.lang,
-            lexicon=args.lexicon,
-            audio_format=args.audio_format,
-            bitrate=args.bitrate,
-        )
-    except (RuntimeError, ValueError, NotImplementedError) as exc:
-        sys.stderr.write(f"{exc}\n")
-        return 1
-
-    # The last non-empty stdout line is the report, by the orchestrator's
-    # contract. Nothing else may be printed after it.
-    sys.stdout.write(json.dumps(report, ensure_ascii=False) + "\n")
-    return 0
+    return run_command(build_command(engine), argv)

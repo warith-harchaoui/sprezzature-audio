@@ -59,29 +59,35 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import importlib
 import json
 import sys
 import zipfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
+
 # ── Module-level configuration ──────────────────────────────────────────────
 
-#: Where engine checkpoints / configs live, per-user. Mirrors the
-#: ``~/.cache/sprezzature-skill/`` convention used by alt_from_ollama.
+#: Where engine checkpoints / configs live, per-user. The same
+#: ``~/.cache/sprezzature-skill/`` root the captions and diarize scripts of
+#: this package cache under; unlike them, it does not read
+#: ``SPREZZATURE_CACHE_DIR``.
 CACHE_ROOT: Path = Path.home() / ".cache" / "sprezzature-skill"
 
 #: OpenVoice v2 checkpoint bundle. Tagged stable release on GitHub.
 #: Kept as a single configurable URL so the maintainer can pin a new
 #: version without editing logic.
 OPENVOICE_CHECKPOINT_URL: str = (
-    "https://myshell-public-repo-host.s3.amazonaws.com/openvoice/"
-    "checkpoints_v2_0417.zip"
+    "https://myshell-public-repo-host.s3.amazonaws.com/openvoice/checkpoints_v2_0417.zip"
 )
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
+
 
 def _download(url: str, dest: Path) -> None:
     """
@@ -159,6 +165,7 @@ def _check_importable(modules: tuple[str, ...]) -> bool:
 
 # ── OpenVoice v2 installer ─────────────────────────────────────────────────
 
+
 def install_openvoice() -> int:
     """
     Download OpenVoice v2 checkpoints into the local cache.
@@ -200,9 +207,7 @@ def install_openvoice() -> int:
     # in the upstream README; we point the wrapper config at the
     # canonical filenames.
     base_speakers_dir: Path = extract_dir / "checkpoints_v2" / "base_speakers" / "ses"
-    converter_ckpt: Path = (
-        extract_dir / "checkpoints_v2" / "converter" / "checkpoint.pth"
-    )
+    converter_ckpt: Path = extract_dir / "checkpoints_v2" / "converter" / "checkpoint.pth"
     config: dict[str, object] = {
         "device": "cpu",
         "default_language": "English",
@@ -213,13 +218,15 @@ def install_openvoice() -> int:
         "tau": 0.3,
     }
     (target_dir / "config.json").write_text(
-        json.dumps(config, indent=2) + "\n", encoding="utf-8",
+        json.dumps(config, indent=2) + "\n",
+        encoding="utf-8",
     )
     print(f"✓ openvoice ready (config: {target_dir / 'config.json'})")
     return 0
 
 
 # ── ChatterboxTTS installer ────────────────────────────────────────────────
+
 
 def install_chatterbox() -> int:
     """
@@ -361,45 +368,47 @@ def _espeak_is_usable() -> bool:
 
 # ── CLI ────────────────────────────────────────────────────────────────────
 
-def parse_args() -> argparse.Namespace:
-    """Parse the command-line arguments."""
-    parser = argparse.ArgumentParser(
-        prog="sprezzature-audio-install-voice",
-        description=(
-            "Download model checkpoints for the narration engines "
-            "(kokoro, openvoice, chatterbox). The Python packages come with "
-            "`pip install sprezzature-audio`, except OpenVoice's, which a wheel "
-            "cannot carry: from a clone, "
-            "`pip install -r scripts/requirements-narrate-openvoice.txt`."
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__,
-    )
-    parser.add_argument(
-        "--engine",
-        choices=("kokoro", "openvoice", "chatterbox", "all"),
-        default="all",
-        help="Engine to install (default: all).",
-    )
-    return parser.parse_args()
+#: The module docstring is the epilog, as it was under argparse's raw
+#: formatter. Each paragraph is marked ``\\b`` so click prints it as written.
+_EPILOG: str = "\n\n".join(
+    "\b\n" + paragraph for paragraph in (__doc__ or "").strip().split("\n\n")
+)
 
 
-def main() -> int:
-    """CLI entrypoint."""
-    args = parse_args()
-    engines = (
-        ("kokoro", "openvoice", "chatterbox")
-        if args.engine == "all" else (args.engine,)
-    )
+@sprezzature_command(
+    "sprezzature-audio-install-voice",
+    help=(
+        "Download model checkpoints for the narration engines "
+        "(kokoro, openvoice, chatterbox). The Python packages come with "
+        "`pip install sprezzature-audio`, except OpenVoice's, which a wheel "
+        "cannot carry: from a clone, "
+        "`pip install -r scripts/requirements-narrate-openvoice.txt`."
+    ),
+    epilog=_EPILOG,
+)
+@click.option(
+    "--engine",
+    type=click.Choice(["kokoro", "openvoice", "chatterbox", "all"]),
+    default="all",
+    help="Engine to install (default: all).",
+)
+def _cli(engine: str) -> int:
+    """Click command body: install each requested engine's checkpoints."""
+    engines = ("kokoro", "openvoice", "chatterbox") if engine == "all" else (engine,)
     installers = {
         "kokoro": install_kokoro,
         "openvoice": install_openvoice,
         "chatterbox": install_chatterbox,
     }
     failed: int = 0
-    for engine in engines:
-        failed += installers[engine]()
+    for name in engines:
+        failed += installers[name]()
     return 1 if failed else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

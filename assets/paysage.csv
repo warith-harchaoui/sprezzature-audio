@@ -1,5 +1,5 @@
 Tool,Local et hors ligne,Gratuit ou open source,Licence permissive pour un usage commercial,Qualité de la reconnaissance,Segmentation par locuteur,Identification nommée du locuteur,Synthèse vocale,Clonage de voix,Piste minutée produite,Couverture multilingue,Installation légère sans torch,Vitesse sur une machine ordinaire,Traitement en flux temps réel,Maturité et écosystème,Support commercial
-sprezzature-audio,5,5,4,4,3,5,4,3,5,4,5,4,1,1,1
+sprezzature-audio,5,5,4,4,3,5,4,3,5,4,1,4,1,1,1
 whisper.cpp,5,5,5,4,2,1,1,1,4,5,5,5,3,5,2
 faster-whisper,5,5,5,4,1,1,1,1,2,5,4,5,2,5,2
 WhisperX,5,5,3,4,4,1,1,1,4,4,2,4,1,4,1

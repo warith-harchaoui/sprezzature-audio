@@ -65,7 +65,8 @@ from pathlib import Path as _PathHelper
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
 from pathlib import Path
 
-from _argparse import make_parser  # noqa: E402
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 
 #: Where the GGML weights are cached. Override the parent dir via
 #: ``SPREZZATURE_CACHE_DIR``; the trailing ``whisper`` subfolder is fixed so
@@ -220,28 +221,31 @@ def download_model(name: str) -> Path:
 # ── CLI entry point ─────────────────────────────────────────────────────
 
 
-def main() -> int:
-    """Run the pip-install + model-prefetch pipeline."""
-    p = make_parser(
-        prog="sprezzature-audio-install",
-        description="Install vocal-helper (whisper.cpp over-layer) and "
-        "pre-download a GGML caption model so `sprezzature-audio-captions` "
-        "runs offline.",
-    )
-    p.add_argument(
-        "--model",
-        default=DEFAULT_MODEL,
-        choices=list(SUPPORTED_MODELS),
-        help=f"Model alias to pre-download (default: {DEFAULT_MODEL}).",
-    )
-    args = p.parse_args()
-
+@sprezzature_command(
+    "sprezzature-audio-install",
+    help="Install vocal-helper (whisper.cpp over-layer) and "
+    "pre-download a GGML caption model so `sprezzature-audio-captions` "
+    "runs offline.",
+)
+@click.option(
+    "--model",
+    default=DEFAULT_MODEL,
+    type=click.Choice(list(SUPPORTED_MODELS)),
+    help=f"Model alias to pre-download (default: {DEFAULT_MODEL}).",
+)
+def _cli(model: str) -> int:
+    """Click command body: install the engine, then prefetch ``model``."""
     ensure_captions_engine()
-    download_model(args.model)
+    download_model(model)
     print()
     print("→ Ready. Test with:")
     print("    python scripts/captions_from_whisper.py path/to/audio-or-video")
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run the pip-install + model-prefetch pipeline."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

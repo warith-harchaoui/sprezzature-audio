@@ -40,7 +40,7 @@ Shell completion:
   eval "$(_SPREZZATURE_AUDIO_COMPLETE=zsh_source sprezzature-audio)"    # zsh
 
 Run `sprezzature-audio tools` to see which tools are ready on this machine
-and which fail to import. A tool's own flags: `sprezzature-audio TOOL -- --help`.
+and which fail to import. A tool's own flags: `sprezzature-audio TOOL --help`.
 """
 
 
@@ -91,9 +91,14 @@ def _attach(name: str, module_name: str, extra: str, summary: str) -> None:
     @main.command(
         name,
         help=summary,
+        # No help option of its own: ``--help`` belongs to the tool. With the
+        # default one, ``sprezzature-audio audit --help`` printed this stub's
+        # one-line summary and a single RESTS argument, and only
+        # ``-- --help`` reached the flags anybody was asking about.
         context_settings={
             "ignore_unknown_options": True,
             "allow_extra_args": True,
+            "help_option_names": [],
         },
     )
     @click.argument("rest", nargs=-1, type=click.UNPROCESSED)
@@ -108,12 +113,13 @@ def _attach(name: str, module_name: str, extra: str, summary: str) -> None:
         except ImportError as exc:  # pragma: no cover - dependency guard
             raise SystemExit(missing_extra_message(_name, _extra, exc).rstrip()) from exc
 
-        # The tools read sys.argv themselves — they were commands before they
-        # were sub-commands, and they still are.
+        # The tools were commands before they were sub-commands, and they
+        # still are: each takes its own argv. sys.argv is set as well, for
+        # anything below that reads the program name from it.
         saved = sys.argv
         try:
             sys.argv = [f"sprezzature-audio {_name}", *rest]
-            raise SystemExit(int(module.main() or 0))
+            raise SystemExit(int(module.main(list(rest)) or 0))
         finally:
             sys.argv = saved
 

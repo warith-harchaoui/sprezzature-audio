@@ -34,7 +34,14 @@ EXPOSE 8000
 
 # Serve what the image was built for. A CMD of `--help` is a container that
 # starts, prints and exits — which looks like it works and does nothing.
+#
+# `sprezzature-audio-mcp` serves the same FastAPI app as `uvicorn
+# sprezzature_audio.api:app`, with the MCP endpoint mounted on it: one port
+# answers both /v1/... and /mcp. Until this CMD it ran plain uvicorn, and the
+# container had no /mcp. Bound to 0.0.0.0 because the server's own default,
+# 127.0.0.1, is unreachable from outside a container.
+#
 # Override with any of the command lines:
 #
 #   docker run --rm -v "$PWD:/work" IMAGE sprezzature-audio-captions /work/talk.mp4
-CMD ["uvicorn", "sprezzature_audio.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sprezzature-audio-mcp", "--host", "0.0.0.0", "--port", "8000"]

@@ -53,7 +53,8 @@ from pathlib import Path
 from pathlib import Path as _PathHelper
 
 sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
-from _argparse import make_parser  # noqa: E402
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 
 #: Where NeMo caches downloaded checkpoints; the diarize scripts export
 #: the same env var so the two agree on the location.
@@ -163,34 +164,32 @@ def prefetch_models(models: list[str]) -> None:
     print(f"→ Cache populated at {NEMO_DIR}.")
 
 
-def main() -> int:
-    """Run pip-install + checkpoint-prefetch. Returns 0 on success."""
-    p = make_parser(
-        prog="sprezzature-audio-install-diarize",
-        description=(
-            "Install nemo_toolkit[asr] and pre-download the Sortformer + "
-            "TitaNet checkpoints so `sprezzature-audio-diarize` / "
-            "`sprezzature-audio-identify` run offline."
-        ),
-    )
-    p.add_argument("--no-install", action="store_true", help="Skip the pip install step.")
-    p.add_argument("--no-download", action="store_true", help="Skip the model prefetch step.")
-    p.add_argument(
-        "--only",
-        choices=("sortformer", "titanet"),
-        default=None,
-        help="Prefetch just one of the two checkpoints.",
-    )
-    args = p.parse_args()
-
-    if not args.no_install:
+@sprezzature_command(
+    "sprezzature-audio-install-diarize",
+    help=(
+        "Install nemo_toolkit[asr] and pre-download the Sortformer + "
+        "TitaNet checkpoints so `sprezzature-audio-diarize` / "
+        "`sprezzature-audio-identify` run offline."
+    ),
+)
+@click.option("--no-install", is_flag=True, help="Skip the pip install step.")
+@click.option("--no-download", is_flag=True, help="Skip the model prefetch step.")
+@click.option(
+    "--only",
+    type=click.Choice(["sortformer", "titanet"]),
+    default=None,
+    help="Prefetch just one of the two checkpoints.",
+)
+def _cli(no_install: bool, no_download: bool, only: str | None) -> int:
+    """Click command body: install NeMo, then prefetch the checkpoints."""
+    if not no_install:
         ensure_nemo()
 
-    if not args.no_download:
+    if not no_download:
         models: list[str] = []
-        if args.only in (None, "sortformer"):
+        if only in (None, "sortformer"):
             models.append(SORTFORMER_MODEL)
-        if args.only in (None, "titanet"):
+        if only in (None, "titanet"):
             models.append(TITANET_MODEL)
         prefetch_models(models)
 
@@ -201,6 +200,11 @@ def main() -> int:
         "    python scripts/identify_from_titanet.py <diar.json> --audio <audio> --refs ./voices/"
     )
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run pip-install + checkpoint-prefetch. Returns 0 on success."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

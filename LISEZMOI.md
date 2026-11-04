@@ -105,11 +105,11 @@ La porte d'entrée liste chaque outil. Un script doit appeler la commande propre
 sprezzature-audio --help                 # le catalogue, une ligne par outil
 make-audio --help                        # la même commande, sous son ancien nom
 sprezzature-audio tools                  # quels outils s'importent sur cette machine
-sprezzature-audio captions -- --help     # les options d'un outil, par la porte d'entrée
+sprezzature-audio captions --help        # les options d'un outil, par la porte d'entrée
 sprezzature-audio-captions --help        # les mêmes options, par la commande de l'outil
 ```
 
-Les deux noms mènent au même groupe click, ils ne peuvent donc pas diverger. Tout argument placé après le nom de l'outil va à cet outil. `--help` fait exception : la porte d'entrée y répond elle-même, d'où le `--` dans l'exemple.
+Les deux noms mènent au même groupe click, ils ne peuvent donc pas diverger. Tout argument placé après le nom de l'outil va à cet outil, `--help` compris : la porte d'entrée ne répond à `--help` qu'avant le nom d'un outil.
 
 ```sh
 # Transcrire une vidéo en WebVTT (écrit conf.vtt)
@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # ajoute un serveur Ollama pour translate et name
 ```
 
-L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut sert les routes HTTP avec uvicorn (pas le point d'accès MCP). Les fichiers passent par `./work`, monté sur `/work` ; les caches de modèles vont dans un volume nommé, par `SPREZZATURE_CACHE_DIR`. Les outils longs tournent comme des commandes dans la même image.
+L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut est `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` : un seul processus, sur un seul port, sert les routes HTTP et le point d'accès MCP sur `/mcp`. Les fichiers passent par `./work`, monté sur `/work` ; les caches de modèles vont dans un volume nommé, par `SPREZZATURE_CACHE_DIR`. Les outils longs tournent comme des commandes dans la même image.
 
 ## Skill d'agent
 

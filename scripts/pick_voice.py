@@ -43,12 +43,16 @@ Author
 
 from __future__ import annotations
 
-import argparse
 import json
 import subprocess
 import sys
 import wave
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 
 # ── Module-level configuration ──────────────────────────────────────────────
 
@@ -57,9 +61,7 @@ ENGINES: tuple[str, ...] = ("kokoro", "openvoice", "chatterbox")
 
 #: Default sample line. Designed to exercise a range of phonemes plus
 #: one comma + one period so prosody is audible.
-DEFAULT_SAMPLE_TEXT: str = (
-    "Hello, this is how my narrator sounds reading a normal sentence."
-)
+DEFAULT_SAMPLE_TEXT: str = "Hello, this is how my narrator sounds reading a normal sentence."
 
 #: Built-in voices per engine. Kept in code (not auto-discovered from
 #: the checkpoint) so the picker works even when the engine isn't yet
@@ -73,25 +75,69 @@ BUILTIN_VOICES: dict[str, tuple[str, ...]] = {
     # choice, and `narrate_kokoro.py --list-voices` only works once the
     # weights are downloaded.
     "kokoro": (
-        "af_alloy", "af_aoede", "af_bella", "af_heart", "af_jessica",
-        "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky",
-        "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam",
-        "am_michael", "am_onyx", "am_puck", "am_santa",
-        "bf_alice", "bf_emma", "bf_isabella", "bf_lily",
-        "bm_daniel", "bm_fable", "bm_george", "bm_lewis",
-        "ef_dora", "em_alex", "em_santa",
+        "af_alloy",
+        "af_aoede",
+        "af_bella",
+        "af_heart",
+        "af_jessica",
+        "af_kore",
+        "af_nicole",
+        "af_nova",
+        "af_river",
+        "af_sarah",
+        "af_sky",
+        "am_adam",
+        "am_echo",
+        "am_eric",
+        "am_fenrir",
+        "am_liam",
+        "am_michael",
+        "am_onyx",
+        "am_puck",
+        "am_santa",
+        "bf_alice",
+        "bf_emma",
+        "bf_isabella",
+        "bf_lily",
+        "bm_daniel",
+        "bm_fable",
+        "bm_george",
+        "bm_lewis",
+        "ef_dora",
+        "em_alex",
+        "em_santa",
         "ff_siwis",
-        "hf_alpha", "hf_beta", "hm_omega", "hm_psi",
-        "if_sara", "im_nicola",
-        "jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo",
-        "pf_dora", "pm_alex", "pm_santa",
-        "zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi",
-        "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang",
+        "hf_alpha",
+        "hf_beta",
+        "hm_omega",
+        "hm_psi",
+        "if_sara",
+        "im_nicola",
+        "jf_alpha",
+        "jf_gongitsune",
+        "jf_nezumi",
+        "jf_tebukuro",
+        "jm_kumo",
+        "pf_dora",
+        "pm_alex",
+        "pm_santa",
+        "zf_xiaobei",
+        "zf_xiaoni",
+        "zf_xiaoxiao",
+        "zf_xiaoyi",
+        "zm_yunjian",
+        "zm_yunxi",
+        "zm_yunxia",
+        "zm_yunyang",
     ),
     "openvoice": (
-        "base-en-default", "base-en-friendly", "base-en-cheerful",
-        "base-en-sad", "base-en-whispering",
-        "base-es-default", "base-fr-default",
+        "base-en-default",
+        "base-en-friendly",
+        "base-en-cheerful",
+        "base-en-sad",
+        "base-en-whispering",
+        "base-es-default",
+        "base-fr-default",
     ),
     "chatterbox": (
         "default",  # the bundled speaker; clones go through --voice-sample
@@ -100,6 +146,7 @@ BUILTIN_VOICES: dict[str, tuple[str, ...]] = {
 
 
 # ── Engine probe ───────────────────────────────────────────────────────────
+
 
 def engine_is_available(engine: str) -> bool:
     """
@@ -125,8 +172,12 @@ def engine_is_available(engine: str) -> bool:
 
 # ── Sampling ───────────────────────────────────────────────────────────────
 
+
 def sample_one_voice(
-    engine: str, voice: str, text: str, out_dir: Path,
+    engine: str,
+    voice: str,
+    text: str,
+    out_dir: Path,
 ) -> Path | None:
     """
     Generate one demo clip via the engine wrapper.
@@ -154,26 +205,32 @@ def sample_one_voice(
     # The wrapper concatenates per-segment WAVs into one file named
     # ``narration.wav``; we move it to the voice-named target.
     script: Path = Path(__file__).resolve().parent / f"narrate_{engine}.py"
-    segments_payload: list[dict[str, object]] = [{
-        "text": text,
-        "kind": "paragraph",
-        "heading_level": 0,
-        "pause_before_ms": 0,
-        "pause_after_ms": 0,
-        "emotion": "neutral",
-        "intensity": 0.5,
-        "pace": "normal",
-        "emphasis_word": "",
-    }]
+    segments_payload: list[dict[str, object]] = [
+        {
+            "text": text,
+            "kind": "paragraph",
+            "heading_level": 0,
+            "pause_before_ms": 0,
+            "pause_after_ms": 0,
+            "emotion": "neutral",
+            "intensity": 0.5,
+            "pace": "normal",
+            "emphasis_word": "",
+        }
+    ]
     work: Path = out_dir / ".segments.json"
     work.write_text(json.dumps(segments_payload, ensure_ascii=False), encoding="utf-8")
     try:
         proc = subprocess.run(
             [
-                sys.executable, str(script),
-                "--segments", str(work),
-                "--out-dir", str(out_dir),
-                "--voice", voice,
+                sys.executable,
+                str(script),
+                "--segments",
+                str(work),
+                "--out-dir",
+                str(out_dir),
+                "--voice",
+                voice,
             ],
             capture_output=True,
             text=True,
@@ -186,7 +243,8 @@ def sample_one_voice(
     if proc.returncode != 0:
         return None
     last_line: str = next(
-        (line for line in reversed(proc.stdout.splitlines()) if line.strip()), "",
+        (line for line in reversed(proc.stdout.splitlines()) if line.strip()),
+        "",
     )
     try:
         result = json.loads(last_line)
@@ -196,7 +254,6 @@ def sample_one_voice(
     if produced != target and produced.is_file():
         produced.replace(target)
     return target if target.is_file() else None
-
 
 
 # ── Measuring a voice ──────────────────────────────────────────────────────
@@ -248,11 +305,11 @@ def pitch_span_semitones(path: Path) -> float | None:
     low, high = int(rate / F0_MAX_HZ), int(rate / F0_MIN_HZ)
     pitches: list[float] = []
     for start in range(0, max(0, len(samples) - window), hop):
-        frame = samples[start:start + window]
+        frame = samples[start : start + window]
         if np.sqrt(np.mean(frame * frame)) < 0.02:
             continue
         frame = frame - frame.mean()
-        correlation = np.correlate(frame, frame, mode="full")[window - 1:]
+        correlation = np.correlate(frame, frame, mode="full")[window - 1 :]
         if correlation[0] <= 0:
             continue
         band = correlation[low:high]
@@ -273,71 +330,72 @@ def pitch_span_semitones(path: Path) -> float | None:
 
 # ── CLI ────────────────────────────────────────────────────────────────────
 
-def parse_args() -> argparse.Namespace:
-    """Parse the command-line arguments."""
-    parser = argparse.ArgumentParser(
-        prog="sprezzature-audio-voice",
-        description="List narration engine voices and optionally sample them.",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__,
-    )
-    parser.add_argument(
-        "--engine",
-        choices=ENGINES + ("all",),
-        default="all",
-        help="Engine to list / sample (default: all).",
-    )
-    parser.add_argument(
-        "--sample",
-        action="store_true",
-        help="Generate a demo clip for each listed voice.",
-    )
-    parser.add_argument(
-        "--text",
-        default=DEFAULT_SAMPLE_TEXT,
-        help=f"Sample text (default: {DEFAULT_SAMPLE_TEXT!r}).",
-    )
-    parser.add_argument(
-        "--out-dir",
-        type=Path,
-        default=Path("out/voice-samples"),
-        help="Where to write the demo clips (default: out/voice-samples/).",
-    )
-    parser.add_argument(
-        "--measure",
-        action="store_true",
-        help="With --sample, rank the voices by how far their pitch moves. "
-             "Turns a long list into a shortlist worth listening to.",
-    )
-    return parser.parse_args()
+#: The module docstring is the epilog, as it was under argparse's raw
+#: formatter. Each paragraph is marked ``\\b`` so click prints it as written
+#: instead of reflowing the usage examples into one line.
+_EPILOG: str = "\n\n".join(
+    "\b\n" + paragraph for paragraph in (__doc__ or "").strip().split("\n\n")
+)
 
 
-def main() -> int:
-    """CLI entrypoint."""
-    args = parse_args()
-    engines: tuple[str, ...] = ENGINES if args.engine == "all" else (args.engine,)
+@sprezzature_command(
+    "sprezzature-audio-voice",
+    help="List narration engine voices and optionally sample them.",
+    epilog=_EPILOG,
+)
+@click.option(
+    "--engine",
+    type=click.Choice([*ENGINES, "all"]),
+    default="all",
+    help="Engine to list / sample (default: all).",
+)
+@click.option(
+    "--sample",
+    is_flag=True,
+    help="Generate a demo clip for each listed voice.",
+)
+@click.option(
+    "--text",
+    default=DEFAULT_SAMPLE_TEXT,
+    help=f"Sample text (default: {DEFAULT_SAMPLE_TEXT!r}).",
+)
+@click.option(
+    "--out-dir",
+    type=click.Path(path_type=Path),
+    default=Path("out/voice-samples"),
+    help="Where to write the demo clips (default: out/voice-samples/).",
+)
+@click.option(
+    "--measure",
+    is_flag=True,
+    help="With --sample, rank the voices by how far their pitch moves. "
+    "Turns a long list into a shortlist worth listening to.",
+)
+def _cli(engine: str, sample: bool, text: str, out_dir: Path, measure: bool) -> int:
+    """Click command body: list the voices, sample and rank them on request."""
+    engines: tuple[str, ...] = ENGINES if engine == "all" else (engine,)
 
-    for engine in engines:
-        installed: bool = engine_is_available(engine)
+    for name in engines:
+        installed: bool = engine_is_available(name)
         marker: str = "✓" if installed else "✗ (not installed)"
-        print(f"\n[{engine}] {marker}")
-        for voice in BUILTIN_VOICES[engine]:
+        print(f"\n[{name}] {marker}")
+        for voice in BUILTIN_VOICES[name]:
             print(f"  • {voice}")
-        if not args.sample:
+        if not sample:
             continue
         if not installed:
-            print(
-                f"  → samples skipped: pip install -r "
-                f"requirements-narrate-{engine}.txt"
-            )
+            print(f"  → samples skipped: pip install -r requirements-narrate-{name}.txt")
             continue
         measured: list[tuple[float, str, Path]] = []
-        for voice in BUILTIN_VOICES[engine]:
+        for voice in BUILTIN_VOICES[name]:
             out: Path | None = sample_one_voice(
-                engine, voice, args.text, args.out_dir / engine,
+                name,
+                voice,
+                text,
+                out_dir / name,
             )
             print(f"    → {voice}: {out if out else 'FAILED'}")
-            if args.measure and out is not None:
+            if measure and out is not None:
                 span = pitch_span_semitones(out)
                 if span is not None:
                     measured.append((span, voice, out))
@@ -366,6 +424,11 @@ def main() -> int:
         "--engine <engine> --voice-sample your-voice.wav <post.md>"
     )
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI entrypoint."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

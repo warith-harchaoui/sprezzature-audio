@@ -80,7 +80,6 @@ except ImportError:  # pragma: no cover - dependency guard
         sys.exit(1)
 
 else:
-
     # Reuse the exact same FastAPI app -- MCP is a thin wrapper on top.
     from sprezzature_audio.api import app
 
@@ -104,7 +103,6 @@ else:
     else:  # pragma: no cover - legacy fastapi-mcp
         mcp.mount()
 
-
     def main(argv: list[str] | None = None) -> None:
         """
         Entry point for the ``sprezzature-audio-mcp`` console script.
@@ -122,40 +120,62 @@ else:
         argv : list of str or None, optional
             Arguments to parse. ``None`` reads ``sys.argv``.
         """
-        import argparse
         import os
 
-        parser = argparse.ArgumentParser(
-            prog="sprezzature-audio-mcp",
-            description=(
+        import click
+        from sprezzature_audio_scripts._click import (
+            CONTEXT_SETTINGS,
+            SprezzatureCommand,
+            run_command,
+        )
+
+        # Read here, at call time, as the argparse parser did: a test or a
+        # container that sets the variables before calling main() is heard.
+        host_default = os.environ.get("SPREZZATURE_AUDIO_HOST", "127.0.0.1")
+        port_default = int(os.environ.get("SPREZZATURE_AUDIO_PORT", "8000"))
+
+        @click.command(
+            name="sprezzature-audio-mcp",
+            cls=SprezzatureCommand,
+            context_settings=CONTEXT_SETTINGS,
+            help=(
                 "Serve the sprezzature-audio MCP tools over HTTP. Every tool is a "
                 "route on the same FastAPI app, with the MCP endpoint "
                 "mounted beside them."
             ),
-            formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog=(
                 "Defaults come from SPREZZATURE_AUDIO_HOST and "
-                "SPREZZATURE_AUDIO_PORT when those are set.\n"
+                "SPREZZATURE_AUDIO_PORT when those are set.\n\n"
                 "The host defaults to 127.0.0.1: pass --host 0.0.0.0 to "
                 "accept connections from outside this machine."
             ),
         )
-        parser.add_argument(
-            "--host",
-            default=os.environ.get("SPREZZATURE_AUDIO_HOST", "127.0.0.1"),
-            help="Interface to bind (default: %(default)s).",
+        @click.version_option(
+            None,
+            "-V",
+            "--version",
+            package_name="sprezzature-audio",
+            prog_name="sprezzature-audio-mcp",
         )
-        parser.add_argument(
+        @click.option(
+            "--host",
+            default=host_default,
+            help=f"Interface to bind (default: {host_default}).",
+        )
+        @click.option(
             "--port",
             type=int,
-            default=int(os.environ.get("SPREZZATURE_AUDIO_PORT", "8000")),
-            help="Port to bind (default: %(default)s).",
+            default=port_default,
+            help=f"Port to bind (default: {port_default}).",
         )
-        args = parser.parse_args(argv)
+        def _serve(host: str, port: int) -> None:
+            import uvicorn
 
-        import uvicorn
+            uvicorn.run(app, host=host, port=port, workers=1)
 
-        uvicorn.run(app, host=args.host, port=args.port, workers=1)
+        _serve._sprezzature_prog_name = "sprezzature-audio-mcp"  # type: ignore[attr-defined]
+        run_command(_serve, argv)
+
 
 if __name__ == "__main__":  # pragma: no cover
     main()

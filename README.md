@@ -105,11 +105,11 @@ The front door lists every tool. A script should call the tool's own command.
 sprezzature-audio --help                 # the catalogue, one line per tool
 make-audio --help                        # the same command, under its older name
 sprezzature-audio tools                  # which tools import on this machine
-sprezzature-audio captions -- --help     # one tool's own flags, through the front door
+sprezzature-audio captions --help        # one tool's own flags, through the front door
 sprezzature-audio-captions --help        # the same flags, from the tool's own command
 ```
 
-Both names resolve to the same click group, so they cannot drift. Every argument after the tool name goes to that tool. `--help` is the exception: the front door answers it itself, which is why the example passes it after `--`.
+Both names resolve to the same click group, so they cannot drift. Every argument after the tool name goes to that tool, `--help` included: the front door answers `--help` only before a tool is named.
 
 ```sh
 # Transcribe a video to WebVTT (writes talk.vtt)
@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # adds an Ollama server for translate and name
 ```
 
-The image installs the package with `ffmpeg` and `espeak-ng`, and its default command serves the HTTP routes with uvicorn (not the MCP endpoint). Files go through `./work`, mounted at `/work`; model caches go to a named volume through `SPREZZATURE_CACHE_DIR`. The long tools run as commands in the same image.
+The image installs the package with `ffmpeg` and `espeak-ng`, and its default command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000`: one process on one port serves the HTTP routes and the MCP endpoint at `/mcp`. Files go through `./work`, mounted at `/work`; model caches go to a named volume through `SPREZZATURE_CACHE_DIR`. The long tools run as commands in the same image.
 
 ## Agent skill
 

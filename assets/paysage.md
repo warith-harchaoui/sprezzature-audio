@@ -2,15 +2,15 @@
 
 ## Axes
 
-- **Horizontal: Efficacité ↔ Créativité** — ~39 % de la variance
-- **Vertical: Accessibilité ↔ Liberté** — ~15 % de la variance
+- **Horizontal: Agilité ↔ Créativité** — ~39 % de la variance
+- **Vertical: Fiabilité ↔ Accessibilité** — ~16 % de la variance
 
-En deux axes, nous avons préservé ~54 % de l'information du tableau.
+En deux axes, nous avons préservé ~55 % de l'information du tableau.
 
 ## Analyse
 
-L'axe horizontal distingue principalement les solutions qui privilégient l'efficacité, comme AssemblyAI ou Amazon Transcribe, de celles qui se concentrent davantage sur la créativité, avec sprezzature-audio en tête. La vitesse d'exécution et la simplicité d'installation sont des facteurs importants pour les premières, tandis que la capacité à générer des voix expressives et originales prime pour les secondes. On observe que sprezzature-audio, bien qu'étant le leader général, n'est pas le plus performant en termes d'efficacité, ce qui le place dans une position intéressante, à la fois créatif et accessible.
+L'axe horizontal distingue principalement les solutions qui misent sur la capacité à générer des résultats originaux et personnalisés, de celles qui privilégient la rapidité de mise en œuvre et l'efficacité. Les outils positionnés à droite, comme sprezzature-audio, F5-TTS et XTTS v2, excellent dans la création de voix et de contenus audio complexes, tandis que ceux à gauche, tels que whisper.cpp et faster-whisper, se distinguent par leur agilité et leur facilité d'utilisation. Sprezzature-audio, bien qu'étant le leader, se positionne en réalité plus sur la créativité que sur l'agilité, ce qui le place dans une posture intéressante face à des alternatives plus pragmatiques.
 
-L'axe vertical met en opposition les options qui se veulent les plus accessibles, souvent grâce à leur gratuité ou à leur facilité d'utilisation, comme ElevenLabs ou Azure Speech et celles qui offrent une plus grande liberté, notamment grâce à des licences permissives et une capacité à fonctionner hors ligne. Plusieurs options se retrouvent dans le coin supérieur droit, témoignant d'une volonté de combiner créativité et liberté, comme MeloTTS ou faster-whisper. Il est intéressant de noter que plusieurs solutions, comme WhisperX ou pyannote.audio, se regroupent dans le coin supérieur gauche, privilégiant l'efficacité tout en offrant une certaine liberté d'utilisation.
+L'axe vertical oppose, quant à lui, les solutions qui se veulent robustes et fiables, à celles qui mettent l'accent sur la simplicité d'accès et la facilité d'utilisation. Les options situées en bas, comme ElevenLabs, Deepgram et Azure Speech, se concentrent sur la fourniture de résultats constants et de qualité, même si cela implique un certain niveau de complexité. À l'inverse, les solutions en haut, dont sprezzature-audio et Chatterbox, cherchent à être accessibles à un public plus large, en sacrifiant potentiellement une partie de leur fiabilité.
 
-Enfin, le regroupement des options dans les différents quadrants révèle des choix stratégiques clairs. Les solutions du quadrant inférieur gauche, comme Deepgram ou OpenAI Audio API, se positionnent sur un marché où la simplicité et la rapidité d'accès sont des priorités. Les options du quadrant supérieur droit, quant à elles, visent un public plus exigeant, à la recherche de performances créatives et d'une grande flexibilité. L'ensemble de la carte illustre la diversité des approches possibles dans le domaine de la transcription et de la synthèse vocale.
+On observe un regroupement important dans le quadrant supérieur gauche, où se trouvent plusieurs options comme whisper.cpp, faster-whisper et WhisperX. Ces outils partagent une même volonté de proposer des solutions rapides et faciles à mettre en œuvre, même si leurs performances peuvent varier. À l'opposé, le quadrant inférieur droit regroupe des options comme ElevenLabs et Otter.ai, qui se distinguent par leur fiabilité et leur capacité à fournir des résultats constants, mais qui peuvent être perçues comme moins accessibles ou moins flexibles.

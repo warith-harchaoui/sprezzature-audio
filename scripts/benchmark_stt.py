@@ -85,7 +85,8 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from _argparse import make_parser  # noqa: E402
+import click  # noqa: E402
+from _click import run_command, sprezzature_command  # noqa: E402
 from _device import describe as describe_device  # noqa: E402
 from _device import report as device_report  # noqa: E402
 from caption_diarize import parse_caption_cues  # noqa: E402
@@ -179,9 +180,19 @@ def word_error_rate(reference: Sequence[str], hypothesis: Sequence[str]) -> dict
             if reference[i - 1] == hypothesis[j - 1]:
                 current[j] = previous[j - 1]
             else:
-                sub = (previous[j - 1][0] + 1, previous[j - 1][1] + 1, previous[j - 1][2], previous[j - 1][3])
+                sub = (
+                    previous[j - 1][0] + 1,
+                    previous[j - 1][1] + 1,
+                    previous[j - 1][2],
+                    previous[j - 1][3],
+                )
                 dele = (previous[j][0] + 1, previous[j][1], previous[j][2] + 1, previous[j][3])
-                ins = (current[j - 1][0] + 1, current[j - 1][1], current[j - 1][2], current[j - 1][3] + 1)
+                ins = (
+                    current[j - 1][0] + 1,
+                    current[j - 1][1],
+                    current[j - 1][2],
+                    current[j - 1][3] + 1,
+                )
                 current[j] = min(sub, dele, ins)
         previous = current
 
@@ -348,9 +359,7 @@ def diarization_error_rate(
         )
 
     if total is None:
-        total = max(
-            [s[2] for s in reference] + [s[2] for s in hypothesis] or [0.0]
-        )
+        total = max([s[2] for s in reference] + [s[2] for s in hypothesis] or [0.0])
 
     reference_frames = _to_frames(reference, total, reference_labels)
     hypothesis_frames = _to_frames(hypothesis, total, hypothesis_labels)
@@ -514,33 +523,62 @@ def format_report(results: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Command-line entry point."""
-    parser = make_parser(
-        "sprezzature-audio-benchmark",
-        "Measure transcription quality (WER), speaker attribution (DER) and speed (RTF).",
-        epilog=(
-            "Examples:\n"
-            "  sprezzature-audio-benchmark --reference truth.vtt --hypothesis whisper.vtt\n"
-            "  sprezzature-audio-benchmark --reference-rttm truth.rttm --hypothesis-rttm out.rttm\n"
-            "  sprezzature-audio-benchmark --audio a.mp4 \\\n"
-            "      --time-command 'sprezzature-audio-captions a.mp4'\n"
-        ),
-    )
-    parser.add_argument("--reference", type=Path, help="Reference transcript (.vtt, .srt or .txt).")
-    parser.add_argument("--hypothesis", type=Path, help="System transcript to score.")
-    parser.add_argument("--reference-rttm", type=Path, help="Reference diarization (.rttm).")
-    parser.add_argument("--hypothesis-rttm", type=Path, help="System diarization to score.")
-    parser.add_argument("--no-collar", action="store_true", help="Score DER without the 250 ms collar.")
-    parser.add_argument("--time-command", help="Command to run and time.")
-    parser.add_argument(
-        "--audio",
-        type=Path,
-        help="The audio or video the timed command processes; its duration is measured.",
-    )
-    parser.add_argument("--audio-seconds", type=float, help="Audio duration, stated by hand.")
-    parser.add_argument("--json", action="store_true", help="Emit JSON instead of the console report.")
-    args = parser.parse_args(argv)
+@sprezzature_command(
+    "sprezzature-audio-benchmark",
+    help="Measure transcription quality (WER), speaker attribution (DER) and speed (RTF).",
+    epilog=(
+        "\b\n"
+        "Examples:\n"
+        "  sprezzature-audio-benchmark --reference truth.vtt --hypothesis whisper.vtt\n"
+        "  sprezzature-audio-benchmark --reference-rttm truth.rttm --hypothesis-rttm out.rttm\n"
+        "  sprezzature-audio-benchmark --audio a.mp4 \\\n"
+        "      --time-command 'sprezzature-audio-captions a.mp4'\n"
+    ),
+)
+@click.option(
+    "--reference",
+    type=click.Path(path_type=Path),
+    help="Reference transcript (.vtt, .srt or .txt).",
+)
+@click.option("--hypothesis", type=click.Path(path_type=Path), help="System transcript to score.")
+@click.option(
+    "--reference-rttm", type=click.Path(path_type=Path), help="Reference diarization (.rttm)."
+)
+@click.option(
+    "--hypothesis-rttm", type=click.Path(path_type=Path), help="System diarization to score."
+)
+@click.option("--no-collar", is_flag=True, help="Score DER without the 250 ms collar.")
+@click.option("--time-command", "timed", help="Command to run and time.")
+@click.option(
+    "--audio",
+    type=click.Path(path_type=Path),
+    help="The audio or video the timed command processes; its duration is measured.",
+)
+@click.option("--audio-seconds", type=float, help="Audio duration, stated by hand.")
+@click.option("--json", "as_json", is_flag=True, help="Emit JSON instead of the console report.")
+def _cli(
+    reference: Path | None,
+    hypothesis: Path | None,
+    reference_rttm: Path | None,
+    hypothesis_rttm: Path | None,
+    no_collar: bool,
+    timed: str | None,
+    audio: Path | None,
+    audio_seconds: float | None,
+    as_json: bool,
+) -> int:
+    """Click command body: score and time what the flags name, print the report."""
+    # Validated before any work, as the argparse parser did: a usage error
+    # exits 2 with the usage line, whatever was asked besides.
+    if bool(reference) != bool(hypothesis):
+        raise click.UsageError("--reference and --hypothesis go together.")
+    if bool(reference_rttm) != bool(hypothesis_rttm):
+        raise click.UsageError("--reference-rttm and --hypothesis-rttm go together.")
+    if timed and not (audio or audio_seconds):
+        raise click.UsageError(
+            "--time-command needs --audio (duration measured) or --audio-seconds "
+            "(duration stated) to compute a real-time factor."
+        )
 
     results: dict[str, Any] = {}
     # Recorded on every run, not only timed ones: a WER is reproducible only
@@ -548,40 +586,36 @@ def main(argv: list[str] | None = None) -> int:
     # it, and a silent CPU fallback is invisible in the number itself.
     results["device"] = device_report()
 
-    if bool(args.reference) != bool(args.hypothesis):
-        parser.error("--reference and --hypothesis go together.")
-    if bool(args.reference_rttm) != bool(args.hypothesis_rttm):
-        parser.error("--reference-rttm and --hypothesis-rttm go together.")
-    if args.time_command and not (args.audio or args.audio_seconds):
-        parser.error(
-            "--time-command needs --audio (duration measured) or --audio-seconds "
-            "(duration stated) to compute a real-time factor."
-        )
-
-    if args.reference:
-        results["wer"] = word_error_rate(
-            read_transcript(args.reference), read_transcript(args.hypothesis)
-        )
-    if args.reference_rttm:
+    # The pairs were checked above; these narrow the types to match.
+    if reference and hypothesis:
+        results["wer"] = word_error_rate(read_transcript(reference), read_transcript(hypothesis))
+    if reference_rttm and hypothesis_rttm:
         results["der"] = diarization_error_rate(
-            read_rttm(args.reference_rttm),
-            read_rttm(args.hypothesis_rttm),
-            collar=not args.no_collar,
+            read_rttm(reference_rttm),
+            read_rttm(hypothesis_rttm),
+            collar=not no_collar,
         )
-    if args.time_command:
+    if timed:
         # --audio wins when both are given: a measured duration beats a
         # remembered one, and saying which of the two produced the number is
         # part of the report rather than a detail of the run.
-        measured = args.audio is not None
-        seconds = measure_audio_seconds(args.audio) if measured else args.audio_seconds
-        results["speed"] = time_command(args.time_command, seconds)
+        if audio is not None:
+            measured, seconds = True, measure_audio_seconds(audio)
+        else:
+            measured, seconds = False, float(audio_seconds or 0.0)
+        results["speed"] = time_command(timed, seconds)
         results["speed"]["audio_s_source"] = "measured" if measured else "stated"
 
-    if args.json:
+    if as_json:
         print(json.dumps(results, indent=2, ensure_ascii=False))
     else:
         print(format_report(results))
     return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Command-line entry point."""
+    return run_command(_cli, argv)
 
 
 if __name__ == "__main__":

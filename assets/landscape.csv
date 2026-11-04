@@ -1,5 +1,5 @@
 Tool,Local and offline,Free or open source,Permissive commercial licence,Transcription accuracy,Speaker segmentation,Named speaker identification,Speech synthesis,Voice cloning,Timed track produced,Multilingual coverage,Light install without torch,Speed on an ordinary machine,Streaming and real time,Maturity and ecosystem,Commercial support
-sprezzature-audio,5,5,4,4,3,5,4,3,5,4,5,4,1,1,1
+sprezzature-audio,5,5,4,4,3,5,4,3,5,4,1,4,1,1,1
 whisper.cpp,5,5,5,4,2,1,1,1,4,5,5,5,3,5,2
 faster-whisper,5,5,5,4,1,1,1,1,2,5,4,5,2,5,2
 WhisperX,5,5,3,4,4,1,1,1,4,4,2,4,1,4,1

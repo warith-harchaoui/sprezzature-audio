@@ -6,6 +6,7 @@
 #   docker compose up -d
 #   curl -s localhost:8000/health
 #   curl -s localhost:8000/v1/device          # which accelerator this host uses
+#   # and the MCP endpoint on the same port: an MCP host registers localhost:8000/mcp
 #   docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 #   docker compose run --rm api sprezzature-audio-narrate-kokoro --segments /work/segments.json --out-dir /work/out
 #   docker compose --profile diarize run --rm diarize sprezzature-audio-diarize /work/talk.mp4
@@ -16,7 +17,8 @@
 # Three services, and the split is the point.
 #
 # `api` serves the routes that are fast and pure — caption conversion, speaker
-# merge, WER and DER. Transcription is deliberately absent from the API: it
+# merge, WER and DER — and the MCP endpoint at /mcp beside them, from one
+# `sprezzature-audio-mcp` process on one port. Transcription is deliberately absent from the API: it
 # loads a multi-gigabyte model and runs for minutes, which behind a
 # synchronous route is a timeout with extra steps. So the long tools stay
 # command lines, run through this same image.
@@ -48,6 +50,9 @@ services:
       - ./work:/work
       - audio-cache:/cache
     working_dir: /work
+    # The Dockerfile's CMD, stated here too so the reader of this file sees
+    # what the service runs: the HTTP routes and /mcp, on 0.0.0.0:8000.
+    command: ["sprezzature-audio-mcp", "--host", "0.0.0.0", "--port", "8000"]
     restart: unless-stopped
 
   diarize:

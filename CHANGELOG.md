@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **No argparse left in the command lines.** The last eight parsers are click now, through `scripts/_click.py`: `sprezzature-audio-audit`, `-benchmark`, `-voice`, `-install`, `-install-diarize`, `-install-voice`, the three `-narrate-*` commands (their shared parser in `scripts/_speaker.py`) and `sprezzature-audio-mcp`. Option names, defaults, choices and exit codes are unchanged; usage errors still exit 2. Every `main` takes an optional `argv`. The help reads the click way (`Usage:`, `-h`, `-V`), and `sprezzature-audio-mcp` gained `-V`. `scripts/_argparse.py` stays, unused here, because it is the canonical copy the hub syncs to the other bricks.
+- **`sprezzature-audio TOOL --help` shows the tool's own flags.** The sub-commands of the front door no longer have a help option of their own, so `--help` after a tool name reaches the tool; `-- --help` is no longer needed. Same under `make-audio`.
+- **The Docker image serves `/mcp` too.** Its command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` instead of plain uvicorn: the same FastAPI app with the MCP endpoint mounted on it, so one container answers `/v1/...` and `/mcp` on one port. `docker-compose.yml` states the same command.
+- **Landscape: the light-install rating is one star, not five.** Since 1.9.0 the base install carries torch, through NeMo and Chatterbox, so `sprezzature-audio` rates like them on "Light install without torch". Corrected in LANDSCAPE, PAYSAGE and both CSVs; both maps regenerated with `standpoint` (39.2 % and 15.5 % of the variance, 54.7 % together), and the loadings quoted in the prose follow.
+- **Tests.** `test_every_command_is_click.py` runs every console script with `--help` and asserts a click usage line under its own name, asserts no module imports argparse, and checks the front door passes `--help` through. It replaces the `prog=` scan in `test_console_scripts_exist.py`, which had become all skips.
+
 ### Docs
 
 README, LISEZMOI, TRIGGERS and EXAMPLES rewritten against the code as it stands, and the smaller docs corrected where they described the extras that 1.9.0 removed.
@@ -9,7 +17,7 @@ README, LISEZMOI, TRIGGERS and EXAMPLES rewritten against the code as it stands,
 - **Every tool is documented.** The README listed seven speech tools and five narration ones as "six scripts"; it now lists all fifteen, with the console script and the front-door sub-command of each, plus `sprezzature-audio tools` and `sprezzature-audio-mcp`. LISEZMOI had lost the audit and narration tables entirely; it now has the same sections and facts as the README.
 - **Narration examples that could not run.** `make-audio narrate post.md --out post.mp3` does not exist: the narration commands take `--segments` (a JSON list of blocks) and `--out-dir`, and write `narration.wav` and `narration.vtt`. The examples now say so.
 - **A library name that does not exist.** `audio.synthesise(...)` was shown; there is no such attribute. The model-backed names are `transcribe`, `diarize`, `translate_cues`, `narrate` and the others in `_LAZY`, now shown with their real signatures. `word_error_rate` takes word lists, not strings, and the example now calls `normalise_words` first.
-- **`make-audio captions --help`** was said to show the tool's flags. The front door answers `--help` itself; `sprezzature-audio captions -- --help` or `sprezzature-audio-captions --help` reach the tool. The click epilog now says so too.
+- **`make-audio captions --help`** was said to show the tool's flags, and did not: the front door answered `--help` itself. It now passes it to the tool (see Changed below).
 - **`NEMO_DIAR_MODEL`** was listed as an environment variable. Nothing reads it; the checkpoint is chosen with `--model`. Removed from the README, LISEZMOI, LANDSCAPE, PAYSAGE and the `diarize_from_nemo` docstring. `OLLAMA_URL`, `SPREZZATURE_AUDIO_HOST` and `SPREZZATURE_AUDIO_PORT`, which the code does read, were missing and are now listed.
 - **`sprezzature-audio-name`** was described (in its front-door help) as asking a local model. It matches introduction and vocative patterns, and calls a local model only with `--ollama`. Its default output name for `meeting.speakers.vtt` is `meeting.speakers.speakers.json`, so the examples now pass `--out`.
 - **The voice engine.** The docs now say that this package does not choose it and neither should the caller: `speaker-helper`'s router decides, `sprezzature-publish` asks it, and Kokoro is the default.
