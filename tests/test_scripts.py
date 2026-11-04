@@ -867,7 +867,8 @@ def test_run_command_help_and_version_exit_0(capsys: pytest.CaptureFixture[str])
     assert "my-tool" in capsys.readouterr().out
 
     assert sc.run_command(cmd, ["--version"]) == 0
-    assert sc.SKILL_VERSION in capsys.readouterr().out
+    # The installed version when there is one, SKILL_VERSION from a bare clone.
+    assert sc._version() in capsys.readouterr().out
 
 
 def test_sprezzature_command_usage_line_shows_help_token() -> None:
