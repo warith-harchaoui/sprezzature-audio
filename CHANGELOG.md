@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Docs
+
+- **Commands that a wheel does not have.** `sprezzature-audio-voice` printed `python3 narrate_post.py` (a script of another package) as the next step, and `pip install -r requirements-narrate-<engine>.txt` when an engine could not sample; the installers and the NeMo error printed `python scripts/...` paths. They now print the console scripts, and `sprezzature-audio-voice --help` shows them too. `sprezzature-audio-install-voice --help` now describes what it does for Kokoro.
+- **Where the translator's model call goes.** `OLLAMA_URL` (`--url`) is only probed; the call goes through best-engine-ai-helper to `SPREZZATURE_LLM_BASE_URL`. README and LISEZMOI say so, and `docker-compose.yml` now sets both to the `ollama` service: with only the first, `translate` passed its probe and sent the call to localhost.
+- **Caches.** Narration weights do not follow `SPREZZATURE_CACHE_DIR`; the README, LISEZMOI and the compose comment no longer say they do.
+- **Smaller corrections.** Audio extraction goes through `video-helper` first, then `audio-helper`, then `ffmpeg`; the narration report's extra keys are listed; CONTRIBUTING and CODING give CI's exact commands (`ruff check`, `mypy` twice, `pytest -q`, `requirements-dev.txt`) and no longer advise `ruff format .`; LANDSCAPE and PAYSAGE no longer list best-engine-ai-helper as a brick of the suite, and PAYSAGE uses French spacing before `:` `;` `?` `!`; comments in `pyproject.toml`, `mypy.ini`, `requirements-dev.txt` and the pre-push hook no longer describe extras or a numpy-free CI.
+
 ## v1.10.0 (2026-11-04): click everywhere, and a front door that passes --help on
 
 ### Changed

@@ -35,7 +35,7 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]
 
-# No mandatory ML deps — install the extras you need.
+# Everything this package does installs here: no feature extras since 2026-11-01.
 dependencies = [
     "click>=8.1",
     "langdetect>=1.0.9",
@@ -151,7 +151,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Two, and neither is a feature.
+# One, and it is not a feature.
 #
 # Everything else was folded into the base install on 2026-11-01. The suite
 # had 59 extras across eleven repositories and six bricks whose base was a

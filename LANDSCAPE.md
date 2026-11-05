@@ -15,8 +15,7 @@ sprezzature suite
 ├── sprezzature-colors         (contrast, colour-vision deficiency, Tailwind palettes)
 ├── sprezzature-ui             (vanilla JS and Tailwind, i18n audit)
 ├── sprezzature-cli-gui        (a command line wrapped in a page)
-├── sprezzature-ux-laws        (30 laws, 8 decidable from the HTML)
-└── best-engine-ai-helper      (which local model fits this machine)
+└── sprezzature-ux-laws        (30 laws, 8 decidable from the HTML)
 ```
 
 What comes before: [`audio-helper`](https://github.com/warith-harchaoui/audio-helper) at the signal level (format conversion, resampling, trimming, voice separation with Demucs) and [`video-helper`](https://github.com/warith-harchaoui/video-helper) for pulling an audio stream out of a container. A silence and a sentence look the same to them. This package starts once the audio is usable and asks what is in it.
@@ -55,7 +54,7 @@ Ordered by what they return against what they cost.
 
 **[pyannote Community-1](https://huggingface.co/pyannote/speaker-diarization-community-1): say when you hit the ceiling.** Their pipeline has no fixed speaker count and publishes its error rate per dataset; ours is pinned to a four-speaker checkpoint and says nothing about it. Here: `scripts/diarize_from_nemo.py` already accepts `--model`, so the checkpoint is swappable; what is missing is a refusal. When the turn list comes back with exactly four distinct ids on a long recording, Sortformer has probably folded a fifth voice into a fourth, and the script should say so on stderr and in the JSON rather than hand back a confident answer. Cost: an afternoon, one new field, no new dependency. Best ratio in this list, because the capability is there and only the honesty is missing.
 
-**[Piper](https://github.com/OHF-Voice/piper1-gpl): name a voice by what it is.** Piper ids read `fr_FR-siwis-medium`, which is language, region, speaker and quality tier in one string. Kokoro ids read `af_bella`, where two letters encode language and gender and nothing else, and `scripts/pick_voice.py:68` carries a seven-line comment decoding them for the reader. Here: `sprezzature-audio-voice` should print the decoded triple beside the raw id, so the list is browsable without the comment. Cost: an hour. The mapping is already written, as prose, in that comment.
+**[Piper](https://github.com/OHF-Voice/piper1-gpl): name a voice by what it is.** Piper ids read `fr_FR-siwis-medium`, which is language, region, speaker and quality tier in one string. Kokoro ids read `af_bella`, where two letters encode language and gender and nothing else, and `scripts/pick_voice.py:70` carries a seven-line comment decoding them for the reader. Here: `sprezzature-audio-voice` should print the decoded triple beside the raw id, so the list is browsable without the comment. Cost: an hour. The mapping is already written, as prose, in that comment.
 
 **[Otter.ai](https://otter.ai/): enrol a voice once, not every run.** Otter learns a speaker's voice once and names them in every later meeting. Here, `scripts/identify_from_titanet.py` recomputes the reference centroid from the WAV files in `--refs` on every single run, which is the slow half of the job for a recurring cast. A small enrolment store under `~/.cache/sprezzature-skill/voices/`, keyed on the TitaNet model tag, would skip it. Cost: an afternoon, plus one rule this suite has already learned the hard way: a cache must never silently change an answer, so the store needs a command that lists it and a flag that ignores it.
 

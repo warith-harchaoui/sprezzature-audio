@@ -14,7 +14,7 @@ Between a quarter and a third of non-blank lines carry a comment. A comment earn
 
 ## Style
 
-- `ruff` runs both the linter and the formatter; the line-length limit is 100 characters. `ruff format` applies the formatting automatically, so run it before committing rather than hand-fixing whitespace.
+- `ruff` runs both the linter and the formatter; the line-length limit is 100 characters. Run `ruff format` on the files you changed before committing rather than hand-fixing whitespace, and never on the whole repository: CI gates on `ruff check`, not on the format, and not every file is in ruff's format yet.
 - No filler transitions in prose or comments ("Moreover," "Furthermore," "crucial," "game-changer," "delve into"): if a sentence needs one of these to sound weighty, cut the sentence back to what it actually says.
 - No em dash or en dash used as a sentence aside. Use a comma, a colon, a semicolon, parentheses, or simply a second sentence instead.
 

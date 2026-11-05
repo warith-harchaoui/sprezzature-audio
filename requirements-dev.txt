@@ -17,18 +17,12 @@ mypy>=1.11,<3
 # suite and speaker-helper reached it first. starlette's own `full` extra
 # lists both, which is why this is additive rather than a pin.
 httpx2>=2.0.0
-# The one helper this file names, and it is here rather than only in the
-# [captions] / [diarize] extras because of what this repository's CI installs:
-# `.[api,mcp]` plus this file, and no heavy extra, on purpose. The property
+# The one helper this file names, added while CI installed `.[api,mcp]` plus
+# this file and no heavy extra: the property
 # tests/test_concurrent_runs_transcribe_once.py measures -- two processes
-# asking for one transcription make one -- is *provided* by this package, so
-# without it here the whole file would skip in the only environment that gates
-# the repository, and a file that skips entire reports green for work it never
-# did. Measured before adding it, because the comment above about heavy extras
-# is a real constraint: from an empty venv it is 8.7 MB and thirteen
-# pure-Python wheels (os-helper, psutil, requests, PyYAML, tqdm, validators,
-# python-dotenv, click and four requests transitives). No torch. **No numpy**,
-# which mattered most: mypy.ini explains at length that a numpy in the
-# environment stops mypy inside a third-party stub under `python_version =
-# 3.10`, and CI being numpy-free is what keeps that gate green.
+# asking for one transcription make one -- is *provided* by this package, and
+# without it here the whole file would have skipped in the only environment
+# that gates the repository. Since 2026-11-01 the base install declares it with
+# the same bounds, so this line is now redundant rather than load bearing; it
+# is kept so the test's dependency stays visible where the test toolchain is.
 wallet-helper>=1.3.2,<2

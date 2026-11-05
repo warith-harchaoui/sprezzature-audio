@@ -286,7 +286,7 @@ def _sortformer_model(model_tag: str, device: str) -> Any:
     try:
         from nemo.collections.asr.models import SortformerEncLabelModel  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        sys.exit(f"NeMo is not installed. Run:\n    python scripts/install_diarize.py\n({exc})")
+        sys.exit(f"NeMo is not installed. Run:\n    sprezzature-audio-install-diarize\n({exc})")
     # NeMo caches downloaded checkpoints under ~/.cache/torch/NeMo/ by
     # default; set NEMO_CACHE_DIR to redirect that if desired.
     os.environ.setdefault("NEMO_CACHE_DIR", str(NEMO_DIR))

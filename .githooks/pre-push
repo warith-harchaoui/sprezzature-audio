@@ -17,10 +17,11 @@ ruff check . || { echo "[pre-push] ruff failed - push aborted."; exit 1; }
 #
 # numpy >= 2.3 ships stubs written with PEP 695 `type` statements, which mypy
 # accepts only from python_version 3.12; mypy.ini pins 3.10 on purpose, to
-# keep checking against the oldest Python this package supports. numpy is not
-# imported here -- it arrives through pydantic's type graph -- so on a machine
-# that happens to have it, mypy stops inside that stub having checked none of
-# our code. CI installs no numpy and is green. The long form is in mypy.ini.
+# keep checking against the oldest Python this package supports. numpy is a
+# base dependency (the identification and transcription scripts use it), so on
+# a machine where the pair resolves badly, mypy stops inside that stub having checked none of
+# our code. CI installs numpy too since 2026-11-01, and was green with numpy
+# 2.5.4 and mypy 2.4.1 on 2026-11-04. The long form is in mypy.ini.
 #
 # Aborting on it made this hook unpassable on any developer machine with numpy
 # installed, which is most of them. An unpassable hook teaches `--no-verify`,

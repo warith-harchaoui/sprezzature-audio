@@ -48,7 +48,7 @@ Une narration arrive sous forme d'un fichier audio et d'un WebVTT, la même conv
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | La même chose avec Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | Les voix intégrées de chaque moteur ; `--sample` écrit un court extrait de démonstration par voix, et `--measure` les classe selon l'amplitude de leur hauteur. |
 
-Les trois commandes de narration partagent les mêmes options, parce que `sprezzature-publish` les pilote indifféremment. Elles impriment un rapport JSON d'une ligne sur la sortie standard (chemin de l'audio, durée, chemin des repères, voix, langue).
+Les trois commandes de narration partagent les mêmes options, parce que `sprezzature-publish` les pilote indifféremment. Elles impriment un rapport JSON d'une ligne sur la sortie standard : chemin de l'audio, durée, chemin des repères, voix et langue, plus la langue détectée, le recours éventuel à une langue de repli, et les indications de voix que le moteur a ignorées.
 
 Ce paquet ne choisit pas le moteur de voix, et son appelant non plus. Cette décision appartient au routeur de [`speaker-helper`](https://github.com/warith-harchaoui/speaker-helper), à qui appartiennent les moteurs. `sprezzature-publish` interroge le routeur puis lance l'enveloppe correspondante ici. Sans `--voice`, la langue est détectée dans le texte et une voix qui la parle est choisie. C'est important : la langue détectée est ce sur quoi travaille le phonémiseur, si bien qu'un texte français lu comme de l'anglais n'est pas du français avec un accent, ce sont les règles d'orthographe anglaises appliquées à des mots français.
 
@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # ajoute un serveur Ollama pour translate et name
 ```
 
-L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut est `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` : un seul processus, sur un seul port, sert les routes HTTP et le point d'accès MCP sur `/mcp`. Les fichiers passent par `./work`, monté sur `/work` ; les caches de modèles vont dans un volume nommé, par `SPREZZATURE_CACHE_DIR`. Les outils longs tournent comme des commandes dans la même image.
+L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut est `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` : un seul processus, sur un seul port, sert les routes HTTP et le point d'accès MCP sur `/mcp`. Les fichiers passent par `./work`, monté sur `/work` ; les caches de Whisper et de NeMo vont dans un volume nommé, par `SPREZZATURE_CACHE_DIR` ; les poids de narration ne suivent pas cette variable et restent dans le conteneur. Compose pointe `OLLAMA_URL` et `SPREZZATURE_LLM_BASE_URL` vers le service `ollama`, parce que la première n'est que sondée et que la seconde est l'adresse où part l'appel au modèle. Les outils longs tournent comme des commandes dans la même image.
 
 ## Skill d'agent
 
@@ -219,7 +219,7 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 
 `audio-helper` travaille au **niveau du signal** : conversion de formats, découpe d'une forme d'onde, rééchantillonnage, séparation d'une voix et d'une musique de fond avec Demucs. Il n'a aucune notion des mots ; un silence et une phrase se ressemblent à ses yeux.
 
-`sprezzature-audio` travaille au **niveau du contenu** : il lit la parole, l'attribue à un locuteur, la traduit, et lit un texte à voix haute. Les deux paquets sont faits pour être utilisés ensemble. `captions_from_whisper.py` appelle `audio-helper` en interne pour extraire un fichier WAV 16 kHz mono (le format qu'attend Whisper) avant de lancer le modèle de parole.
+`sprezzature-audio` travaille au **niveau du contenu** : il lit la parole, l'attribue à un locuteur, la traduit, et lit un texte à voix haute. Les deux paquets sont faits pour être utilisés ensemble. `captions_from_whisper.py` extrait un fichier WAV 16 kHz mono (le format qu'attend Whisper) avant de lancer le modèle de parole, par `video-helper` d'abord, puis `audio-helper`, puis un simple appel à `ffmpeg` si aucun des deux ne s'importe.
 
 ## Modèles utilisés
 
@@ -236,10 +236,10 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 | Variable | Rôle |
 |---|---|
 | `SPREZZATURE_WHISPER_MODEL` | Remplacer le chemin ou l'alias du modèle Whisper |
-| `SPREZZATURE_CACHE_DIR` | Racine du cache des poids Whisper, des points de contrôle NeMo et des résultats (`~/.cache/sprezzature-skill` par défaut) |
+| `SPREZZATURE_CACHE_DIR` | Racine du cache des poids Whisper, des points de contrôle NeMo et des résultats (`~/.cache/sprezzature-skill` par défaut). Les poids de narration l'ignorent : Kokoro et OpenVoice vont sous `~/.cache/sprezzature-skill`, Chatterbox sous `~/.cache/huggingface` |
 | `SPREZZATURE_NO_CACHE` | Toute valeur désactive le cache des résultats de transcription et de diarisation |
-| `OLLAMA_URL` | Point d'accès Ollama par défaut de `translate` et `name` (`http://localhost:11434` par défaut) |
-| `SPREZZATURE_LLM_*` | Configuration du moteur LLM (grand modèle de langage) lue par best-engine-ai-helper (`SPREZZATURE_LLM_BACKEND` vaut `ollama` par défaut) |
+| `OLLAMA_URL` | Valeur par défaut du `--url` que `translate` et `name` sondent avant d'appeler un modèle (`http://localhost:11434` par défaut). L'appel lui-même part vers `SPREZZATURE_LLM_BASE_URL` ; il faut donc pointer les deux vers le même serveur |
+| `SPREZZATURE_LLM_*` | Configuration du moteur LLM (grand modèle de langage) lue par best-engine-ai-helper : `SPREZZATURE_LLM_BACKEND` vaut `ollama` par défaut, `SPREZZATURE_LLM_BASE_URL` vaut `http://localhost:11434` |
 | `SPREZZATURE_AUDIO_HOST`, `SPREZZATURE_AUDIO_PORT` | Adresse d'écoute par défaut de `sprezzature-audio-mcp` |
 
 ## Licence

@@ -11,6 +11,14 @@ read the upstream README.
 
 What it does, per engine
 ------------------------
+``kokoro``
+    1. Verifies ``kokoro_onnx`` is importable.
+    2. Downloads ``kokoro-v1.0.onnx`` and ``voices-v1.0.bin`` (about
+       354 MB together) into ``~/.cache/sprezzature-skill/kokoro/``,
+       skipping a file already there at the expected size.
+    3. Checks for a system espeak-ng, which pip cannot supply, and
+       fails with the install line when there is none.
+
 ``openvoice``
     1. Verifies the package is importable (``pip install`` instructions
        on the bare-machine path).

@@ -239,7 +239,7 @@ def _cli(model: str) -> int:
     download_model(model)
     print()
     print("→ Ready. Test with:")
-    print("    python scripts/captions_from_whisper.py path/to/audio-or-video")
+    print("    sprezzature-audio-captions path/to/audio-or-video")
     return 0
 
 

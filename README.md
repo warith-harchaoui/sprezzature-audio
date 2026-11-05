@@ -48,7 +48,7 @@ A narration lands as an audio file plus a WebVTT, the same convention a transcri
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | The same, with Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | The built-in voices of each engine; `--sample` writes a one-line demo clip per voice, and `--measure` ranks them by how far their pitch moves. |
 
-The three narration commands share one set of flags, because `sprezzature-publish` drives them interchangeably. They print a one-line JSON report on standard output (audio path, duration, cue path, voice, language).
+The three narration commands share one set of flags, because `sprezzature-publish` drives them interchangeably. They print a one-line JSON report on standard output: audio path, duration, cue path, voice and language, plus the language detected, whether a fallback was used, and any voice hints the engine ignored.
 
 This package does not choose the voice engine, and neither should its caller. That decision belongs to the router in [`speaker-helper`](https://github.com/warith-harchaoui/speaker-helper), which owns the engines. `sprezzature-publish` asks the router and then runs the matching wrapper here. With no `--voice`, the language is detected from the text and a voice that speaks it is picked. This matters: the detected language is what the phonemiser works from, so French read as English is not French with an accent, it is English spelling rules applied to French words.
 
@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # adds an Ollama server for translate and name
 ```
 
-The image installs the package with `ffmpeg` and `espeak-ng`, and its default command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000`: one process on one port serves the HTTP routes and the MCP endpoint at `/mcp`. Files go through `./work`, mounted at `/work`; model caches go to a named volume through `SPREZZATURE_CACHE_DIR`. The long tools run as commands in the same image.
+The image installs the package with `ffmpeg` and `espeak-ng`, and its default command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000`: one process on one port serves the HTTP routes and the MCP endpoint at `/mcp`. Files go through `./work`, mounted at `/work`; the Whisper and NeMo caches go to a named volume through `SPREZZATURE_CACHE_DIR`; the narration weights do not follow that variable and stay inside the container. Compose sets both `OLLAMA_URL` and `SPREZZATURE_LLM_BASE_URL` to the `ollama` service, because the first is only probed and the second is where the model call goes. The long tools run as commands in the same image.
 
 ## Agent skill
 
@@ -219,7 +219,7 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 
 `audio-helper` works at the **signal level**: converting formats, slicing a waveform, resampling, separating a voice from background music with Demucs. It has no notion of words; a silence and a sentence look the same to it.
 
-`sprezzature-audio` works at the **content level**: it reads speech, attributes it to a speaker, translates it, and reads text aloud. The two packages are meant to be used together. `captions_from_whisper.py` calls `audio-helper` internally to extract a 16 kHz mono WAV file (the format Whisper expects) before it runs the speech model.
+`sprezzature-audio` works at the **content level**: it reads speech, attributes it to a speaker, translates it, and reads text aloud. The two packages are meant to be used together. `captions_from_whisper.py` extracts a 16 kHz mono WAV file (the format Whisper expects) before it runs the speech model, through `video-helper` first, then `audio-helper`, then a plain `ffmpeg` call if neither is importable.
 
 ## Models used
 
@@ -236,10 +236,10 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 | Variable | Purpose |
 |---|---|
 | `SPREZZATURE_WHISPER_MODEL` | Override the Whisper model path or alias |
-| `SPREZZATURE_CACHE_DIR` | Cache root for Whisper weights, NeMo checkpoints and results (default `~/.cache/sprezzature-skill`) |
+| `SPREZZATURE_CACHE_DIR` | Cache root for Whisper weights, NeMo checkpoints and results (default `~/.cache/sprezzature-skill`). Narration weights ignore it: Kokoro and OpenVoice go under `~/.cache/sprezzature-skill`, Chatterbox under `~/.cache/huggingface` |
 | `SPREZZATURE_NO_CACHE` | Set to any value to disable the transcription and diarization result cache |
-| `OLLAMA_URL` | Default Ollama endpoint for `translate` and `name` (default `http://localhost:11434`) |
-| `SPREZZATURE_LLM_*` | LLM (large language model) backend configuration read by best-engine-ai-helper (`SPREZZATURE_LLM_BACKEND` defaults to `ollama`) |
+| `OLLAMA_URL` | Default of the `--url` that `translate` and `name` probe before calling a model (default `http://localhost:11434`). The call itself goes to `SPREZZATURE_LLM_BASE_URL`, so point both at the same server |
+| `SPREZZATURE_LLM_*` | LLM (large language model) backend configuration read by best-engine-ai-helper: `SPREZZATURE_LLM_BACKEND` defaults to `ollama`, `SPREZZATURE_LLM_BASE_URL` to `http://localhost:11434` |
 | `SPREZZATURE_AUDIO_HOST`, `SPREZZATURE_AUDIO_PORT` | Default bind address of `sprezzature-audio-mcp` |
 
 ## License

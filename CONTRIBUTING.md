@@ -5,25 +5,31 @@
 ```sh
 git clone https://github.com/warith-harchaoui/sprezzature-audio.git
 cd sprezzature-audio
-pip install -e ".[dev]"
+pip install -e . -r requirements-dev.txt
+git config core.hooksPath .githooks
 ```
 
-The `-e` flag installs the package in "editable" mode: your local checkout is used directly, so an edit to a `.py` file takes effect the next time you run the code, with no reinstall step.
+The `-e` flag installs the package in "editable" mode: your local checkout is used directly, so an edit to a `.py` file takes effect the next time you run the code, with no reinstall step. `requirements-dev.txt` is what CI installs: pytest, ruff, mypy and the test-only helpers. The `[dev]` extra carries only pytest and ruff. The second line turns on the pre-push hook, which runs the same steps as CI.
 
 ## Run tests
 
 ```sh
-pytest
+pytest -q
 ```
 
-## Lint
+## Lint and types
+
+The same steps as CI (`.github/workflows/ci.yml`), in the same order:
 
 ```sh
 ruff check .
-ruff format --check .
+mypy sprezzature_audio
+mypy scripts
 ```
 
-`ruff check` looks for actual problems (unused imports, undefined names); `ruff format --check` only reports whether the formatting already matches what `ruff format` would produce, without changing anything. Run `ruff format .` (no `--check`) to apply the formatting yourself before committing.
+`ruff check` looks for actual problems (unused imports, undefined names). mypy runs twice because the modules in `scripts/` import each other by bare name, which only resolves when that directory is the root of the check.
+
+Format the files you changed, and only those: `ruff format path/to/file.py`. CI does not run `ruff format --check`, and several files are not in ruff's format today, so `ruff format .` would rewrite code nobody meant to touch.
 
 ## Style
 

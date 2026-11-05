@@ -148,7 +148,7 @@ def _titanet_model(model_tag: str, device: str) -> Any:
     try:
         from nemo.collections.asr.models import EncDecSpeakerLabelModel  # type: ignore
     except ImportError as exc:  # pragma: no cover
-        sys.exit(f"NeMo is not installed. Run:\n    python scripts/install_diarize.py\n({exc})")
+        sys.exit(f"NeMo is not installed. Run:\n    sprezzature-audio-install-diarize\n({exc})")
     os.environ.setdefault("NEMO_CACHE_DIR", str(NEMO_DIR))
     model = EncDecSpeakerLabelModel.from_pretrained(model_tag)
     model.eval()

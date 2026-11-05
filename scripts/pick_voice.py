@@ -17,22 +17,22 @@ For each engine the orchestrator supports (``kokoro``, ``openvoice``,
    listen and choose.
 
 The script never auto-downloads model checkpoints — that's
-``install_narrate.py``'s job. Without checkpoints, sampling skips
+``sprezzature-audio-install-voice``'s job. Without checkpoints, sampling skips
 gracefully with a one-line install hint.
 
 Usage
 -----
 ::
 
-    # List voices for every installed engine
-    python3 pick_voice.py
+    # List voices for every engine
+    sprezzature-audio-voice
 
     # Generate a 1-sentence sample per voice for the chosen engine
-    python3 pick_voice.py \\
+    sprezzature-audio-voice \\
         --engine openvoice --sample
 
-    # Custom sample text (defaults to a Lorem-ipsum-ish neutral line)
-    python3 pick_voice.py \\
+    # Custom sample text (the default is a neutral one-line greeting)
+    sprezzature-audio-voice \\
         --engine chatterbox --sample \\
         --text "This is how my narrator sounds reading a typical sentence."
 
@@ -72,8 +72,8 @@ BUILTIN_VOICES: dict[str, tuple[str, ...]] = {
     # j = Japanese, p = Portuguese, z = Mandarin. The second letter is the
     # speaker's gender. Listing them in full rather than sampling is the
     # point of this table — someone choosing a narrator wants to see the
-    # choice, and `narrate_kokoro.py --list-voices` only works once the
-    # weights are downloaded.
+    # choice, and nothing can list them from the weights before those are
+    # downloaded.
     "kokoro": (
         "af_alloy",
         "af_aoede",
@@ -152,8 +152,8 @@ def engine_is_available(engine: str) -> bool:
     """
     Subprocess-probe the engine wrapper's ``--check`` mode.
 
-    Mirrors the behaviour of ``narrate_post._engine_is_available``
-    so the two callers stay in lock-step without sharing state.
+    Runs the same ``--check`` that ``sprezzature-publish`` asks of the
+    wrapper, so the two callers agree without sharing state.
     """
     script: Path = Path(__file__).resolve().parent / f"narrate_{engine}.py"
     if not script.is_file():
@@ -384,7 +384,7 @@ def _cli(engine: str, sample: bool, text: str, out_dir: Path, measure: bool) -> 
         if not sample:
             continue
         if not installed:
-            print(f"  → samples skipped: pip install -r requirements-narrate-{name}.txt")
+            print(f"  → samples skipped: sprezzature-audio-install-voice --engine {name}")
             continue
         measured: list[tuple[float, str, Path]] = []
         for voice in BUILTIN_VOICES[name]:
@@ -417,11 +417,11 @@ def _cli(engine: str, sample: bool, text: str, out_dir: Path, measure: bool) -> 
 
     print(
         "\nUse one of the voices above with:\n"
-        "  python3 narrate_post.py "
-        "--engine <engine> --voice <voice> <post.md>\n"
+        "  sprezzature-audio-narrate-<engine> "
+        "--voice <voice> --segments segments.json --out-dir out\n"
         "Or clone your own voice with:\n"
-        "  python3 narrate_post.py "
-        "--engine <engine> --voice-sample your-voice.wav <post.md>"
+        "  sprezzature-audio-narrate-<engine> "
+        "--voice-sample your-voice.wav --segments segments.json --out-dir out"
     )
     return 0
 

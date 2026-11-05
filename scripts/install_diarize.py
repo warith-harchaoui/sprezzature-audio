@@ -195,10 +195,8 @@ def _cli(no_install: bool, no_download: bool, only: str | None) -> int:
 
     print()
     print("→ Ready. Try:")
-    print("    python scripts/diarize_from_nemo.py path/to/interview.mp4")
-    print(
-        "    python scripts/identify_from_titanet.py <diar.json> --audio <audio> --refs ./voices/"
-    )
+    print("    sprezzature-audio-diarize path/to/interview.mp4")
+    print("    sprezzature-audio-identify <diar.json> --audio <audio> --refs ./voices/")
     return 0
 
 

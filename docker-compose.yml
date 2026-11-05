@@ -39,10 +39,20 @@ services:
       # the first call: the default http://localhost:11434 resolves to *this*
       # container, so the API comes up healthy and fails on the first
       # translation.
+      #
+      # Two variables, because two things reach the server. `translate` and
+      # `name` probe OLLAMA_URL (their --url) to see that it answers; the model
+      # call itself goes through best-engine-ai-helper, which reads
+      # SPREZZATURE_LLM_BASE_URL. Setting only the first passes the probe and
+      # then sends the translation to localhost.
       OLLAMA_URL: http://ollama:11434
-      # Whisper weights and the Kokoro voice pack land under $HOME by default,
-      # which a `down` throws away — and re-downloading a multi-gigabyte model
-      # looks exactly like a slow first run. Pointed at a named volume below.
+      SPREZZATURE_LLM_BASE_URL: http://ollama:11434
+      # Whisper weights, NeMo checkpoints and the result cache land under $HOME
+      # by default, which a `down` throws away — and re-downloading a
+      # multi-gigabyte model looks exactly like a slow first run. Pointed at a
+      # named volume below. The narration weights do not follow this variable:
+      # Kokoro's are looked for under ~/.cache/speaker-helper and
+      # ~/.cache/sprezzature-skill, so in this container they live and die with it.
       SPREZZATURE_CACHE_DIR: /cache
     volumes:
       # The recordings to caption and the captions written beside them.
