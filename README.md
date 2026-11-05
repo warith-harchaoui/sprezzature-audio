@@ -43,7 +43,7 @@ A narration lands as an audio file plus a WebVTT, the same convention a transcri
 
 | Command | Front door | What it produces |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON file, with the Kokoro voice. Kokoro is the default: 54 built-in voices in eight languages, English in American and British voices. |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON file, with the Kokoro voice: 54 built-in voices in eight languages, English in American and British voices. `narrate` is the oldest name, not a default engine: which engine reads a document is `speaker-helper`'s call (see below). |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | The same, with OpenVoice, which can clone a voice from a short sample (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | The same, with Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | The built-in voices of each engine; `--sample` writes a one-line demo clip per voice, and `--measure` ranks them by how far their pitch moves. |
@@ -57,7 +57,7 @@ This package does not choose the voice engine, and neither should its caller. Th
 | Command | Front door | What it does |
 |---|---|---|
 | `sprezzature-audio-install` | `install` | Pre-downloads a GGML Whisper model (`--model`, default `large-v3-turbo`) so captioning runs offline. |
-| `sprezzature-audio-install-diarize` | `install-diarize` | Runs `pip install nemo_toolkit[asr]` (skip with `--no-install`) and pre-downloads the Sortformer and TitaNet checkpoints (`--only` for one of them). |
+| `sprezzature-audio-install-diarize` | `install-diarize` | Checks that NeMo imports, running `pip install nemo_toolkit[asr]` only if it does not (`--no-install` skips that), and pre-downloads the Sortformer and TitaNet checkpoints (`--only` for one of them). |
 | `sprezzature-audio-install-voice` | `install-voice` | Downloads a narration engine's weights (`--engine kokoro`, `openvoice`, `chatterbox` or `all`, the default) and checks for a system espeak-ng. |
 
 Two more commands are not tools: `sprezzature-audio tools` lists the fifteen and says which ones import on this machine, and `sprezzature-audio-mcp` serves the MCP surface (see below).
@@ -229,7 +229,7 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 | Diarization (who spoke when) | `nvidia/diar_sortformer_4spk-v1` | NeMo |
 | Speaker identification (matching a voice to a reference sample) | `nvidia/speakerverification_en_titanet_large` | NeMo |
 | Translation and name guessing | `qwen3-vl:8b`, through the Ollama server at `--url` | best-engine-ai-helper |
-| Narration | Kokoro (default), OpenVoice, Chatterbox | speaker-helper |
+| Narration | Kokoro, OpenVoice, Chatterbox, chosen per reading by the router | speaker-helper |
 
 ## Environment variables
 

@@ -32,7 +32,7 @@ en:
         - label: Say who spoke when
           note: "NeMo Sortformer, up to four speakers, as an RTTM file and a JSON turn list. TitaNet then matches a voice against a reference sample and gives it a name."
         - label: Translate the cues
-          note: a local model, through the same environment variables every model call in the suite reads
+          note: "qwen3-vl:8b on the Ollama server the command is given, OLLAMA_URL by default. Only the timeout comes from the environment."
       result:
         label: WebVTT, SRT, or a plain transcript
         note: what was said, by whom, and in which language
@@ -76,7 +76,7 @@ fr:
         - label: Dire qui a parlé quand
           note: "NeMo Sortformer, jusqu'à quatre locuteurs, en fichier RTTM et en liste de tours JSON. TitaNet rapproche ensuite une voix d'un échantillon de référence et lui donne un nom."
         - label: Traduire les repères
-          note: un modèle local, par les mêmes variables d'environnement que lit chaque appel de modèle de la suite
+          note: "qwen3-vl:8b sur le serveur Ollama qu'on donne à la commande, OLLAMA_URL par défaut. Seul le délai maximal vient de l'environnement."
       result:
         label: Du WebVTT, du SRT, ou une transcription simple
         note: ce qui a été dit, par qui, et dans quelle langue

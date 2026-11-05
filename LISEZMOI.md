@@ -43,7 +43,7 @@ Une narration arrive sous forme d'un fichier audio et d'un WebVTT, la même conv
 
 | Commande | Porte d'entrée | Résultat |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON `--segments`, avec la voix Kokoro. Kokoro est le moteur par défaut : 54 voix intégrées en huit langues, l'anglais en voix américaines et britanniques. |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON `--segments`, avec la voix Kokoro : 54 voix intégrées en huit langues, l'anglais en voix américaines et britanniques. `narrate` est le nom le plus ancien, pas un moteur par défaut : le moteur qui lit un document, c'est `speaker-helper` qui le choisit (voir plus bas). |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | La même chose avec OpenVoice, qui sait cloner une voix à partir d'un court échantillon (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | La même chose avec Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | Les voix intégrées de chaque moteur ; `--sample` écrit un court extrait de démonstration par voix, et `--measure` les classe selon l'amplitude de leur hauteur. |
@@ -57,7 +57,7 @@ Ce paquet ne choisit pas le moteur de voix, et son appelant non plus. Cette déc
 | Commande | Porte d'entrée | Ce qu'elle fait |
 |---|---|---|
 | `sprezzature-audio-install` | `install` | Télécharge à l'avance un modèle Whisper GGML (`--model`, `large-v3-turbo` par défaut) pour que la transcription tourne hors ligne. |
-| `sprezzature-audio-install-diarize` | `install-diarize` | Lance `pip install nemo_toolkit[asr]` (à sauter avec `--no-install`) et télécharge à l'avance les points de contrôle Sortformer et TitaNet (`--only` pour un seul des deux). |
+| `sprezzature-audio-install-diarize` | `install-diarize` | Vérifie que NeMo s'importe, ne lance `pip install nemo_toolkit[asr]` que s'il ne s'importe pas (`--no-install` saute cette étape), et télécharge à l'avance les points de contrôle Sortformer et TitaNet (`--only` pour un seul des deux). |
 | `sprezzature-audio-install-voice` | `install-voice` | Télécharge les poids d'un moteur de narration (`--engine kokoro`, `openvoice`, `chatterbox` ou `all`, la valeur par défaut) et vérifie la présence d'un espeak-ng système. |
 
 Deux autres commandes ne sont pas des outils : `sprezzature-audio tools` liste les quinze et dit lesquels s'importent sur cette machine, et `sprezzature-audio-mcp` sert la surface MCP (voir plus bas).
@@ -229,7 +229,7 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 | Diarisation (qui a parlé quand) | `nvidia/diar_sortformer_4spk-v1` | NeMo |
 | Identification (faire correspondre une voix à un échantillon de référence) | `nvidia/speakerverification_en_titanet_large` | NeMo |
 | Traduction et devinette des noms | `qwen3-vl:8b`, par le serveur Ollama de `--url` | best-engine-ai-helper |
-| Narration | Kokoro (par défaut), OpenVoice, Chatterbox | speaker-helper |
+| Narration | Kokoro, OpenVoice, Chatterbox, choisi à chaque lecture par le routeur | speaker-helper |
 
 ## Variables d'environnement
 

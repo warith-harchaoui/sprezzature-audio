@@ -34,7 +34,7 @@ Then the direction decides the half:
 
 - **Timed text in, a judgement out.** `audit` (can it be read at that speed?), `benchmark` or the metric tools (how wrong is it against a reference?).
 
-- **Text in, speech out.** `narrate` and its two siblings, after `install-voice`; `voice` to hear the candidates first. This package does not choose the engine, and the agent must not either: `speaker-helper`'s router decides, and `sprezzature-publish` calls it. Kokoro is the default (`narrate`). Name another engine only when the user explicitly asks for one.
+- **Text in, speech out.** `narrate` and its two siblings, after `install-voice`; `voice` to hear the candidates first. This package does not choose the engine, and the agent must not either: `speaker-helper`'s router decides, and `sprezzature-publish` calls it. With no engine named by the user, ask the router (`speaker-helper --language <lang> route --condition offline`) and run the wrapper it names; `narrate` is Kokoro's front-door name, not a default.
 
 **Not this package:** cutting, resampling or cleaning a signal (`audio-helper`); wiring a narration into a page with a player and read-along highlighting (`sprezzature-publish`, which calls this package for the voice); describing an image in words (`sprezzature-accessibility`).
 
@@ -52,7 +52,7 @@ Then the direction decides the half:
 | `translate` | `sprezzature-audio-translate` | Translate a caption track, keeping its timings, and emit a two-track `<video>` snippet. |
 | `audit` | `sprezzature-audio-audit` | Can these captions be read at the speed they go by? Exit code 1 on any finding. |
 | `benchmark` | `sprezzature-audio-benchmark` | WER, DER or RTF of a run, against a reference or a stopwatch. |
-| `narrate` | `sprezzature-audio-narrate-kokoro` | Read these blocks aloud with Kokoro (the default) and write the audio and its `.vtt`. |
+| `narrate` | `sprezzature-audio-narrate-kokoro` | Read these blocks aloud with Kokoro and write the audio and its `.vtt`. |
 | `narrate-openvoice` | `sprezzature-audio-narrate-openvoice` | The same with OpenVoice, which clones a voice sample. |
 | `narrate-chatterbox` | `sprezzature-audio-narrate-chatterbox` | The same with Chatterbox. |
 | `voice` | `sprezzature-audio-voice` | Which voices are there, and what do they sound like? |
@@ -93,7 +93,7 @@ The heavy stages run local models on real files: they are commands, not HTTP or 
 | RTF | none | `sprezzature-audio-benchmark --time-command` | `benchmark` | none | none |
 | Device probe | `audio.describe_device`, `audio.device_report` | none | none | `GET /v1/device` | `get_device` |
 | Liveness | none | none | none | `GET /health` | `health` |
-| Narrate (Kokoro, default) | `audio.narrate("kokoro", ...)` | `sprezzature-audio-narrate-kokoro` | `narrate` | none | none |
+| Narrate (Kokoro) | `audio.narrate("kokoro", ...)` | `sprezzature-audio-narrate-kokoro` | `narrate` | none | none |
 | Narrate (OpenVoice) | `audio.narrate("openvoice", ...)` | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | none | none |
 | Narrate (Chatterbox) | `audio.narrate("chatterbox", ...)` | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | none | none |
 | List and sample voices | `audio.sample_one_voice` | `sprezzature-audio-voice` | `voice` | none | none |

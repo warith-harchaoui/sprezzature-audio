@@ -166,7 +166,7 @@ sprezzature-audio-install
 
 ```sh
 sprezzature-audio-install-diarize
-# Runs pip install nemo_toolkit[asr], then downloads the Sortformer and TitaNet checkpoints
+# Checks that NeMo imports (pip-installs nemo_toolkit[asr] only if it does not), then downloads the Sortformer and TitaNet checkpoints
 ```
 
 ## Install a narration engine's weights
