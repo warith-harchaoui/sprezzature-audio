@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # adds an Ollama server for translate and name
 ```
 
-The image installs the package with `ffmpeg` and `espeak-ng`, and its default command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000`: one process on one port serves the HTTP routes and the MCP endpoint at `/mcp`. Files go through `./work`, mounted at `/work`; the Whisper and NeMo caches go to a named volume through `SPREZZATURE_CACHE_DIR`; the narration weights do not follow that variable and stay inside the container. Compose sets both `OLLAMA_URL` and `SPREZZATURE_LLM_BASE_URL` to the `ollama` service, because the first is only probed and the second is where the model call goes. The long tools run as commands in the same image.
+The image installs the package with `ffmpeg` and `espeak-ng`, and its default command is `sprezzature-audio-mcp --host 0.0.0.0 --port 8000`: one process on one port serves the HTTP routes and the MCP endpoint at `/mcp`. Files go through `./work`, mounted at `/work`; the Whisper and NeMo caches go to the named volume `audio-cache` through `SPREZZATURE_CACHE_DIR`, and the narration weights, which do not follow that variable, to a second one, `voice-cache`, mounted on the container's `~/.cache`. Both survive `docker compose down`; `down -v` deletes them. `OLLAMA_URL` points at the `ollama` service. The long tools run as commands in the same image.
 
 ## Agent skill
 
@@ -228,7 +228,7 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 | ASR (speech to text) | `large-v3-turbo` by default, or any other GGML Whisper weights (the compact format whisper.cpp expects) | vocal-helper / whisper.cpp |
 | Diarization (who spoke when) | `nvidia/diar_sortformer_4spk-v1` | NeMo |
 | Speaker identification (matching a voice to a reference sample) | `nvidia/speakerverification_en_titanet_large` | NeMo |
-| Translation and name guessing | `qwen3-vl:8b`, through Ollama by default | best-engine-ai-helper |
+| Translation and name guessing | `qwen3-vl:8b`, through the Ollama server at `--url` | best-engine-ai-helper |
 | Narration | Kokoro (default), OpenVoice, Chatterbox | speaker-helper |
 
 ## Environment variables
@@ -238,8 +238,8 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 | `SPREZZATURE_WHISPER_MODEL` | Override the Whisper model path or alias |
 | `SPREZZATURE_CACHE_DIR` | Cache root for Whisper weights, NeMo checkpoints and results (default `~/.cache/sprezzature-skill`). Narration weights ignore it: Kokoro and OpenVoice go under `~/.cache/sprezzature-skill`, Chatterbox under `~/.cache/huggingface` |
 | `SPREZZATURE_NO_CACHE` | Set to any value to disable the transcription and diarization result cache |
-| `OLLAMA_URL` | Default of the `--url` that `translate` and `name` probe before calling a model (default `http://localhost:11434`). The call itself goes to `SPREZZATURE_LLM_BASE_URL`, so point both at the same server |
-| `SPREZZATURE_LLM_*` | LLM (large language model) backend configuration read by best-engine-ai-helper: `SPREZZATURE_LLM_BACKEND` defaults to `ollama`, `SPREZZATURE_LLM_BASE_URL` to `http://localhost:11434` |
+| `OLLAMA_URL` | Default of the `--url` of `translate` and `name`: the Ollama server they check and then call (default `http://localhost:11434`) |
+| `SPREZZATURE_LLM_TIMEOUT` | Per-request timeout, in seconds, of the LLM (large language model) call that best-engine-ai-helper makes for `translate` and `name` (default 120). The backend and server are not read from the environment: those two tools name Ollama at `--url` themselves |
 | `SPREZZATURE_AUDIO_HOST`, `SPREZZATURE_AUDIO_PORT` | Default bind address of `sprezzature-audio-mcp` |
 
 ## License

@@ -94,9 +94,10 @@ _BASE = ""
 #: The uncapped readings are kept rather than omitted, because an absence that
 #: was measured and an absence that was never looked at are different facts.
 #: ``best-engine-ai-helper`` is the one worth dwelling on: the floor this
-#: manifest names, 0.4.0, declares plain ``>=3.10``, while the copy installed
-#: on a developer machine (1.10.0) depends on ``os-helper<4,>=2.9.0`` and is
-#: capped. ``[translate]`` does turn out to be capped — see
+#: manifest named until 2026-11-05, 0.4.0, declared plain ``>=3.10``, while the
+#: copy installed on a developer machine (1.10.0) depends on
+#: ``os-helper<4,>=2.9.0`` and is capped. The floor is 1.11.0 now and reads the
+#: same way: open itself, capped one hop down. ``[translate]`` does turn out to be capped — see
 #: :data:`CAPPED_ONE_HOP_DOWN` — so the installed reading reaches the right
 #: conclusion, and it reaches it for a reason that is not true of the version
 #: the manifest asks for. Right answer, wrong evidence, and the next time the
@@ -120,7 +121,11 @@ MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
     ("vocal-helper", "0.6.0"): "<3.14,>=3.10",
     ("audio-helper", "2.6.1"): "<3.14,>=3.10",
     ("video-helper", "1.7.0"): "<3.14,>=3.10",
-    ("best-engine-ai-helper", "0.4.0"): ">=3.10",
+    # Relevé le 2026-11-05 sur l'index simple en JSON, roue et sdist de la
+    # 1.11.0 : ">=3.10". Plancher monté depuis la 0.4.0 parce que l'appel passe
+    # maintenant `engine=` (présent dès la 1.1.0) et que seules les 1.11.x
+    # admettent `os-helper>=4`.
+    ("best-engine-ai-helper", "1.11.0"): ">=3.10",
     ("nemo_toolkit", "1.23.0"): "",
     # `>=1.3` resolves to 1.3.0, the lowest published; 1.3.0 and 1.3.1 are the
     # only 1.3.x files on the index and both read the same. It carries the
@@ -137,18 +142,21 @@ MEASURED_AT_THEIR_FLOOR: dict[tuple[str, str], str] = {
 #: The ceiling one hop further down, for a dependency whose *own* window is
 #: open but whose base graph cannot avoid a capped library.
 #:
-#: ``best-engine-ai-helper 0.4.0`` is the case, and it is the reason this
+#: ``best-engine-ai-helper`` is the case (0.4.0 when this was written, 1.11.0
+#: now), and it is the reason this
 #: second table exists rather than a fudged entry in the first: its declared
 #: ``Requires-Python`` really is ``>=3.10``, and writing ``<3.14`` next to its
 #: name would be recording a reading nobody can take. What it *does* declare
-#: is ``os-helper>=1.5.0``, and the ceiling is unavoidable there — checked
+#: is an ``os-helper`` range (``>=1.5.0`` at 0.4.0), and the ceiling is unavoidable there — checked
 #: across the whole of ``os-helper``'s simple index on 2026-10-31, **not one
 #: of its releases ships without ``<3.14``**, so no resolution of that floor
 #: escapes it.
 #:
 #: Each value is ``(the dependency line that carries it, its window)``.
 CAPPED_ONE_HOP_DOWN: dict[tuple[str, str], tuple[str, str]] = {
-    ("best-engine-ai-helper", "0.4.0"): ("os-helper>=1.5.0", "<3.14,>=3.10"),
+    # 1.11.0 names `os-helper<5,>=2.9.0` (read off its wheel's METADATA on
+    # 2026-11-05); every os-helper release carries `<3.14`, as above.
+    ("best-engine-ai-helper", "1.11.0"): ("os-helper<5,>=2.9.0", "<3.14,>=3.10"),
 }
 
 #: The minor versions a capped dependency has to be checked against. 3.14 is

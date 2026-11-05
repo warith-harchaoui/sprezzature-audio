@@ -20,10 +20,7 @@ torchaudio>=2.0.0
 librosa>=0.10.0
 numpy>=1.24.0
 
-# For sprezzature-publish's narrate_post.py, which drives these engines and
-# routes its optional LLM enrichment of the narration hints through
-# best_engine_ai_helper.llm.chat at module level, so it cannot be imported
-# without it. Nothing in this package imports it: the engine wrappers here
-# only synthesise. Kept so that installing an engine tier gives a working
-# narration chain end to end rather than one that fails at the caller.
-best-engine-ai-helper>=1.4
+# best-engine-ai-helper used to be listed here "for sprezzature-publish's
+# narrate_post.py". OpenVoice does not need it, and the base install already
+# declares it (`translate` and `name` call a model through it), so it is not
+# repeated.

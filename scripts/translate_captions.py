@@ -343,7 +343,8 @@ def make_ollama_translator(
     Parameters
     ----------
     url : str
-        Ollama endpoint.
+        Ollama endpoint. The model call goes here, the same server the
+        command line probes.
     model : str
         Model tag (``qwen3-vl:8b``).
     source_lang : str
@@ -368,6 +369,18 @@ def make_ollama_translator(
         f"are the translations. Do not merge, split, add, or drop keys."
     )
 
+    # The server the CLI probed is the server the call goes to. Without an
+    # engine descriptor `chat` falls back to best-engine-ai-helper's own
+    # endpoint setting (`SPREZZATURE_LLM_BASE_URL`, default localhost), so
+    # `--url` used to gate the call without ever reaching it: in a container
+    # the probe passed against the `ollama` service and the translation went
+    # to localhost.
+    engine: dict[str, object] = {
+        "backend": "ollama",
+        "base_url": url,
+        "llm": {"model": model},
+    }
+
     def translate(window: list[str]) -> list[str]:
         """Translate one window of cue texts via Ollama, preserving order."""
         from best_engine_ai_helper.llm import chat as _llm_chat
@@ -380,6 +393,7 @@ def make_ollama_translator(
                     json.dumps(payload, ensure_ascii=False),
                     system=system,
                     model=model,
+                    engine=engine,
                 )
             ).strip()
         except Exception as exc:  # noqa: BLE001

@@ -78,6 +78,11 @@ def test_no_file_points_at_a_requirements_file_that_is_gone() -> None:
             continue
         if path.name.startswith("requirements") or path.name == Path(__file__).name:
             continue      # this file names the removed ones on purpose, above
+        if path.name == "CHANGELOG.md":
+            # History, and the one place a removed file must keep its name:
+            # the entry that says it was removed. Released sections are not
+            # rewritten, so a guard over them could only be satisfied by lying.
+            continue
         try:
             text = path.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):

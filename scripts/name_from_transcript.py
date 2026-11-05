@@ -427,7 +427,7 @@ def _llm_pass(
     cues : list of dict
         Speaker-attributed cues.
     url : str
-        Ollama endpoint (``http://localhost:11434``).
+        Ollama endpoint (``http://localhost:11434``). The call goes here.
     model : str
         Model tag to send.
     seed_names : dict of str to (str, float)
@@ -465,6 +465,9 @@ def _llm_pass(
                 json.dumps(user_payload, ensure_ascii=False),
                 system=system,
                 model=model,
+                # The server the caller probed, not best-engine-ai-helper's
+                # own default: otherwise `--url` gates a call it never reaches.
+                engine={"backend": "ollama", "base_url": url, "llm": {"model": model}},
             )
         ).strip()
     except Exception as exc:  # noqa: BLE001

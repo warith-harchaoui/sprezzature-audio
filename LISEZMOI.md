@@ -209,7 +209,7 @@ docker compose run --rm api sprezzature-audio-captions /work/talk.mp4
 docker compose --profile translate up -d   # ajoute un serveur Ollama pour translate et name
 ```
 
-L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut est `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` : un seul processus, sur un seul port, sert les routes HTTP et le point d'accès MCP sur `/mcp`. Les fichiers passent par `./work`, monté sur `/work` ; les caches de Whisper et de NeMo vont dans un volume nommé, par `SPREZZATURE_CACHE_DIR` ; les poids de narration ne suivent pas cette variable et restent dans le conteneur. Compose pointe `OLLAMA_URL` et `SPREZZATURE_LLM_BASE_URL` vers le service `ollama`, parce que la première n'est que sondée et que la seconde est l'adresse où part l'appel au modèle. Les outils longs tournent comme des commandes dans la même image.
+L'image installe le paquet avec `ffmpeg` et `espeak-ng`, et sa commande par défaut est `sprezzature-audio-mcp --host 0.0.0.0 --port 8000` : un seul processus, sur un seul port, sert les routes HTTP et le point d'accès MCP sur `/mcp`. Les fichiers passent par `./work`, monté sur `/work` ; les caches de Whisper et de NeMo vont dans le volume nommé `audio-cache`, par `SPREZZATURE_CACHE_DIR`, et les poids de narration, qui ne suivent pas cette variable, dans un second, `voice-cache`, monté sur le `~/.cache` du conteneur. Les deux survivent à `docker compose down` ; `down -v` les efface. `OLLAMA_URL` pointe vers le service `ollama`. Les outils longs tournent comme des commandes dans la même image.
 
 ## Skill d'agent
 
@@ -228,7 +228,7 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 | ASR (parole vers texte) | `large-v3-turbo` par défaut, ou tout autre jeu de poids Whisper au format GGML (le format compact qu'attend whisper.cpp) | vocal-helper / whisper.cpp |
 | Diarisation (qui a parlé quand) | `nvidia/diar_sortformer_4spk-v1` | NeMo |
 | Identification (faire correspondre une voix à un échantillon de référence) | `nvidia/speakerverification_en_titanet_large` | NeMo |
-| Traduction et devinette des noms | `qwen3-vl:8b`, par Ollama par défaut | best-engine-ai-helper |
+| Traduction et devinette des noms | `qwen3-vl:8b`, par le serveur Ollama de `--url` | best-engine-ai-helper |
 | Narration | Kokoro (par défaut), OpenVoice, Chatterbox | speaker-helper |
 
 ## Variables d'environnement
@@ -238,8 +238,8 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 | `SPREZZATURE_WHISPER_MODEL` | Remplacer le chemin ou l'alias du modèle Whisper |
 | `SPREZZATURE_CACHE_DIR` | Racine du cache des poids Whisper, des points de contrôle NeMo et des résultats (`~/.cache/sprezzature-skill` par défaut). Les poids de narration l'ignorent : Kokoro et OpenVoice vont sous `~/.cache/sprezzature-skill`, Chatterbox sous `~/.cache/huggingface` |
 | `SPREZZATURE_NO_CACHE` | Toute valeur désactive le cache des résultats de transcription et de diarisation |
-| `OLLAMA_URL` | Valeur par défaut du `--url` que `translate` et `name` sondent avant d'appeler un modèle (`http://localhost:11434` par défaut). L'appel lui-même part vers `SPREZZATURE_LLM_BASE_URL` ; il faut donc pointer les deux vers le même serveur |
-| `SPREZZATURE_LLM_*` | Configuration du moteur LLM (grand modèle de langage) lue par best-engine-ai-helper : `SPREZZATURE_LLM_BACKEND` vaut `ollama` par défaut, `SPREZZATURE_LLM_BASE_URL` vaut `http://localhost:11434` |
+| `OLLAMA_URL` | Valeur par défaut du `--url` de `translate` et `name`, le serveur Ollama qu'ils vérifient puis appellent (`http://localhost:11434` par défaut) |
+| `SPREZZATURE_LLM_TIMEOUT` | Délai maximal, en secondes, de chaque appel au LLM (grand modèle de langage) que best-engine-ai-helper fait pour `translate` et `name` (120 par défaut). Le moteur et le serveur ne sont pas lus dans l'environnement : ces deux outils désignent eux-mêmes Ollama sur `--url` |
 | `SPREZZATURE_AUDIO_HOST`, `SPREZZATURE_AUDIO_PORT` | Adresse d'écoute par défaut de `sprezzature-audio-mcp` |
 
 ## Licence

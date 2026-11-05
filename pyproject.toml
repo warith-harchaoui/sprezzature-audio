@@ -124,12 +124,21 @@ dependencies = [
 
     # ----------------------------------------------------------- la traduction
     # From `[translate]`. Worth one note that took two readings to get right:
-    # `best-engine-ai-helper 0.4.0` declares plain `>=3.10` on the index, so
-    # it looks clean -- but its own base names `os-helper>=1.5.0`, and **no
+    # `best-engine-ai-helper` declares plain `>=3.10` on the index, so it
+    # looks clean -- but its own base names `os-helper` (`>=1.5.0` at 0.4.0,
+    # `<5,>=2.9.0` at 1.11.0), and **no
     # os-helper release on PyPI has ever shipped without `<3.14`** (checked
     # across the whole simple index, not sampled). The ceiling arrives one hop
     # down and arrives unavoidably.
-    "best-engine-ai-helper>=0.4.0",
+    #
+    # The floor is 1.11.0 since 2026-11-05, for two reasons read off the index.
+    # The translator and the name guesser now pass the server they probed to
+    # `chat(engine=...)`, which exists from 1.1.0; and every release from 1.0.0
+    # to 1.10.0 caps `os-helper` below 3 or 4, so none of them can install
+    # beside the `os-helper>=4` above. 1.11.0 is the first that both accepts
+    # `engine=` and allows `os-helper<5`. 0.4.0 resolved only because it named
+    # `os-helper>=1.5.0` uncapped, and it had no `engine=`.
+    "best-engine-ai-helper>=1.11.0",
 
     # ------------------------------------------------- les surfaces HTTP et MCP
     # From `[api]` and `[mcp]`. `pydantic` is named because
