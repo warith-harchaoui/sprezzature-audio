@@ -2,8 +2,12 @@
 
 ## [Unreleased]
 
+## [1.10.3] — 2026-11-05
+
 ### Docs
 
+- README and LISEZMOI: Kokoro's 54 built-in voices speak eight languages, not
+  nine; the how-it-works figure says so too.
 - README, LISEZMOI and TRIGGERS.md no longer call Kokoro "the default". `narrate` is Kokoro's front-door name; which engine reads a document is `speaker-helper`'s router's answer (`backend="auto"`, chatterbox offline in 0.15.2), and TRIGGERS.md told the agent to run Kokoro unless the user named another engine, which is the caller choosing. It now says to ask the router (`speaker-helper --language <lang> route --condition offline`).
 - `install-diarize` was described as running `pip install nemo_toolkit[asr]`. It checks that NeMo imports and installs it only when it does not, which after a base install is never (README, LISEZMOI, EXAMPLES.md).
 - The figure said translation reads "the same environment variables every model call in the suite reads". `translate` and `name` hand best-engine-ai-helper the backend, the server (`--url`, default `OLLAMA_URL`) and the model explicitly; only `SPREZZATURE_LLM_TIMEOUT` comes from the environment. Both figures redrawn.
