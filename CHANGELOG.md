@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.10.1] — 2026-11-05
+
 ### Fixed
 
 - **`translate` and `name` call the server they check.** Both probed `--url` (default `OLLAMA_URL`) and then called `best_engine_ai_helper.llm.chat` with no endpoint, so the call went to best-engine-ai-helper's own setting, localhost by default. In the compose stack the probe passed against the `ollama` service and the translation failed against localhost. `make_ollama_translator(url=...)` and the name guesser now pass `engine={"backend": "ollama", "base_url": url, ...}`. `tests/test_the_llm_call_goes_where_the_probe_went.py` checks the URL reaches `chat`, with a stub and no server; it fails on the previous code.
