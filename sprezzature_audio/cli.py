@@ -53,7 +53,7 @@ and which fail to import. A tool's own flags: `sprezzature-audio TOOL --help`.
         "on), which is what a script should call."
     ),
 )
-@click.version_option(package_name="sprezzature-audio")
+@click.version_option(None, "-V", "--version", package_name="sprezzature-audio")
 def main() -> None:  # pragma: no cover - click dispatches
     """Front door over the fifteen tools this package ships."""
 

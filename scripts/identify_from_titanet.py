@@ -47,8 +47,7 @@ Default model
 checkpoint, trained for speaker verification (telling voices apart, as
 opposed to transcribing what they say). It was trained primarily on
 English but works reasonably well on other languages too, for short,
-everyday conversational clips. Override it with ``--model`` or the
-``NEMO_TITANET_MODEL`` environment variable.
+everyday conversational clips. Override it with ``--model``.
 
 Reference-clip layout
 ---------------------

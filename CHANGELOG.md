@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The front door `sprezzature-audio` (and `make-audio`) answers `-V` as well as `--version`, like every per-tool command already did; it was a usage error. `tests/test_the_front_door_answers_both_version_flags.py` holds both flags against the installed version.
+
+### Docs
+
+- The docstring of `scripts/identify_from_titanet.py` said the TitaNet checkpoint could be overridden with a `NEMO_TITANET_MODEL` environment variable. Nothing reads it; the claim is removed and `--model` remains the one override.
+
 ## [1.10.1] — 2026-11-05
 
 ### Fixed
