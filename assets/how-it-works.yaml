@@ -41,7 +41,7 @@ en:
         - label: Detect the language first
           note: "nobody passes one. The detected language is what the phonemiser works from, so a French page read as English is not French in an American accent, it is an American spelling the words out."
         - label: Pick the voice that speaks it
-          note: "fifty-four built-in voices across nine languages. Or one cloned from a sample of six to thirty seconds, when you need a particular person rather than a page read aloud."
+          note: "fifty-four built-in voices across eight languages. Or one cloned from a sample of six to thirty seconds, when you need a particular person rather than a page read aloud."
         - label: Measure the audio, then cut the cues
           note: the WebVTT is built from the measured length of each file. Not transcribed back, and not typed.
       result:
@@ -85,7 +85,7 @@ fr:
         - label: Détecter la langue d'abord
           note: "personne n'en passe une. La langue détectée est ce dont part le phonémiseur, si bien qu'une page française lue en anglais n'est pas du français avec un accent américain, c'est un Américain qui épelle les mots."
         - label: Choisir la voix qui la parle
-          note: "cinquante-quatre voix intégrées dans neuf langues. Ou une voix clonée depuis un échantillon de six à trente secondes, quand il faut une personne précise et pas une page lue à voix haute."
+          note: "cinquante-quatre voix intégrées dans huit langues. Ou une voix clonée depuis un échantillon de six à trente secondes, quand il faut une personne précise et pas une page lue à voix haute."
         - label: Mesurer l'audio, puis découper les repères
           note: le WebVTT est construit sur la durée mesurée de chaque fichier. Ni retranscrit, ni saisi à la main.
       result:

@@ -43,7 +43,7 @@ A narration lands as an audio file plus a WebVTT, the same convention a transcri
 
 | Command | Front door | What it produces |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON file, with the Kokoro voice. Kokoro is the default: 54 built-in voices in nine languages. |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON file, with the Kokoro voice. Kokoro is the default: 54 built-in voices in eight languages, English in American and British voices. |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | The same, with OpenVoice, which can clone a voice from a short sample (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | The same, with Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | The built-in voices of each engine; `--sample` writes a one-line demo clip per voice, and `--measure` ranks them by how far their pitch moves. |

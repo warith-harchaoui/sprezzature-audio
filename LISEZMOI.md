@@ -43,7 +43,7 @@ Une narration arrive sous forme d'un fichier audio et d'un WebVTT, la même conv
 
 | Commande | Porte d'entrée | Résultat |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON `--segments`, avec la voix Kokoro. Kokoro est le moteur par défaut : 54 voix intégrées en neuf langues. |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON `--segments`, avec la voix Kokoro. Kokoro est le moteur par défaut : 54 voix intégrées en huit langues, l'anglais en voix américaines et britanniques. |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | La même chose avec OpenVoice, qui sait cloner une voix à partir d'un court échantillon (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | La même chose avec Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | Les voix intégrées de chaque moteur ; `--sample` écrit un court extrait de démonstration par voix, et `--measure` les classe selon l'amplitude de leur hauteur. |
