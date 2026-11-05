@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.10.2] — 2026-11-05
+
 ### Changed
 
 - The front door `sprezzature-audio` (and `make-audio`) answers `-V` as well as `--version`, like every per-tool command already did; it was a usage error. `tests/test_the_front_door_answers_both_version_flags.py` holds both flags against the installed version.
