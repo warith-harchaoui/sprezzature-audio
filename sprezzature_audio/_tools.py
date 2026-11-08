@@ -35,7 +35,7 @@ TOOLS: dict[str, tuple[str, str, str]] = {
         "audit_captions",
         "",
         "Report every cue that cannot be read as timed — too fast, too "
-        "short, too long, too many lines. Standard library only.",
+        "short, too long, too many lines. No model, no network.",
     ),
     "benchmark": (
         "benchmark_stt",
@@ -80,8 +80,8 @@ TOOLS: dict[str, tuple[str, str, str]] = {
     "narrate": (
         "narrate_kokoro",
         "",
-        "Document → narration, with the timed track beside it. Kokoro, the "
-        "default voice since 1.3.0.",
+        "Document → narration, with the timed track beside it, in the Kokoro "
+        "voice. Which engine reads a document is speaker-helper's router's call.",
     ),
     "narrate-openvoice": (
         "narrate_openvoice",

@@ -115,16 +115,14 @@ from caption_diarize import (  # noqa: E402
 )
 
 # Every LLM/VLM call across sprezzature-* routes through this one function,
-# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
-# the backend and model tag from the SPREZZATURE_LLM_* environment variables
-# (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
-# at each call site below is a per-call override on top of that.
+# no script imports an Ollama/OpenAI/LangChain client directly. The call
+# below names the backend, the server (``--url``) and the model itself, so of
+# the SPREZZATURE_LLM_* environment variables only the timeout applies.
 #
-# ``best-engine-ai-helper`` is an optional extra (the ``[translate]`` extra
-# in pyproject.toml), so the import is deferred to inside ``_llm_pass``,
-# the same policy CODING.md sets for NeMo / pywhispercpp / numpy, rather
-# than done here at module scope, so this module (and its rule-pass-only
-# functions) stay importable on a base install with no extras.
+# ``best-engine-ai-helper`` is a base dependency since 2026-11-01, and the
+# import is still deferred to inside ``_llm_pass``, the same policy CODING.md
+# sets for NeMo / pywhispercpp / numpy, so that the rule pass stays free of
+# whatever that package imports.
 
 # ── Configuration ──────────────────────────────────────────────────────────
 

@@ -188,6 +188,13 @@ def build_command(engine: str) -> click.Command:
             sys.stderr.write("--segments and --out-dir are both required\n")
             return 2
 
+        # The neighbours' wording and exit code. Without this a mistyped path
+        # was a FileNotFoundError traceback, since only the engine's own
+        # refusals are caught below.
+        if not segments.is_file():
+            sys.stderr.write(f"No such file: {segments}\n")
+            return 1
+
         try:
             blocks = json.loads(segments.read_text(encoding="utf-8"))
             report = narrate(

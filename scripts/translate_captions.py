@@ -84,10 +84,9 @@ from _lang import detect_text_language, extract_body_text, language_name  # noqa
 from caption_diarize import parse_caption_cues  # noqa: E402
 
 # Every LLM/VLM call across sprezzature-* routes through this one function,
-# no script imports an Ollama/OpenAI/LangChain client directly. It resolves
-# the backend and model tag from the SPREZZATURE_LLM_* environment variables
-# (SPREZZATURE_LLM_BACKEND defaults to "ollama"); the `model` argument passed
-# at each call site below is a per-call override on top of that.
+# no script imports an Ollama/OpenAI/LangChain client directly. The call
+# below names the backend, the server (``--url``) and the model itself, so of
+# the SPREZZATURE_LLM_* environment variables only the timeout applies.
 #
 # ``best-engine-ai-helper`` is a base dependency since 2026-11-01, but the
 # import is still deferred to inside the translator closure built by

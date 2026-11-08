@@ -10,7 +10,7 @@ sprezzature suite
 ├── sprezzature-publish        (sites, meta tags, read-along; calls this one for the voice)
 ├── sprezzature-accessibility  (static HTML lint, alt text)
 ├── sprezzature-video          (claim checking over a film, captions from a narration script)
-├── sprezzature-figures        (167 chart kinds)
+├── sprezzature-figures        (168 chart kinds)
 ├── sprezzature-maps           (choropleth, situation plate, accumulation field)
 ├── sprezzature-colors         (contrast, colour-vision deficiency, Tailwind palettes)
 ├── sprezzature-ui             (vanilla JS and Tailwind, i18n audit)

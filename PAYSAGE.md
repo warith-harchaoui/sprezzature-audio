@@ -10,7 +10,7 @@ suite sprezzature
 ├── sprezzature-publish        (sites, balises méta, lecture suivie ; appelle celui-ci pour la voix)
 ├── sprezzature-accessibility  (contrôle statique du HTML, textes alternatifs)
 ├── sprezzature-video          (vérification des revendications d'un film, sous-titres depuis le script)
-├── sprezzature-figures        (167 types de graphiques)
+├── sprezzature-figures        (168 types de graphiques)
 ├── sprezzature-maps           (choroplèthe, planche de situation, champ d'accumulation)
 ├── sprezzature-colors         (contraste, déficience de la vision des couleurs, palettes Tailwind)
 ├── sprezzature-ui             (JS natif et Tailwind, audit i18n)

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## [1.10.4] — 2026-11-08
+
+### Fixed
+
+- **The MCP handshake announced a sentence as the server's version.** fastapi-mcp 0.4 calls `Server(self.name, self.description)`, and the second positional parameter of `Server` is the version. `serverInfo.version` is now the package version and the description goes to `instructions`.
+- **`sprezzature-audio-narrate-*` on a missing `--segments` file** printed a `FileNotFoundError` traceback. It now says `No such file: <path>` and exits 1, like the other tools.
+
+`tests/test_the_small_surfaces_tell_the_truth.py` holds both; each test fails on the previous code.
+
+### Docs
+
+- `sprezzature-audio audit` was described as "Standard library only" in its front-door help, the README and LISEZMOI. It imports click; what it does not need is a model or a network, and that is what they now say.
+- The front-door help of `narrate` and the package docstring still called Kokoro "the default voice", with OpenVoice and Chatterbox "behind their own extras". There are no extras, and the engine is the router's call.
+- LANDSCAPE and PAYSAGE: `sprezzature-figures` has 168 chart kinds, not 167.
+- Comments in `scripts/name_from_transcript.py` and `scripts/translate_captions.py` described the backend as read from the environment, and the first one best-engine-ai-helper as an optional extra.
+
 ## [1.10.3] — 2026-11-05
 
 ### Docs

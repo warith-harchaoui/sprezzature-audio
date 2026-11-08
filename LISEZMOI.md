@@ -34,7 +34,7 @@ Quinze outils. Chacun est sa propre commande, et chacun est aussi une sous-comma
 
 | Commande | Porte d'entrée | Résultat |
 |---|---|---|
-| `sprezzature-audio-audit` | `audit` | Chaque repère qui ne peut pas être lu au rythme où il passe : inversé, chevauchant, vide, trop bref, trop long, trop rapide, trop large, trop de lignes. Les valeurs par défaut suivent le Netflix Timed Text Style Guide ; chaque seuil est une option. Code de sortie 1 au moindre constat. Bibliothèque standard seulement. |
+| `sprezzature-audio-audit` | `audit` | Chaque repère qui ne peut pas être lu au rythme où il passe : inversé, chevauchant, vide, trop bref, trop long, trop rapide, trop large, trop de lignes. Les valeurs par défaut suivent le Netflix Timed Text Style Guide ; chaque seuil est une option. Code de sortie 1 au moindre constat. Aucun modèle, aucun réseau. |
 | `sprezzature-audio-benchmark` | `benchmark` | Le WER entre deux transcriptions, le DER entre deux fichiers RTTM, et le RTF d'une commande chronométrée (`--time-command`). |
 
 ### Du texte à la parole

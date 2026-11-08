@@ -34,7 +34,7 @@ Fifteen tools. Each one is its own command, and each one is also a sub-command o
 
 | Command | Front door | What it produces |
 |---|---|---|
-| `sprezzature-audio-audit` | `audit` | Every cue that cannot be read as timed: reversed, overlapping, empty, too brief, too long, too fast, too wide, too many lines. Defaults follow the Netflix Timed Text Style Guide; each threshold is a flag. Exit code 1 on any finding. Standard library only. |
+| `sprezzature-audio-audit` | `audit` | Every cue that cannot be read as timed: reversed, overlapping, empty, too brief, too long, too fast, too wide, too many lines. Defaults follow the Netflix Timed Text Style Guide; each threshold is a flag. Exit code 1 on any finding. No model and no network. |
 | `sprezzature-audio-benchmark` | `benchmark` | WER between two transcripts, DER between two RTTM files, and RTF of a timed command (`--time-command`). |
 
 ### From text to speech

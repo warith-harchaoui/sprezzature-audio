@@ -21,9 +21,11 @@ The understanding half, four models, one per question:
 - A local LLM (reached through Ollama, no cloud call) translates the
   transcript into another language once it has speaker labels.
 
-The speaking half, one model: Kokoro, an 82M-parameter text-to-speech model
-run through ONNX, phonemising through espeak-ng. It is the default voice
-since 1.3.0; OpenVoice and Chatterbox stay available behind their own extras.
+The speaking half, three engines reached through ``speaker-helper``: Kokoro,
+an 82M-parameter text-to-speech model run through ONNX, phonemising through
+espeak-ng; Chatterbox; and OpenVoice, which clones a voice sample. Which of
+them reads a document is the call of ``speaker-helper``'s router, not of this
+package.
 
 Every step runs on the machine that calls it: no audio or text is sent to a
 remote server unless the caller explicitly configures a remote LLM.
@@ -54,7 +56,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
-__version__ = "1.10.3"
+__version__ = "1.10.4"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"
 __license__ = "BSD-3-Clause"
