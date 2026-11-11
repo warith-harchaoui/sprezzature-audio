@@ -2,7 +2,7 @@
 
 Local-first speech processing for the [sprezzature](https://sprezzature.ai/) stack.
 
-Point it at a recording (a meeting, an interview, a lecture) and it hands back a transcript that says not just *what* was said, but *who* said it and *in which language*. It also works the other way: a page of text becomes a narration with its timed track. Everything runs on your own machine: no audio leaves it, and no API key is needed. If you instead need to cut, resample, or clean up the audio signal itself (trim silence, separate a voice from background music), that is a different job, handled by a sibling package, [audio-helper](https://github.com/warith-harchaoui/audio-helper); this package starts once the audio is already usable and asks what was said in it.
+Point it at a recording (a meeting, an interview, a lecture) and it hands back a transcript that says not just *what* was said, but *who* said it and *in which language*, as WebVTT (Web Video Text Tracks, the subtitle file a web page's video player reads) or SRT (SubRip Text, an older subtitle file most desktop video players open) subtitles. It also works the other way: a page of text becomes a narration, a WAV (Waveform Audio File Format, the uncompressed sound file any audio player opens) with its timed track. Everything runs on your own machine: no audio leaves it, and no key to an online API (Application Programming Interface, a paid online service your program would send the audio to) is needed. If you instead need to cut, resample, or clean up the audio signal itself (trim silence, separate a voice from background music), that is a different job, handled by a sibling package, [audio-helper](https://github.com/warith-harchaoui/audio-helper); this package starts once the audio is already usable and asks what was said in it.
 
 ## How it works
 
@@ -25,7 +25,7 @@ Fifteen tools. Each one is its own command, and each one is also a sub-command o
 |---|---|---|
 | `sprezzature-audio-captions` | `captions` | WebVTT, SRT or a plain transcript of an audio or video file, through a local Whisper model (`vocal-helper`, over whisper.cpp). Vocabulary biasing with `--prompt`, `--vocab`, `--vocab-from`, `--auto-project`. |
 | `sprezzature-audio-diarize` | `diarize` | An RTTM file and a `.diarization.json` turn list, through NeMo Sortformer (a checkpoint built for up to 4 speakers). |
-| `sprezzature-audio-identify` | `identify` | A `.speakers.json` that maps each diarized speaker to a name, by matching TitaNet embeddings against a folder of reference WAVs (`--refs`, one file per known speaker). |
+| `sprezzature-audio-identify` | `identify` | A `.speakers.json` that maps each diarized speaker to a name, by matching TitaNet embeddings against a folder of reference WAV files (`--refs`, one file per known speaker). |
 | `sprezzature-audio-pipeline` | `pipeline` | A speaker-labelled WebVTT, SRT or plain text, merged from a caption file and a `.diarization.json` already on disk (and optionally a `.speakers.json`). It takes no media file. |
 | `sprezzature-audio-name` | `name` | A `speakers.json` guessed from the transcript itself: self-introduction and vocative patterns, plus a local-model pass when `--ollama` is given. |
 | `sprezzature-audio-translate` | `translate` | A translated `.vtt` (`<stem>.<lang>.vtt`) and a two-track `<video>` snippet on standard output, through a local model. The target language is `--lang`, or detected from the surrounding page (`--in`, `--context`). |
@@ -43,7 +43,7 @@ A narration lands as an audio file plus a WebVTT, the same convention a transcri
 
 | Command | Front door | What it produces |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON file, with the Kokoro voice: 54 built-in voices in eight languages, English in American and British voices. `narrate` is the oldest name, not a default engine: which engine reads a document is `speaker-helper`'s call (see below). |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (or `--audio-format mp3`) and `narration.vtt` in `--out-dir`, from a `--segments` JSON (JavaScript Object Notation, plain text in named fields that a program reads: here, the list of sentences to speak) file, with the Kokoro voice: 54 built-in voices in eight languages, English in American and British voices. `narrate` is the oldest name, not a default engine: which engine reads a document is `speaker-helper`'s call (see below). |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | The same, with OpenVoice, which can clone a voice from a short sample (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | The same, with Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | The built-in voices of each engine; `--sample` writes a one-line demo clip per voice, and `--measure` ranks them by how far their pitch moves. |
@@ -56,15 +56,15 @@ This package does not choose the voice engine, and neither should its caller. Th
 
 | Command | Front door | What it does |
 |---|---|---|
-| `sprezzature-audio-install` | `install` | Pre-downloads a GGML Whisper model (`--model`, default `large-v3-turbo`) so captioning runs offline. |
+| `sprezzature-audio-install` | `install` | Pre-downloads a GGML (Georgi Gerganov Machine Learning, the compact format whisper.cpp loads: the model is one file on disk) Whisper model (`--model`, default `large-v3-turbo`) so captioning runs offline. |
 | `sprezzature-audio-install-diarize` | `install-diarize` | Checks that NeMo imports, running `pip install nemo_toolkit[asr]` only if it does not (`--no-install` skips that), and pre-downloads the Sortformer and TitaNet checkpoints (`--only` for one of them). |
 | `sprezzature-audio-install-voice` | `install-voice` | Downloads a narration engine's weights (`--engine kokoro`, `openvoice`, `chatterbox` or `all`, the default) and checks for a system espeak-ng. |
 
-Two more commands are not tools: `sprezzature-audio tools` lists the fifteen and says which ones import on this machine, and `sprezzature-audio-mcp` serves the MCP surface (see below).
+Two more commands are not tools: `sprezzature-audio tools` lists the fifteen and says which ones import on this machine, and `sprezzature-audio-mcp` serves the MCP (Model Context Protocol, the protocol through which AI agents call tools in English) surface (see below).
 
 ## Install
 
-One line. Captioning, diarization, speaker identification, translation, narration and the HTTP and MCP surfaces all install with it.
+One line. Captioning, diarization, speaker identification, translation, narration and the HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) and MCP surfaces all install with it.
 
 ```sh
 pip install sprezzature-audio
@@ -161,7 +161,7 @@ print(audio.word_error_rate(ref, hyp)["wer"])
 print(audio.describe_device())              # which accelerator this host uses
 ```
 
-The model-backed half resolves on first use (PEP 562), so the import above costs nothing even with Whisper, NeMo and Kokoro installed:
+The model-backed half resolves on first use, as Python Enhancement Proposal 562 (PEP 562, the numbered design document that lets a package load a part only when it is first used) allows, so the import above costs nothing even with Whisper, NeMo and Kokoro installed:
 
 ```python
 from pathlib import Path
@@ -188,7 +188,7 @@ The FastAPI (Python web framework) app serves the fast, model-free half. Transcr
 |---|---|---|
 | `GET /health` | `health` | Liveness probe. |
 | `GET /v1/device` | `get_device` | Which accelerator this host will use, probed rather than read from config. |
-| `POST /v1/captions/convert` | `convert_captions` | VTT, SRT and plain text, from one to another. |
+| `POST /v1/captions/convert` | `convert_captions` | VTT (short for WebVTT, the subtitle file a web page's video player reads), SRT and plain text, from one to another. |
 | `POST /v1/captions/merge` | `merge_speakers` | Captions plus speaker turns into one speaker-labelled track. |
 | `POST /v1/metrics/wer` | `measure_wer` | WER between a reference and a hypothesis transcript. |
 | `POST /v1/metrics/der` | `measure_der` | DER between two sets of speaker segments, with the best label permutation. |
@@ -244,7 +244,7 @@ The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode,
 
 ## License
 
-BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/LICENSE).
+The three-clause licence of the Berkeley Software Distribution, BSD 3-Clause. See [LICENSE](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/LICENSE).
 
 ## Author
 

@@ -2,7 +2,7 @@
 
 Traitement local de la parole pour la suite [sprezzature](https://sprezzature.ai/).
 
-On pointe l'outil vers un enregistrement (une réunion, un entretien, un cours) et il renvoie une transcription qui dit non seulement *ce qui* a été dit, mais *qui* l'a dit et *dans quelle langue*. Il travaille aussi dans l'autre sens : une page de texte devient une narration avec sa piste minutée. Tout tourne sur la machine locale : aucun son n'en sort, aucune clé d'API n'est nécessaire. Pour découper, rééchantillonner ou nettoyer le signal audio lui-même (couper les silences, séparer une voix d'une musique de fond), c'est un autre métier, assuré par un paquet voisin, [audio-helper](https://github.com/warith-harchaoui/audio-helper) ; ce paquet-ci part d'un audio déjà exploitable et se demande ce qui y a été dit.
+On pointe l'outil vers un enregistrement (une réunion, un entretien, un cours) et il renvoie une transcription qui dit non seulement *ce qui* a été dit, mais *qui* l'a dit et *dans quelle langue*, en sous-titres WebVTT (*Web Video Text Tracks*, le fichier de sous-titres que lit le lecteur vidéo d'une page web) ou SRT (*SubRip Text*, un fichier de sous-titres plus ancien qu'ouvrent la plupart des lecteurs vidéo de bureau). Il travaille aussi dans l'autre sens : une page de texte devient une narration, un WAV (*Waveform Audio File Format*, le fichier son non compressé que tout lecteur audio ouvre) avec sa piste minutée. Tout tourne sur la machine locale : aucun son n'en sort, aucune clé d'API (*Application Programming Interface*, un service en ligne payant auquel votre programme enverrait le son) n'est nécessaire. Pour découper, rééchantillonner ou nettoyer le signal audio lui-même (couper les silences, séparer une voix d'une musique de fond), c'est un autre métier, assuré par un paquet voisin, [audio-helper](https://github.com/warith-harchaoui/audio-helper) ; ce paquet-ci part d'un audio déjà exploitable et se demande ce qui y a été dit.
 
 ## Comment ça marche
 
@@ -12,12 +12,12 @@ On pointe l'outil vers un enregistrement (une réunion, un entretien, un cours) 
 
 Quinze outils. Chacun est sa propre commande, et chacun est aussi une sous-commande de la porte d'entrée `sprezzature-audio` (alias `make-audio`). Quelques termes reviennent dans les tableaux ci-dessous ; les voici une fois pour toutes :
 
-- **ASR** (reconnaissance automatique de la parole, de l'anglais *automatic speech recognition*) est le nom technique de la transcription automatique : transformer une onde sonore en mots écrits.
+- **ASR** (*automatic speech recognition*, la reconnaissance automatique de la parole) est le nom technique de la transcription automatique : transformer une onde sonore en mots écrits.
 - **WebVTT** et **SRT** sont deux formats de fichier texte pour les sous-titres : une liste de triplets `[début, fin, texte]`. WebVTT est le standard du web (celui qu'attend une balise `<video>`) ; SRT est plus ancien et lu par davantage de lecteurs vidéo.
 - **RTTM** (*Rich Transcription Time Marked*) est un format texte issu de la recherche en traitement de la parole, pour noter *qui a parlé quand* : une ligne par tour de parole, avec un instant de départ, une durée et une étiquette de locuteur.
 - La **diarisation** est l'étape qui marque qui a parlé quand, sans connaître le nom de personne.
 - **NeMo** est la boîte à outils libre de NVIDIA pour les modèles de parole ; **Sortformer** (diarisation) et **TitaNet** (empreinte vocale) sont deux modèles NeMo utilisés ici.
-- **WER** (taux d'erreur de mots), **DER** (taux d'erreur de diarisation) et **RTF** (facteur temps réel : durée de calcul divisée par la durée de l'audio) sont les trois mesures que rend `benchmark`.
+- **WER** (*word error rate*, le taux d'erreur de mots), **DER** (*diarization error rate*, le taux d'erreur de diarisation) et **RTF** (*real-time factor*, le facteur temps réel : durée de calcul divisée par la durée de l'audio) sont les trois mesures que rend `benchmark`.
 
 ### De la parole au texte
 
@@ -43,7 +43,7 @@ Une narration arrive sous forme d'un fichier audio et d'un WebVTT, la même conv
 
 | Commande | Porte d'entrée | Résultat |
 |---|---|---|
-| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON `--segments`, avec la voix Kokoro : 54 voix intégrées en huit langues, l'anglais en voix américaines et britanniques. `narrate` est le nom le plus ancien, pas un moteur par défaut : le moteur qui lit un document, c'est `speaker-helper` qui le choisit (voir plus bas). |
+| `sprezzature-audio-narrate-kokoro` | `narrate` | `narration.wav` (ou `--audio-format mp3`) et `narration.vtt` dans `--out-dir`, à partir d'un fichier JSON (*JavaScript Object Notation*, du texte en champs nommés qu'un programme sait lire : ici, la liste des phrases à dire) `--segments`, avec la voix Kokoro : 54 voix intégrées en huit langues, l'anglais en voix américaines et britanniques. `narrate` est le nom le plus ancien, pas un moteur par défaut : le moteur qui lit un document, c'est `speaker-helper` qui le choisit (voir plus bas). |
 | `sprezzature-audio-narrate-openvoice` | `narrate-openvoice` | La même chose avec OpenVoice, qui sait cloner une voix à partir d'un court échantillon (`--voice-sample`). |
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | La même chose avec Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | Les voix intégrées de chaque moteur ; `--sample` écrit un court extrait de démonstration par voix, et `--measure` les classe selon l'amplitude de leur hauteur. |
@@ -56,15 +56,15 @@ Ce paquet ne choisit pas le moteur de voix, et son appelant non plus. Cette déc
 
 | Commande | Porte d'entrée | Ce qu'elle fait |
 |---|---|---|
-| `sprezzature-audio-install` | `install` | Télécharge à l'avance un modèle Whisper GGML (`--model`, `large-v3-turbo` par défaut) pour que la transcription tourne hors ligne. |
+| `sprezzature-audio-install` | `install` | Télécharge à l'avance un modèle Whisper GGML (*Georgi Gerganov Machine Learning*, le format compact que charge whisper.cpp, le modèle tenant en un seul fichier ; `--model`, `large-v3-turbo` par défaut) pour que la transcription tourne hors ligne. |
 | `sprezzature-audio-install-diarize` | `install-diarize` | Vérifie que NeMo s'importe, ne lance `pip install nemo_toolkit[asr]` que s'il ne s'importe pas (`--no-install` saute cette étape), et télécharge à l'avance les points de contrôle Sortformer et TitaNet (`--only` pour un seul des deux). |
 | `sprezzature-audio-install-voice` | `install-voice` | Télécharge les poids d'un moteur de narration (`--engine kokoro`, `openvoice`, `chatterbox` ou `all`, la valeur par défaut) et vérifie la présence d'un espeak-ng système. |
 
-Deux autres commandes ne sont pas des outils : `sprezzature-audio tools` liste les quinze et dit lesquels s'importent sur cette machine, et `sprezzature-audio-mcp` sert la surface MCP (voir plus bas).
+Deux autres commandes ne sont pas des outils : `sprezzature-audio tools` liste les quinze et dit lesquels s'importent sur cette machine, et `sprezzature-audio-mcp` sert la surface MCP (Model Context Protocol, le protocole par lequel les agents IA appellent des outils en français) ; voir plus bas.
 
 ## Installation
 
-Une ligne. Sous-titres, diarisation, identification des locuteurs, traduction, narration et surfaces HTTP et MCP s'installent avec elle.
+Une ligne. Sous-titres, diarisation, identification des locuteurs, traduction, narration et surfaces HTTP (*HyperText Transfer Protocol*, l'échange de requêtes et de réponses par lequel un navigateur va chercher chaque page) et MCP s'installent avec elle.
 
 ```sh
 pip install sprezzature-audio
@@ -161,7 +161,7 @@ print(audio.word_error_rate(ref, hyp)["wer"])
 print(audio.describe_device())              # quel accélérateur cette machine utilise
 ```
 
-La moitié adossée aux modèles se résout au premier usage (PEP 562), donc l'import ci-dessus ne coûte rien, même avec Whisper, NeMo et Kokoro installés :
+La moitié adossée aux modèles se résout au premier usage, comme le permet la *Python Enhancement Proposal* 562 (PEP 562, le document de conception numéroté qui permet à un paquet de ne charger une partie qu'à sa première utilisation), donc l'import ci-dessus ne coûte rien, même avec Whisper, NeMo et Kokoro installés :
 
 ```python
 from pathlib import Path
@@ -188,7 +188,7 @@ L'application FastAPI (cadriciel web Python) sert la moitié rapide et sans mod�
 |---|---|---|
 | `GET /health` | `health` | Sonde de vie. |
 | `GET /v1/device` | `get_device` | Quel accélérateur cette machine utilisera, sondé plutôt que lu dans une configuration. |
-| `POST /v1/captions/convert` | `convert_captions` | VTT, SRT et texte brut, de l'un à l'autre. |
+| `POST /v1/captions/convert` | `convert_captions` | VTT (abréviation de WebVTT, le fichier de sous-titres que lit le lecteur vidéo d'une page web), SRT et texte brut, de l'un à l'autre. |
 | `POST /v1/captions/merge` | `merge_speakers` | Sous-titres et tours de parole réunis en une piste étiquetée par locuteur. |
 | `POST /v1/metrics/wer` | `measure_wer` | Le WER entre une transcription de référence et une hypothèse. |
 | `POST /v1/metrics/der` | `measure_der` | Le DER entre deux ensembles de segments de locuteurs, avec la meilleure permutation d'étiquettes. |
@@ -244,7 +244,7 @@ La cinquième surface est le skill `sprezzature-audio` pour Claude Code et OpenC
 
 ## Licence
 
-BSD à 3 clauses. Voir [LICENSE](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/LICENSE).
+La licence à trois clauses de la Berkeley Software Distribution, BSD à 3 clauses. Voir [LICENSE](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/LICENSE).
 
 ## Auteur
 
