@@ -28,7 +28,6 @@ import sys
 import click
 
 from sprezzature_audio._skill import skill_command
-
 from sprezzature_audio._tools import TOOLS, missing_extra_message
 
 #: Shown under the command list. Completion is click's, and worth saying out
