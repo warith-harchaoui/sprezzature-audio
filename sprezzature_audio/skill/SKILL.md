@@ -27,7 +27,7 @@ compatibility: >-
   naming pass need a local Ollama. No network at inference after install.
 metadata:
   author: Warith HARCHAOUI
-  version: 1.8.4
+  version: 1.9.0
 ---
 
 > This skill ships inside the package [`sprezzature-audio`](https://github.com/warith-harchaoui/sprezzature-audio) (`pip install sprezzature-audio`), at `sprezzature_audio/skill/`, beside the tools it describes, invoked as `sprezzature-audio …`. `sprezzature-audio-skill --install` copies it into `~/.claude/skills/sprezzature-audio` (`--agent opencode` for `~/.opencode/skills`); without `--install` the command only reports whether the installed copy is in step. The tools below are the package's console scripts, also reachable as `sprezzature-audio <tool> …`.

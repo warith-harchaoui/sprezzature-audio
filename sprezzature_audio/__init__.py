@@ -56,7 +56,7 @@ Warith HARCHAOUI <warithmetics@deraison.ai>
 
 from __future__ import annotations
 
-__version__ = "1.10.4"
+__version__ = "1.11.0"
 __author__ = "Warith HARCHAOUI"
 __email__ = "warithmetics@deraison.ai"
 __license__ = "BSD-3-Clause"

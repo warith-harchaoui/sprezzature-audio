@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.11.0] — 2026-11-12
+
 ### Added
 
 - **The skill ships with the package.** `SKILL.md`, its reference pages and its trigger catalogue lived only in the sprezzature hub; they are now in `sprezzature_audio/skill/` and inside the wheel, so `pip install sprezzature-audio` carries all five surfaces: the library, the command line (click), the HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) API (application programming interface, the requests one program sends another) with its Dockerfile and `docker-compose.yml`, the MCP (Model Context Protocol, the protocol through which AI agents call tools in English) server through fastapi-mcp, and the skill. `sprezzature-audio-skill` (also `sprezzature-audio skill`) reports whether the copy an agent reads is in step; `--install` copies it into `~/.claude/skills/sprezzature-audio` (`--agent opencode` for `~/.opencode/skills`), moving a copy that differs to `skills-superseded/` first; `--path` prints the folder. `sprezzature_audio.skill_path()` returns it from Python.
