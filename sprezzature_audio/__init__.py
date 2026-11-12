@@ -208,7 +208,10 @@ def __dir__() -> list[str]:
     return sorted(__all__)
 
 
+from sprezzature_audio._skill import skill_path  # noqa: E402
+
 __all__ = [
+    "skill_path",
     # captions: read, write, audit
     "Cue",
     "Finding",

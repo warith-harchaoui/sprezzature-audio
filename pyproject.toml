@@ -180,6 +180,7 @@ Homepage = "https://sprezzature.ai/"
 Repository = "https://github.com/warith-harchaoui/sprezzature-audio"
 
 [project.scripts]
+sprezzature-audio-skill = "sprezzature_audio._skill:main"
 # One front door over the fifteen tools (sprezzature_audio/cli.py), under two
 # spellings. `make-audio` is kept because it is what the skill, the README and
 # years of notes tell people to type; both names land on the same callable, so
@@ -248,3 +249,9 @@ testpaths = ["tests"]
 # carries it -- scripts/test_the_suite_runs_tests_the_same_way.py in the hub
 # checks that it still does.
 addopts = "-ra --strict-markers"
+
+[tool.setuptools.package-data]
+# The skill an agent reads ships inside the package, so `pip install`
+# carries all five surfaces; `sprezzature-audio-skill --install` puts it
+# where Claude Code or OpenCode looks.
+"sprezzature_audio" = ["skill/**/*"]
