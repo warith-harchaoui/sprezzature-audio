@@ -30,7 +30,7 @@ metadata:
   version: 1.8.4
 ---
 
-> The deterministic tools below ship as the standalone package [`sprezzature-audio`](https://github.com/warith-harchaoui/sprezzature-audio) (`pip install sprezzature-audio`), invoked as `sprezzature-audio …`. The `scripts/` folder has moved out of this monorepo; the SKILL.md here stays as the agentic contract.
+> This skill ships inside the package [`sprezzature-audio`](https://github.com/warith-harchaoui/sprezzature-audio) (`pip install sprezzature-audio`), at `sprezzature_audio/skill/`, beside the tools it describes. `sprezzature-audio-skill --install` copies it into `~/.claude/skills/sprezzature-audio` (`--agent opencode` for `~/.opencode/skills`); without `--install` the command only reports whether the installed copy is in step. The tools below are the package's console scripts, also reachable as `sprezzature-audio <tool> …`.
 
 # sprezzature-audio: local AI captions, transcripts and narration
 
@@ -71,13 +71,15 @@ The tools and tests ship today; what is still being collected:
   on the actual transcription behaviour.
 
 A future revision will integrate **`pdbms`** (per the maintainer) to
-improve the whisper.cpp integration. Track shape via
-`tests/fixtures/audio/README.md` in this repository.
+improve the whisper.cpp integration. The repository holds no audio
+fixture yet.
 
 ## Two modes: make and audit
 
 Fifteen tools, each its own console script and each a sub-command of the
-front door `sprezzature-audio` (alias `make-audio`).
+front door `sprezzature-audio` (alias `make-audio`). The front door has two
+more sub-commands that are not tools: `tools` (which tools import here) and
+`skill` (the same command as `sprezzature-audio-skill`).
 
 | Mode | Tool | Purpose |
 |---|---|---|
@@ -90,7 +92,7 @@ front door `sprezzature-audio` (alias `make-audio`).
 | **Make**: text into speech | `sprezzature-audio-narrate-kokoro` (`narrate`), `sprezzature-audio-narrate-openvoice`, `sprezzature-audio-narrate-chatterbox` | `--segments <json> --out-dir <dir>` → `narration.wav` (or `--audio-format mp3`) + `narration.vtt`, and a one-line JSON (JavaScript Object Notation, a text format in which programs store data as named fields, such as {"name": "Paris"}) report on stdout. Kokoro: 54 voices across eight languages, ONNX (Open Neural Network Exchange, a file format that lets a trained model run without the tool that trained it). OpenVoice clones from a short `--voice-sample`; Chatterbox takes emotion hints. Leave `--voice` empty and the text's language picks the voice. |
 | **Make**: hear the voices first | `sprezzature-audio-voice` (`voice`) | Lists each engine's built-in voices; `--sample` writes one demo clip per voice; `--measure` ranks them by pitch movement. |
 | **Make**: prepare the machine | `sprezzature-audio-install`, `-install-diarize`, `-install-voice` | GGML (the model file format whisper.cpp reads, one file per model) Whisper weights; a NeMo check + Sortformer and TitaNet checkpoints; a narration engine's weights plus an espeak-ng check. |
-| **Audit**: can the captions be read at the speed they go by | `sprezzature-audio-audit` (`audit`) | Eight static rules: reversed, overlapping or empty cues, reading speed, minimum and maximum duration, line width, line count. Defaults follow the Netflix Timed Text Style Guide (17 cps, 5/6 s, 7 s, 42 characters) and the two-line convention BBC and Netflix share; each is a flag. Exit 1 on any finding. No model, no network. |
+| **Audit**: can the captions be read at the speed they go by | `sprezzature-audio-audit` (`audit`) | Eight static rules: reversed, overlapping or empty cues, reading speed, minimum and maximum duration, line width, line count. Defaults follow the Netflix Timed Text Style Guide (17 cps, 5/6 s, 7 s, 42 characters) and the two-line convention the BBC (British Broadcasting Corporation) and Netflix share; each is a flag. Exit 1 on any finding. No model, no network. |
 | **Audit**: how wrong is it against a reference | `sprezzature-audio-benchmark` (`benchmark`) | WER with its substitution / deletion / insertion split, DER (diarization error rate, the share of speaking time credited to the wrong person) on 10 ms frames with the standard 250 ms collar, and real-time factor of a timed command. |
 | **Audit**: gate the presence of `<track>` _(borrowed, not shipped here)_ | _(see `sprezzature-accessibility-lint`)_ | Static lint catches `<video>` / `<audio>` without a `<track kind="captions">` child. |
 
@@ -114,7 +116,7 @@ wrapper it names; `narrate` is Kokoro's front-door name, not a default.
 | `name` | Names from the transcript itself: self-introductions ("I'm Alice", "je m'appelle Bob") and vocatives ("Hey Mary, ...", "Thanks, Sam"). `--ollama` adds a local-model pass. | conversations without introductions or direct address give no evidence; the ids stay anonymous. |
 | `pipeline` | Attributes every caption cue to the diarization turn with the largest overlap. | boundaries around overlap remain approximate; one speaker per cue by construction. |
 | `translate` | Second-track translation via local Ollama (`qwen3-vl:8b`); batches cues for cross-cue context and re-attaches translations to the original timestamps 1:1; writes `<stem>.<lang>.vtt` and prints a two-`<track>` snippet. | an 8B model's **draft**: verify before shipping; needs a reachable Ollama daemon. |
-| `install-diarize` | Checks that NeMo imports (`nemo_toolkit[asr]` is a base dependency; it is pip-installed only when missing, and `--no-install` skips even that) and pre-downloads Sortformer + TitaNet (`--only` for one). Idempotent. | does not install torch for a specific CUDA / ROCm (AMD's GPU computing platform) build; does not install `ffmpeg`. |
+| `install-diarize` | Checks that NeMo imports (`nemo_toolkit[asr]` is a base dependency; it is pip-installed only when missing, and `--no-install` skips even that) and pre-downloads Sortformer + TitaNet (`--only` for one). Idempotent. | does not install torch for a specific CUDA build or its AMD (Advanced Micro Devices, the other maker of graphics cards) counterpart; does not install `ffmpeg`. |
 | `narrate*` | Narration with a timed track through `speaker-helper`; `--lexicon` fixes how acronyms are said; `--check` exits 0 when the engine can synthesise here. | it reads a JSON list of blocks, not a Markdown or HTML page: turning a page into blocks is `sprezzature-publish`'s job. |
 
 ## Decision tree
@@ -132,6 +134,7 @@ wrapper it names; `narrate` is Kokoro's front-door name, not a default.
 | "clone this voice" / "voice sample" / "sound like me" | `narrate-openvoice` | `pip install -r scripts/requirements-narrate-openvoice.txt` (from a clone: OpenVoice has no wheel), `sprezzature-audio-install-voice --engine openvoice`, then `sprezzature-audio-narrate-openvoice --segments ... --out-dir ... --voice-sample me.wav`. |
 | "which voice" / "pick a voice" / "this voice is flat" | `voice` | `sprezzature-audio-voice --engine kokoro [--sample] [--measure]`. |
 | "how good is this transcript" / "WER" / "DER" / "is it faster" | `benchmark` | `sprezzature-audio-benchmark --reference truth.vtt --hypothesis whisper.vtt`, or `--reference-rttm` / `--hypothesis-rttm`, or `--audio a.mp4 --time-command '...'`. A metric needs a reference; without one there is no number to give. |
+| "install the skill" / "is the skill up to date" | `skill` | `sprezzature-audio-skill` reports; `sprezzature-audio-skill --install [--agent claude\|opencode]` copies the shipped skill into `~/.claude/skills` or `~/.opencode/skills`, moving a differing copy to `skills-superseded/` first. `--path` prints where pip put it. |
 | "which tools work here" | `tools` | `sprezzature-audio tools`. A tool's own flags: `sprezzature-audio <tool> --help` or `sprezzature-audio-<tool> --help`; the front door hands `--help` to the tool. |
 
 ## Output contract
@@ -148,7 +151,8 @@ The `<track>` element is the caller's to emit:
 
 `translate` is the tool that prints a ready two-track snippet. The
 narration commands print one JSON line (audio path, duration, cue path,
-voice, language, detected language) and nothing after it.
+voice, language, detected language, whether a language fallback was used,
+and the voice hints the engine ignored) and nothing after it.
 
 ## Vocabulary biasing
 
@@ -188,11 +192,11 @@ OpenVoice, Chatterbox, through speaker-helper, whose router picks the engine.
 
 | Surface | How |
 |---|---|
-| Library | `import sprezzature_audio as audio`: `parse`, `write_vtt`, `write_srt`, `audit_cues`, `attribute_speakers`, `word_error_rate`, `diarization_error_rate`, `describe_device` load no model; `transcribe`, `diarize`, `match_speakers`, `translate_cues`, `narrate` resolve on first use. |
-| CLI (command-line interface, a program you run by typing a command in a terminal) | The fifteen console scripts above, and the front door `sprezzature-audio` / `make-audio` (click). |
+| Library | `import sprezzature_audio as audio`: `parse`, `write_vtt`, `write_srt`, `audit_cues`, `attribute_speakers`, `word_error_rate`, `diarization_error_rate`, `describe_device` load no model; `transcribe`, `diarize`, `match_speakers`, `translate_cues`, `narrate` resolve on first use; `skill_path()` returns this skill's folder. |
+| CLI (command-line interface, a program you run by typing a command in a terminal) | The fifteen console scripts above, `sprezzature-audio-skill`, `sprezzature-audio-mcp`, and the front door `sprezzature-audio` / `make-audio` (click). |
 | HTTP (HyperText Transfer Protocol, the language a browser and a server speak each time a page loads) API (application programming interface, the requests one program can send another, such as render this chart) | `uvicorn sprezzature_audio.api:app`: `GET /health`, `GET /v1/device`, `POST /v1/captions/convert`, `POST /v1/captions/merge`, `POST /v1/metrics/wer`, `POST /v1/metrics/der`. The Docker image and `docker compose up` run `sprezzature-audio-mcp`, which serves this app and `/mcp` on port 8000. No transcription, diarization or narration route: those are minutes-long jobs. |
 | MCP (Model Context Protocol, the protocol through which AI agents call tools in English) | `sprezzature-audio-mcp` mounts `/mcp` on the same app (default `127.0.0.1:8000`, or `--host` / `--port`). Tools = `operation_id`s: `health`, `get_device`, `convert_captions`, `merge_speakers`, `measure_wer`, `measure_der`. Audio in → CLI; text in → MCP tool. |
-| Skill | This file. |
+| Skill | This file, shipped in the package at `sprezzature_audio/skill/`. `sprezzature-audio-skill` (or `sprezzature-audio skill`) reports whether the copy an agent reads is in step; `--install` copies it into `~/.claude/skills`, `--agent opencode` into `~/.opencode/skills`. |
 
 ## Tool composition
 
@@ -232,13 +236,17 @@ Add `<track kind="descriptions">` for audio descriptions,
   rule; output formats (WebVTT `<v Name>` cues, SRT prefix, plain
   text). Prior art the transcript-naming rule pass is modelled on
   (Bäuml et al. 2013, Nagrani et al. 2017).
-- The brick's own `TRIGGERS.md`: every tool, the request it answers,
+- `references/triggers.md`: the trigger catalogue, generated by the
+  sprezzature hub.
+- The repository's [`TRIGGERS.md`](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/TRIGGERS.md)
+  (on GitHub, not in the wheel): every tool, the request it answers,
   and what to call on every surface.
 
 ## Scripts
 
-Shipped by the standalone [`sprezzature-audio`](https://github.com/warith-harchaoui/sprezzature-audio)
-package, not by this monorepo. One `pip install sprezzature-audio`
+Shipped by the same [`sprezzature-audio`](https://github.com/warith-harchaoui/sprezzature-audio)
+package as this skill: the repository's `scripts/` folder, installed as the
+`sprezzature_audio_scripts` package. One `pip install sprezzature-audio`
 installs all of them; `[dev]` is the only extra, and it is the test
 toolchain.
 

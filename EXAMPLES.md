@@ -175,3 +175,37 @@ sprezzature-audio-install-diarize
 sprezzature-audio-install-voice --engine kokoro
 # Downloads kokoro-v1.0.onnx and voices-v1.0.bin to ~/.cache/sprezzature-skill/kokoro/
 ```
+
+## See which tools run on this machine
+
+```sh
+sprezzature-audio tools
+# Prints one line per tool: its front-door name, "ready" or "unavailable", and what it does
+```
+
+## Serve the web routes and the agent endpoint
+
+One process serves both the HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) routes and the MCP (Model Context Protocol, the protocol through which AI agents call tools in English) endpoint.
+
+```sh
+sprezzature-audio-mcp
+# Serves the HTTP routes and the MCP endpoint at http://127.0.0.1:8000/mcp
+
+curl -s -X POST localhost:8000/v1/captions/convert \
+    -H 'Content-Type: application/json' \
+    -d '{"captions": "WEBVTT\n\n00:00:00.000 --> 00:00:02.000\nHello.\n", "to": "srt"}'
+# Prints the same cue as SRT
+```
+
+## Install the agent skill
+
+```sh
+sprezzature-audio-skill
+# Prints whether ~/.claude/skills/sprezzature-audio holds the skill this package ships
+
+sprezzature-audio-skill --install
+# Copies it there; a copy that differed is moved to ~/.claude/skills-superseded/sprezzature-audio
+
+sprezzature-audio-skill --install --agent opencode
+# The same, into ~/.opencode/skills/sprezzature-audio
+```

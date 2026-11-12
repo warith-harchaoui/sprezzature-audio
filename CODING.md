@@ -14,13 +14,13 @@ Between a quarter and a third of non-blank lines carry a comment. A comment earn
 
 ## Style
 
-- `ruff` runs both the linter and the formatter; the line-length limit is 100 characters. Run `ruff format` on the files you changed before committing rather than hand-fixing whitespace, and never on the whole repository: CI gates on `ruff check`, not on the format, and not every file is in ruff's format yet.
+- `ruff` runs both the linter and the formatter; the line-length limit is 100 characters. Run `ruff format` on the files you changed before committing rather than hand-fixing whitespace, and never on the whole repository: CI (continuous integration, the checks GitHub runs on every push) gates on `ruff check`, not on the format, and not every file is in ruff's format yet.
 - No filler transitions in prose or comments ("Moreover," "Furthermore," "crucial," "game-changer," "delve into"): if a sentence needs one of these to sound weighty, cut the sentence back to what it actually says.
 - No em dash or en dash used as a sentence aside. Use a comma, a colon, a semicolon, parentheses, or simply a second sentence instead.
 
 ## Tests
 
-`pytest` runs the suite. Every public function gets at least one test. The suite needs no model, no network and no GPU: the heavy machine-learning libraries (NeMo, whisper.cpp through `vocal-helper`, torch) are installed with the package but never loaded by a test, and `tests/test_the_library_surface.py` blocks them in a subprocess to prove that `import sprezzature_audio` does not reach them.
+`pytest` runs the suite. Every public function gets at least one test. The suite needs no model, no network and no GPU (graphics processing unit, the graphics chip that runs AI models many times faster than the main processor): the heavy machine-learning libraries (NeMo, whisper.cpp through `vocal-helper`, torch) are installed with the package but never loaded by a test, and `tests/test_the_library_surface.py` blocks them in a subprocess to prove that `import sprezzature_audio` does not reach them.
 
 ## Deferred imports
 

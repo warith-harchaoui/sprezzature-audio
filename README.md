@@ -10,7 +10,7 @@ Point it at a recording (a meeting, an interview, a lecture) and it hands back a
 
 ## What it does
 
-Fifteen tools. Each one is its own command, and each one is also a sub-command of the front door `sprezzature-audio` (alias `make-audio`). A few terms recur in the tables below, so here they are once:
+Fifteen tools. Each one is its own command, and each one is also a sub-command of the front door `sprezzature-audio` (alias `make-audio`). The package reaches you through five surfaces, all in the one install: the Python library, the command line (click), an HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) API (FastAPI, with a Dockerfile and a `docker-compose.yml`), an MCP (Model Context Protocol, the protocol through which AI agents call tools in English) server (fastapi-mcp) and an agent skill; each has its section below. A few terms recur in the tables below, so here they are once:
 
 - **ASR** (automatic speech recognition) is the technical name for speech-to-text: turning a sound wave into written words.
 - **WebVTT** and **SRT** are two plain-text file formats for subtitles: a list of `[start time, end time, text]` triples. WebVTT is the web standard (what a `<video>` tag expects); SRT is older and read by more video players.
@@ -48,7 +48,7 @@ A narration lands as an audio file plus a WebVTT, the same convention a transcri
 | `sprezzature-audio-narrate-chatterbox` | `narrate-chatterbox` | The same, with Chatterbox. |
 | `sprezzature-audio-voice` | `voice` | The built-in voices of each engine; `--sample` writes a one-line demo clip per voice, and `--measure` ranks them by how far their pitch moves. |
 
-The three narration commands share one set of flags, because `sprezzature-publish` drives them interchangeably. They print a one-line JSON report on standard output: audio path, duration, cue path, voice and language, plus the language detected, whether a fallback was used, and any voice hints the engine ignored.
+The three narration commands share one set of flags, because `sprezzature-publish` drives them interchangeably: `--segments`, `--out-dir`, `--audio-format` and `--bitrate`, `--voice`, `--voice-sample` (the cloning engines only), `--lang`, `--lexicon`, a pronunciation file in YAML (YAML Ain't Markup Language, the plain-text settings format of indented `key: value` lines) that states once how a word, an acronym above all, is said, and `--check`, which exits 0 when the engine can synthesise on this machine and 1 otherwise. They print a one-line JSON report on standard output: audio path, duration, cue path, voice and language, plus the language detected, whether a fallback was used, and any voice hints the engine ignored.
 
 This package does not choose the voice engine, and neither should its caller. That decision belongs to the router in [`speaker-helper`](https://github.com/warith-harchaoui/speaker-helper), which owns the engines. `sprezzature-publish` asks the router and then runs the matching wrapper here. With no `--voice`, the language is detected from the text and a voice that speaks it is picked. This matters: the detected language is what the phonemiser works from, so French read as English is not French with an accent, it is English spelling rules applied to French words.
 
@@ -57,14 +57,14 @@ This package does not choose the voice engine, and neither should its caller. Th
 | Command | Front door | What it does |
 |---|---|---|
 | `sprezzature-audio-install` | `install` | Pre-downloads a GGML (Georgi Gerganov Machine Learning, the compact format whisper.cpp loads: the model is one file on disk) Whisper model (`--model`, default `large-v3-turbo`) so captioning runs offline. |
-| `sprezzature-audio-install-diarize` | `install-diarize` | Checks that NeMo imports, running `pip install nemo_toolkit[asr]` only if it does not (`--no-install` skips that), and pre-downloads the Sortformer and TitaNet checkpoints (`--only` for one of them). |
+| `sprezzature-audio-install-diarize` | `install-diarize` | Checks that NeMo imports, running `pip install nemo_toolkit[asr]` only if it does not (`--no-install` skips that), and pre-downloads the Sortformer and TitaNet checkpoints (`--only` for one of them, `--no-download` to skip the download). |
 | `sprezzature-audio-install-voice` | `install-voice` | Downloads a narration engine's weights (`--engine kokoro`, `openvoice`, `chatterbox` or `all`, the default) and checks for a system espeak-ng. |
 
-Two more commands are not tools: `sprezzature-audio tools` lists the fifteen and says which ones import on this machine, and `sprezzature-audio-mcp` serves the MCP (Model Context Protocol, the protocol through which AI agents call tools in English) surface (see below).
+Three more commands are not tools: `sprezzature-audio tools` lists the fifteen and says which ones import on this machine, `sprezzature-audio-skill` (also `sprezzature-audio skill`) reports whether the agent skill this package ships is installed and in step, and `sprezzature-audio-mcp` serves the MCP surface (see below).
 
 ## Install
 
-One line. Captioning, diarization, speaker identification, translation, narration and the HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) and MCP surfaces all install with it.
+One line. Captioning, diarization, speaker identification, translation, narration and the HTTP and MCP surfaces all install with it.
 
 ```sh
 pip install sprezzature-audio
@@ -178,6 +178,8 @@ audio.translate_cues(rows, translate_batch=translate)
 audio.narrate("kokoro", [{"text": "Hello."}], voice="", voice_sample=None, out_dir=Path("out"))
 ```
 
+`audio.skill_path()` returns the folder of the agent skill the package ships (see [Agent skill](#agent-skill)).
+
 `audio.narrate` is the adapter the narration commands use; the voice engine itself is `speaker-helper`'s, and it is not re-exported here. If a lazy name fails to import, the error says the install is broken (everything is in the base) and chains the import error that names what is missing.
 
 ## HTTP API and MCP
@@ -213,7 +215,19 @@ The image installs the package with `ffmpeg` and `espeak-ng`, and its default co
 
 ## Agent skill
 
-The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode, kept in the [sprezzature](https://github.com/warith-harchaoui/sprezzature) hub. [TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/TRIGGERS.md) is the routing table an agent reads: which request goes to which tool, on which surface.
+The fifth surface is the `sprezzature-audio` skill for Claude Code and OpenCode: a `SKILL.md` that tells an agent when to reach for this package and which command to run, beside its reference pages and its trigger catalogue. It ships inside the package, at `sprezzature_audio/skill/`, so `pip install sprezzature-audio` carries it; the [sprezzature](https://github.com/warith-harchaoui/sprezzature) hub only gathers the ten bricks' skills.
+
+```sh
+sprezzature-audio-skill                          # is the installed copy in step with this package?
+sprezzature-audio-skill --install                # copy it into ~/.claude/skills/sprezzature-audio
+sprezzature-audio-skill --install --agent opencode   # or into ~/.opencode/skills
+sprezzature-audio-skill --path                   # where pip put it
+sprezzature-audio skill --install                # the same command, through the front door
+```
+
+Without `--install` it only reports. With it, an existing copy that differs is moved aside to `skills-superseded/`, beside the skills folder rather than inside it, before the new one is copied. From Python, `sprezzature_audio.skill_path()` returns the same folder.
+
+[TRIGGERS.md](https://github.com/warith-harchaoui/sprezzature-audio/blob/main/TRIGGERS.md) is the routing table an agent reads: which request goes to which tool, on which surface.
 
 ## How this differs from audio-helper
 

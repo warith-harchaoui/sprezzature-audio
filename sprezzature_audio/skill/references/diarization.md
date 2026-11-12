@@ -1,15 +1,15 @@
 # Speaker diarization + speaker identification
 
 Adds "who spoke when" (Sortformer) and "who is who" (TitaNet or a
-transcript-based LLM pass) to the caption stream.
+transcript-based LLM (large language model, the kind of AI model that reads and writes text) pass) to the caption stream.
 
 ## Pipeline
 
-![The pipeline, top to bottom. Audio or video goes to sprezzature-audio-captions, then sprezzature-audio-diarize. Its turns go to either sprezzature-audio-identify (voice reference clips) or sprezzature-audio-name (vocatives, self-introductions, optional Ollama). Both write speakers.json, which sprezzature-audio-pipeline merges into speaker-labelled VTT, SRT and TXT.](diarization-pipeline.svg)
+![The pipeline, top to bottom. Audio or video goes to sprezzature-audio-captions, then sprezzature-audio-diarize. Its turns go to either sprezzature-audio-identify (voice reference clips) or sprezzature-audio-name (vocatives, self-introductions, optional Ollama). Both write speakers.json, which sprezzature-audio-pipeline merges into speaker-labelled VTT (WebVTT, the web's subtitle file), SRT (SubRip Text, the older subtitle file) and plain text.](diarization-pipeline.svg)
 
 ## Models
 
-| Model | Purpose | Default HF id |
+| Model | Purpose | Default Hugging Face id |
 |---|---|---|
 | **Sortformer**: end-to-end diarization transformer | "who spoke when" for up to 4 concurrent speakers | `nvidia/diar_sortformer_4spk-v1` |
 | **TitaNet-Large**: 192-D speaker-verification embeddings | "who is who" by matching against reference clips | `nvidia/speakerverification_en_titanet_large` |
@@ -53,7 +53,7 @@ sprezzature-audio-diarize talk.wav --device cpu
 
 ### Identify with reference clips (TitaNet)
 
-Layout: one WAV per known speaker, filename stem = display name.
+Layout: one WAV (Waveform Audio File Format, the uncompressed sound file) per known speaker, filename stem = display name.
 
 ```text
 voices/
@@ -79,9 +79,9 @@ where were we?", "I'm Alice, product lead at Acme". Two-pass
 detector:
 
 * **Rule pass** (fast, offline): regex for self-introduction
-  patterns (EN + FR) and turn-initial / turn-final vocatives. Each
+  patterns (English and French) and turn-initial / turn-final vocatives. Each
   match carries a confidence score; the highest wins per speaker.
-* **LLM pass** (opt-in via `--ollama`): sends a compact JSON prompt
+* **LLM pass** (opt-in via `--ollama`): sends a compact JSON (JavaScript Object Notation, plain text in named fields) prompt
   to a local Ollama daemon through best-engine-ai-helper (`--url` or
   `OLLAMA_URL` for the endpoint).
   Handles ambiguous cases the regex misses.

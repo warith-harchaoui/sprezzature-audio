@@ -1,16 +1,16 @@
 # Captions / transcripts: `sprezzature-audio-captions`
 
-Generate WebVTT captions, SRT subtitles, or plain transcripts from any audio or video file through **[vocal-helper](https://github.com/warith-harchaoui/vocal-helper)**, the project author's whisper.cpp over-layer. It wraps **[pywhispercpp](https://github.com/absadiki/pywhispercpp)** (the whisper.cpp binding) and owns the model defaults, the word-timestamp wiring, the `min_segment_ms` hallucination guard, and the vocabulary-biasing `initial_prompt` lever (a domain-aligned prompt cut WER by 15–25 pp in the author's AMI sweep). The captions tier drives its `WhisperStage` on the whole file as a single segment: no VAD, no diarization (that lives in the `diarize` tier). The default model is **`large-v3-turbo`**: small enough to run on a laptop and accurate enough for production captions.
+Generate WebVTT (Web Video Text Tracks, the subtitle file a web page's video player reads) captions, SRT (SubRip Text, an older subtitle file most desktop players open) subtitles, or plain transcripts from any audio or video file through **[vocal-helper](https://github.com/warith-harchaoui/vocal-helper)**, the project author's whisper.cpp over-layer. It wraps **[pywhispercpp](https://github.com/absadiki/pywhispercpp)** (the whisper.cpp binding) and owns the model defaults, the word-timestamp wiring, the `min_segment_ms` hallucination guard, and the vocabulary-biasing `initial_prompt` lever (a domain-aligned prompt cut the WER (word error rate, the share of words a transcript gets wrong) by 15 to 25 percentage points in the author's sweep over the AMI (Augmented Multi-party Interaction, a public corpus of recorded meetings) corpus). The captions tier drives its `WhisperStage` on the whole file as a single segment: no VAD (voice activity detection, the step that cuts out the silences), no diarization (that lives in the `diarize` tier). The default model is **`large-v3-turbo`**: small enough to run on a laptop and accurate enough for production captions.
 
 The script handles both video (caption track for a `<video>`) and audio-only files (transcript for a podcast or interview).
 
 ## Why it matters
 
-WCAG SC 1.2.2 (Captions, Prerecorded) is a Level A requirement and is almost universally skipped on small-team and indie sites. The same setup as the rest of the skill's helpers (local-only, no API, no cost per minute) makes shipping captions cheap.
+WCAG (Web Content Accessibility Guidelines, the international rules a web page must follow to be usable by people with disabilities) success criterion 1.2.2 (Captions, Prerecorded) is a Level A requirement and is almost universally skipped on small-team and indie sites. The same setup as the rest of the skill's helpers (local-only, no API (application programming interface, here a paid online service the audio would be sent to), no cost per minute) makes shipping captions cheap.
 
 ## Install
 
-One `pip install` plus a pre-download of the GGML weights:
+One `pip install` plus a pre-download of the GGML (Georgi Gerganov Machine Learning, the compact format whisper.cpp loads, one file per model) weights:
 
 ```bash
 pip install sprezzature-audio
@@ -51,7 +51,7 @@ The same tool is `sprezzature-audio captions …` through the front door.
 
 ## Audio extraction
 
-whisper.cpp needs 16 kHz mono WAV. The script tries, in order:
+whisper.cpp needs 16 kHz mono WAV (Waveform Audio File Format, the uncompressed sound file). The script tries, in order:
 
 1. **`video-helper`** (<https://github.com/warith-harchaoui/video-helper>) for video sources.
 2. **`audio-helper`** (<https://github.com/warith-harchaoui/audio-helper>) for audio sources.
@@ -69,7 +69,7 @@ If neither helper nor `ffmpeg` is available, the script exits with a list of ins
 A `wallet-helper` ledger, so two runs asking for the same file at the same time transcribe it once:
 
 - Location: `~/.cache/sprezzature-skill/captions/` (under `$SPREZZATURE_CACHE_DIR` when set).
-- Key: SHA-256 of the extracted-audio bytes + model + lang + format + prompt, truncated to 32 hex characters.
+- Key: SHA-256 (Secure Hash Algorithm, 256 bits: a fingerprint that changes when any byte does) of the extracted-audio bytes + model + lang + format + prompt, truncated to 32 hex characters.
 - Bypass: `--no-cache` for one run, `SPREZZATURE_NO_CACHE=1` globally.
 - Clear: delete the directory.
 
@@ -83,7 +83,7 @@ Whisper's accuracy on proper nouns and jargon drops sharply without domain conte
 |---|---|
 | `--prompt "<text>"` | Verbatim `initial_prompt` for whisper.cpp. Highest precedence. |
 | `--vocab path/to/glossary.txt` | Glossary file, one term per line, `#` starts a comment. |
-| `--vocab-from path` | File OR directory. Directory → walked as a project root (top-level README / SKILL.md / manifests + `.md` files under `docs/`, `references/`, `src/`, …). |
+| `--vocab-from path` | File or directory. Directory → walked as a project root (top-level README / SKILL.md / manifests + `.md` files under `docs/`, `references/`, `src/`, …). |
 | `--auto-project` | Walk upward from the source to discover the project root, then mine the whole tree. |
 
 Beyond those flags, the resolver looks for a **sibling subtitle file** (`<stem>.vtt` / `.srt` / `.txt`); for re-captioning runs, the prior transcript is the strongest signal. Then it looks for a sibling README / `index.html`. Pass nothing to use those defaults.
@@ -92,7 +92,7 @@ The composed `initial_prompt` is in natural prose, not a comma list; Whisper was
 
 ## Integration in the page
 
-For `<video>`, ALWAYS emit `<track kind="captions">`. Add the other kinds when they apply.
+For `<video>`, always emit `<track kind="captions">`. Add the other kinds when they apply.
 
 ```html
 <video controls preload="metadata">
@@ -163,7 +163,7 @@ How it stays faithful and correctly timed:
   window is retried one cue at a time (which cannot misalign); an unrecoverable
   mismatch aborts loudly rather than shift subtitles.
 - **One model.** `qwen3-vl:8b` through best-engine-ai-helper, on the Ollama
-  server named by `--url` (default `OLLAMA_URL`), the one authorized LLM,
+  server named by `--url` (default `OLLAMA_URL`), the one authorized LLM (large language model, the kind of AI model that reads and writes text),
   not selectable. Needs the daemon running (`ollama serve`, `ollama pull qwen3-vl:8b`).
 - **Draft.** Machine translation from an 8B model: verify before shipping.
 
@@ -185,9 +185,9 @@ The social-preview tags that pair with these surfaces are `sprezzature-publish`'
 
 ## Standards
 
-- WCAG SC 1.2.2: Captions (Prerecorded), Level A.
-- WCAG SC 1.2.5: Audio Description (Prerecorded), Level AA. (Captions alone do not satisfy this; audio descriptions need a separate workflow.)
-- whisper.cpp licensing: MIT. Bundled GGML model files keep their original licenses (also MIT for the official OpenAI releases).
+- WCAG success criterion 1.2.2: Captions (Prerecorded), Level A.
+- WCAG success criterion 1.2.5: Audio Description (Prerecorded), Level AA (double-A, the middle of the three conformance levels). (Captions alone do not satisfy this; audio descriptions need a separate workflow.)
+- whisper.cpp licensing: MIT (Massachusetts Institute of Technology) licence, a short permissive one. Bundled GGML model files keep their original licenses (also MIT for the official OpenAI releases).
 
 ## Checklist
 

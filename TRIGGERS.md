@@ -1,6 +1,6 @@
 # Triggers: sprezzature-audio
 
-Which request about speech goes to which tool, and on which surface. This file is written for an agent (a Claude Code or OpenCode skill, an MCP host, anything choosing a tool on someone's behalf). Humans are welcome, but the routing rules are the point.
+Which request about speech goes to which tool, and on which surface. This file is written for an agent (a Claude Code or OpenCode skill, an MCP (Model Context Protocol, the protocol through which AI agents call tools in English) host, anything choosing a tool on someone's behalf). Humans are welcome, but the routing rules are the point.
 
 ---
 
@@ -13,11 +13,11 @@ The domain has a closed vocabulary, and a request that names one of these object
 | The user holds or wants | Words that name it |
 |---|---|
 | a recording | audio, video, recording, podcast, meeting, interview, talk, voice memo, `.wav`, `.mp3`, `.mp4` |
-| timed text | captions, subtitles, transcript, cue, track, WebVTT, `.vtt`, SRT, `.srt` |
-| who spoke | speaker, turn, diarization, RTTM, `.rttm`, `.diarization.json`, `.speakers.json`, voice sample |
+| timed text | captions, subtitles, transcript, cue, track, WebVTT, `.vtt`, SRT (SubRip Text, the older subtitle format), `.srt` |
+| who spoke | speaker, turn, diarization, RTTM (Rich Transcription Time Marked, the who-spoke-when text file), `.rttm`, `.diarization.json`, `.speakers.json`, voice sample |
 | another language | translation, translated track, two-language captions |
-| a quality number | WER, DER, RTF, accuracy, error rate, reference transcript |
-| spoken text | narration, TTS (text-to-speech), voice, read aloud, narrator, `narration.wav` |
+| a quality number | WER (word error rate), DER (diarization error rate), RTF (real-time factor), accuracy, error rate, reference transcript |
+| spoken text | narration, TTS (text-to-speech, speech synthesis), voice, read aloud, narrator, `narration.wav` |
 
 Then the direction decides the half:
 
@@ -46,7 +46,7 @@ Then the direction decides the half:
 |---|---|---|
 | `captions` | `sprezzature-audio-captions` | Turn this recording into a WebVTT, SRT or plain transcript. |
 | `diarize` | `sprezzature-audio-diarize` | Mark who spoke when, as speaker numbers. |
-| `identify` | `sprezzature-audio-identify` | Put names on the diarized speakers, given one reference WAV per known person. |
+| `identify` | `sprezzature-audio-identify` | Put names on the diarized speakers, given one reference WAV (Waveform Audio File Format, an uncompressed sound file) per known person. |
 | `pipeline` | `sprezzature-audio-pipeline` | Merge a caption file and a diarization file (and optional names) into one speaker-labelled track. |
 | `name` | `sprezzature-audio-name` | Guess who the speakers are from what they say, with no reference sample. |
 | `translate` | `sprezzature-audio-translate` | Translate a caption track, keeping its timings, and emit a two-track `<video>` snippet. |
@@ -60,13 +60,14 @@ Then the direction decides the half:
 | `install-diarize` | `sprezzature-audio-install-diarize` | Install NeMo and download the Sortformer and TitaNet checkpoints. |
 | `install-voice` | `sprezzature-audio-install-voice` | Download a narration engine's weights and check for espeak-ng. |
 | `tools` | `sprezzature-audio tools` | Which of the tools above import on this machine? |
+| `skill` | `sprezzature-audio-skill` | Is the agent skill this package ships installed and in step? `--install` copies it into `~/.claude/skills` (`--agent opencode` for `~/.opencode/skills`). |
 
 The six MCP tools, and when to call each:
 
 | MCP tool | Call it when |
 |---|---|
 | `health` | Only to diagnose a connection problem. |
-| `get_device` | Before promising a transcription time. It probes the accelerator rather than reading config; a CPU-only host is where "a few minutes" becomes an hour. |
+| `get_device` | Before promising a transcription time. It probes the accelerator rather than reading config; a host with only a CPU (central processing unit, the main processor) is where "a few minutes" becomes an hour. |
 | `convert_captions` | "Give me this as SRT", "just the text". Format conversion only, no model. |
 | `merge_speakers` | Captions and speaker turns are held separately and "who said what" is wanted. It joins on time; it does not work out who spoke. |
 | `measure_wer` | "How good is this transcript", "which engine is better". **Needs a reference**, a transcript known to be right. |
@@ -76,7 +77,7 @@ The six MCP tools, and when to call each:
 
 ## What to call on every surface
 
-The heavy stages run local models on real files: they are commands, not HTTP or MCP tools. What the HTTP API and MCP expose is the work on text the pipeline already produced, plus the device probe. So the rule between surfaces is short: **audio in, or speech out: CLI. Text in: MCP tool.**
+The heavy stages run local models on real files: they are commands, not HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) or MCP tools. What the HTTP API (application programming interface, the requests one program sends another) and MCP expose is the work on text the pipeline already produced, plus the device probe. So the rule between surfaces is short: **audio in, or speech out: CLI (command-line interface, a command typed in a terminal). Text in: MCP tool.**
 
 | Job | Library (`import sprezzature_audio as audio`) | CLI command | Front door | HTTP route | MCP tool (`operation_id`) |
 |---|---|---|---|---|---|
@@ -86,7 +87,7 @@ The heavy stages run local models on real files: they are commands, not HTTP or 
 | Merge captions and turns | `audio.attribute_speakers` | `sprezzature-audio-pipeline` | `pipeline` | `POST /v1/captions/merge` | `merge_speakers` |
 | Guess names | none | `sprezzature-audio-name` | `name` | none | none |
 | Translate captions | `audio.translate_cues` | `sprezzature-audio-translate` | `translate` | none | none |
-| Convert VTT, SRT, text | `audio.parse`, `audio.write_vtt`, `audio.write_srt` | none | none | `POST /v1/captions/convert` | `convert_captions` |
+| Convert VTT (WebVTT, the web's subtitle file), SRT, text | `audio.parse`, `audio.write_vtt`, `audio.write_srt` | none | none | `POST /v1/captions/convert` | `convert_captions` |
 | Audit captions | `audio.audit_cues` | `sprezzature-audio-audit` | `audit` | none | none |
 | WER | `audio.word_error_rate` | `sprezzature-audio-benchmark --reference --hypothesis` | `benchmark` | `POST /v1/metrics/wer` | `measure_wer` |
 | DER | `audio.diarization_error_rate` | `sprezzature-audio-benchmark --reference-rttm --hypothesis-rttm` | `benchmark` | `POST /v1/metrics/der` | `measure_der` |
@@ -100,8 +101,9 @@ The heavy stages run local models on real files: they are commands, not HTTP or 
 | Pre-download Whisper | none | `sprezzature-audio-install` | `install` | none | none |
 | Pre-download NeMo | none | `sprezzature-audio-install-diarize` | `install-diarize` | none | none |
 | Pre-download a voice | none | `sprezzature-audio-install-voice` | `install-voice` | none | none |
+| Install the agent skill | `audio.skill_path` (the folder) | `sprezzature-audio-skill --install` | `skill` | none | none |
 
-The MCP server is `sprezzature-audio-mcp`, endpoint `/mcp`. The skill is `sprezzature-audio`, kept in the sprezzature hub.
+The MCP server is `sprezzature-audio-mcp`, endpoint `/mcp`. The skill is `sprezzature-audio`; it ships inside the package at `sprezzature_audio/skill/`, and `sprezzature-audio-skill --install` puts it where Claude Code (or, with `--agent opencode`, OpenCode) reads it.
 
 ---
 
@@ -109,4 +111,4 @@ The MCP server is `sprezzature-audio-mcp`, endpoint `/mcp`. The skill is `sprezz
 
 **1. A metric needs a reference.** `measure_wer`, `measure_der` and `benchmark` compare a hypothesis against something known to be right. If the user has no reference, say so: there is no number to give, and an invented one is worse than none.
 
-**2. Speaker labels are not names.** Diarization produces numbered speakers (`"0"`, `"1"` in the JSON, `Speaker 1` in a merged track), a cluster, not a person. Turning that into "Anna" is stage 3, and it either matches a voice sample (`identify`) or is a guess read out of the transcript's own content (`name`). Do not silently promote one to the other.
+**2. Speaker labels are not names.** Diarization produces numbered speakers (`"0"`, `"1"` in the JSON (JavaScript Object Notation, plain text in named fields) turn list, `Speaker 1` in a merged track), a cluster, not a person. Turning that into "Anna" is stage 3, and it either matches a voice sample (`identify`) or is a guess read out of the transcript's own content (`name`). Do not silently promote one to the other.

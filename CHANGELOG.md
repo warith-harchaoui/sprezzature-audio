@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added
+
+- **The skill ships with the package.** `SKILL.md`, its reference pages and its trigger catalogue lived only in the sprezzature hub; they are now in `sprezzature_audio/skill/` and inside the wheel, so `pip install sprezzature-audio` carries all five surfaces: the library, the command line (click), the HTTP (HyperText Transfer Protocol, the request-and-reply exchange a browser uses to fetch every page) API (application programming interface, the requests one program sends another) with its Dockerfile and `docker-compose.yml`, the MCP (Model Context Protocol, the protocol through which AI agents call tools in English) server through fastapi-mcp, and the skill. `sprezzature-audio-skill` (also `sprezzature-audio skill`) reports whether the copy an agent reads is in step; `--install` copies it into `~/.claude/skills/sprezzature-audio` (`--agent opencode` for `~/.opencode/skills`), moving a copy that differs to `skills-superseded/` first; `--path` prints the folder. `sprezzature_audio.skill_path()` returns it from Python.
+
+### Docs
+
+- README.md, LISEZMOI.md, TRIGGERS.md and the skill said the skill was kept in the sprezzature hub, and the skill still opened on a note that the scripts had "moved out of this monorepo". Both now describe the skill inside the package and the command that installs it; README.md and LISEZMOI.md name the five surfaces, and EXAMPLES.md shows `sprezzature-audio tools`, the HTTP and MCP server, and the skill command.
+- LANDSCAPE.md and PAYSAGE.md still said `sprezzature-audio-audit` "needs nothing but the standard library", the claim 1.10.4 removed from the help, README.md and LISEZMOI.md. It imports click; what it does not need is a model or a network.
+- CONTRIBUTING.md said the pre-push hook "runs the same steps as CI (continuous integration, the checks GitHub runs on every push)" and listed mypy among CI's steps. CI runs `ruff check` and `pytest` on Python 3.12, plus a job that installs and imports the package on 3.10; mypy runs in the hook only. A new command now also takes a row in the skill.
+- README.md and LISEZMOI.md list the flags the three narration commands share, `--lexicon` and `--check` among them, and `install-diarize --no-download`. The skill's output contract names every field of the narration report, and its dead pointer to `tests/fixtures/audio/README.md` is gone.
+- Acronyms are defined at their first use in LANDSCAPE.md, PAYSAGE.md, TRIGGERS.md, CODING.md, CONTRIBUTING.md, EXAMPLES.md and the skill's reference pages.
+
 ## [1.10.4] — 2026-11-08
 
 ### Fixed
