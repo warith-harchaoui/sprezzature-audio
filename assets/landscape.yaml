@@ -71,7 +71,7 @@ approaches:
     axis_1: 2.7784
     axis_2: 3.7969
   role: best
-  color: '#FF3B30'
+  color: '#FF383C'
   attributes:
     Local and offline: 5.0
     Free or open source: 5.0
@@ -324,7 +324,7 @@ approaches:
     axis_1: 2.3461
     axis_2: 3.7969
   role: top
-  color: '#AF52DE'
+  color: '#CB30E0'
   attributes:
     Local and offline: 5.0
     Free or open source: 5.0
@@ -370,7 +370,7 @@ approaches:
     axis_1: 2.7784
     axis_2: 3.2956
   role: right
-  color: '#007AFF'
+  color: '#0088FF'
   attributes:
     Local and offline: 5.0
     Free or open source: 5.0
@@ -485,7 +485,7 @@ approaches:
     axis_1: -1.4866
     axis_2: -3.3594
   role: worst
-  color: '#A52A2A'
+  color: '#AC7F5E'
   attributes:
     Local and offline: 1.0
     Free or open source: 1.0
