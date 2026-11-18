@@ -97,7 +97,7 @@ from caption_diarize import (  # noqa: E402
 from . import __version__ as _VERSION  # noqa: E402
 
 app = FastAPI(
-    title="Sprezzature Audio API",
+    title="sprezzature Audio API",
     description=(
         "HTTP surface for sprezzature-audio: caption conversion, speaker "
         "attribution, and the WER/DER quality metrics. Transcription itself "

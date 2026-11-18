@@ -91,7 +91,7 @@ else:
         app,
         name="sprezzature-audio",
         description=(
-            "Sprezzature Audio MCP tools: convert and merge captions, and measure "
+            "sprezzature Audio MCP tools: convert and merge captions, and measure "
             "transcription quality (WER) and speaker attribution (DER)."
         ),
         include_tags=["meta", "captions", "metrics"],
