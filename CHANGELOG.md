@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [1.11.1] — 2026-11-19
+
+### Changed
+
+- The licence line reads `Copyright (c) 2026, Warith Harchaoui` in LICENSE, README.md and LISEZMOI.md; the licence is unchanged, BSD 3-Clause.
 
 ### Changed
 
