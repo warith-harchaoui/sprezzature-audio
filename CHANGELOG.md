@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.11.2] — 2026-11-21
+
+### Added
+
+- **Files made with a model say so, in their metadata and nowhere visible.** A narration's audio file carries the sentence « généré avec l'aide de l'IA de sprezzature par deraison.ai » and « generated with the help of sprezzature AI by deraison.ai » (WAV: `LIST`/`INFO` `ICMT`; MP3, OGG, FLAC, Opus, M4A: the comment tag plus `ai_generated_fr`, `ai_generated_en` and the IPTC term `digital_source_type=trainedAlgorithmicMedia`, through `ffmpeg -c copy`, no re-encoding). Transcripts, translations, speaker-labelled captions and narration cues in WebVTT carry it as a `NOTE` block before the first cue, never in a cue. SubRip and plain text have no header and are left untouched. Nothing is audible, nothing is displayed. New `scripts/_provenance.py` and a test that parses the produced WebVTT and checks no cue holds the mention.
+
 ## [1.11.1] — 2026-11-19
 
 ### Changed

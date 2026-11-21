@@ -245,6 +245,8 @@ Without `--install` it only reports. With it, an existing copy that differs is m
 | Translation and name guessing | `qwen3-vl:8b`, through the Ollama server at `--url` | best-engine-ai-helper |
 | Narration | Kokoro, OpenVoice, Chatterbox, chosen per reading by the router | speaker-helper |
 
+Every file produced with a model (transcript, translation, speaker-labelled captions, narration) says so in its metadata only: a WebVTT `NOTE` block before the first cue, a comment tag in the audio file ("generated with the help of sprezzature AI by deraison.ai" and its French twin); SubRip has no header, so it is left as is. Nothing audible, nothing on screen.
+
 ## Environment variables
 
 | Variable | Purpose |

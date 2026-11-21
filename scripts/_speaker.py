@@ -43,6 +43,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import click  # noqa: E402
 from _click import run_command, sprezzature_command  # noqa: E402
+from _provenance import tag_audio, vtt_note  # noqa: E402
 
 #: What each engine is called on both sides. The names happen to match today;
 #: naming the mapping anyway is what keeps a rename here from silently
@@ -169,6 +170,30 @@ def build_command(engine: str) -> click.Command:
             "every synthesis honours it -- which is what an acronym needs."
         ),
     )
+    @click.option(
+        "--eardrum/--no-eardrum",
+        default=True,
+        help=(
+            "Before reading, run speaker-helper's Ralph Eardrum Loop on the "
+            "document: every word at risk (names, acronyms, brands) is said, "
+            "heard back by a phoneme recogniser and respelled until it comes "
+            "out right. What passes is kept beside the lexicon and applies to "
+            "every later narration by this engine. On by default; without the "
+            "ear installed the narration goes on and says so."
+        ),
+    )
+    @click.option(
+        "--select",
+        type=click.IntRange(min=0),
+        default=3,
+        show_default=True,
+        help=(
+            "Draw each block up to N times and keep the take whose intonation "
+            "and energy agree with the text (speaker-helper's take selector). "
+            "Draws are only spent where something can go wrong: a question, a "
+            "block tagged with an emotion. 0 or 1: one draw per block."
+        ),
+    )
     def _cli(
         check: bool,
         segments: Path | None,
@@ -179,6 +204,8 @@ def build_command(engine: str) -> click.Command:
         voice_sample: Path | None,
         lang: str,
         lexicon: Path | None,
+        eardrum: bool,
+        select: int,
     ) -> int:
         """Click command body: check the install, or narrate the segments."""
         if check:
@@ -207,6 +234,8 @@ def build_command(engine: str) -> click.Command:
                 lexicon=lexicon,
                 audio_format=audio_format,
                 bitrate=bitrate,
+                eardrum=eardrum,
+                select=select,
             )
         except (RuntimeError, ValueError, NotImplementedError) as exc:
             sys.stderr.write(f"{exc}\n")
@@ -231,12 +260,20 @@ def narrate(
     lexicon: Path | None = None,
     audio_format: str = "wav",
     bitrate: str = "",
+    eardrum: bool = False,
+    select: int = 0,
 ) -> dict[str, Any]:
     """Read ``segments`` aloud and write the narration beside its cues.
 
     Returns the report ``sprezzature-publish`` reads back, whose keys are the
     ones it already consumed before the voice moved out — this is a change of
-    implementation, not of contract.
+    implementation, not of contract. Two keys were added with the ear:
+    ``eardrum`` (what the pronunciation pass heard and fixed) and
+    ``selection`` (how many blocks the take selector judged, and agreed).
+
+    ``eardrum`` and ``select`` default to off here and on in the command line:
+    a library call keeps doing exactly what it did, a narration asked for at
+    the command line gets the ear.
     """
     try:
         from speaker_helper import Settings, Speaker
@@ -267,14 +304,23 @@ def narrate(
     if lexicon is not None:
         mapping["lexicon"] = {"path": str(lexicon), "enabled": True}
     settings = Settings.from_mapping(mapping)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    heard = _eardrum_pass(settings, segments, out_dir) if eardrum else None
+    chooser = _take_selector(select)
 
     async def run() -> Any:
+        # The Speaker is built after the ear has spoken: the lexicon, and the
+        # verified sidecar the loop just wrote beside it, load with it.
         async with Speaker(settings) as speaker:
-            return await speaker.narrate(segments, language=lang or None, voice=voice or None)
+            if chooser is None:
+                return await speaker.narrate(segments, language=lang or None, voice=voice or None)
+            return await speaker.narrate(
+                segments, language=lang or None, voice=voice or None, choose=chooser
+            )
 
     result = asyncio.run(run())
 
-    out_dir.mkdir(parents=True, exist_ok=True)
     audio_path = out_dir / f"narration.{audio_format.lstrip('.')}"
     cues_path = out_dir / "narration.vtt"
     # `result.write_audio` and not `write_bytes`: the extension then decides
@@ -306,9 +352,16 @@ def narrate(
             "    pip install --upgrade 'speaker-helper>=0.14.0'\n"
             "Or ask for --audio-format wav, which needs no encoder."
         )
-    cues_path.write_text(result.to_vtt(), encoding="utf-8")
+    cues_path.write_text(vtt_note(result.to_vtt()), encoding="utf-8")
+    # The voice is a model's: say so in the audio file's own metadata (a
+    # NOTE block does the same in the .vtt above). Never fatal: a container
+    # that cannot take the tag keeps its audio.
+    if not tag_audio(audio_path):
+        sys.stderr.write(
+            f"provenance: could not write the AI mention into {audio_path.name}\n"
+        )
 
-    return {
+    report: dict[str, Any] = {
         "audio": str(audio_path),
         "duration_seconds": result.duration_s,
         "cues": str(cues_path),
@@ -318,6 +371,88 @@ def narrate(
         "language_fallback": result.language_fallback,
         "ignored_hints": result.ignored_hints,
     }
+    if heard is not None:
+        report["eardrum"] = heard
+    selection = getattr(result, "selection", None)
+    if chooser is not None and selection:
+        judged = [r for r in selection if r.get("agrees") is not None]
+        report["selection"] = {
+            "blocks": len(selection),
+            "judged": len(judged),
+            "agree": sum(1 for r in judged if r.get("agrees")),
+            "draws": sum(int(r.get("draws", 1)) for r in selection),
+        }
+    return report
+
+
+def _eardrum_pass(settings: Any, segments: list[Any], out_dir: Path) -> dict[str, Any]:
+    """Run the Ralph Eardrum Loop on the words of ``segments`` before reading.
+
+    The loop is speaker-helper's: it finds the words at risk in the text, says
+    each one in carrier sentences with *this* engine, hears it back with a
+    phoneme recogniser and has the local model respell it until it comes out
+    right. What passes goes to the verified sidecar beside the lexicon, which
+    the Speaker built next loads -- so the narration that follows reads the
+    fixed spellings, and so does every later one by the same engine.
+
+    It runs on what will be *spoken* (a block's ``say`` when it has one), with
+    the very settings of the narration: same engine, same language, same
+    lexicon. A word verified on another engine proves nothing here.
+
+    Never fatal. A missing ear, a missing model or a failure inside the loop
+    leaves the narration exactly as it would have been, and the report says
+    why, so the page still gets its voice.
+    """
+    try:
+        from speaker_helper.eardrum import run_eardrum_async
+        from speaker_helper.narration import coerce_segments
+    except ImportError as exc:
+        sys.stderr.write(
+            "eardrum: speaker-helper has no Ralph Eardrum Loop here (0.16.0 or later, "
+            f"with its [eardrum] extra); narrating without it ({exc})\n"
+        )
+        return {"ran": False, "reason": f"not installed: {exc}"}
+
+    text = "\n".join(
+        seg.spoken for seg in coerce_segments(segments) if seg.is_speakable and seg.spoken.strip()
+    )
+    try:
+        found = asyncio.run(run_eardrum_async(settings, text=text, out_dir=out_dir / "eardrum"))
+    except Exception as exc:  # noqa: BLE001 - the ear must never cost the page its voice
+        sys.stderr.write(f"eardrum: the loop failed ({exc}); narrating without it\n")
+        return {"ran": False, "reason": f"failed: {exc}"}
+
+    verdicts: dict[str, int] = {}
+    for word in found.results:
+        verdicts[word.verdict] = verdicts.get(word.verdict, 0) + 1
+    still_wrong = [w.word for w in found.results if w.verdict not in ("ok", "fixed")]
+    sys.stderr.write(
+        f"eardrum: {len(found.results)} word(s) checked ({verdicts}); report {found.html}\n"
+    )
+    return {
+        "ran": True,
+        "words": len(found.results),
+        "verdicts": verdicts,
+        "still_wrong": still_wrong,
+        "report": str(found.html),
+        "verified": str(found.verified_path) if found.verified_path else None,
+    }
+
+
+def _take_selector(select: int) -> Any:
+    """speaker-helper's take selector for ``select`` draws, or ``None``.
+
+    One draw is no choice, so 0 and 1 both mean "the engine's first take", and
+    an install without the selector reads one take per block as before.
+    """
+    if select <= 1:
+        return None
+    try:
+        from speaker_helper.eardrum.expressive import TakeSelector
+    except ImportError as exc:
+        sys.stderr.write(f"select: no take selector in this speaker-helper ({exc}); one draw\n")
+        return None
+    return TakeSelector(select)
 
 
 def main(engine: str, argv: list[str] | None = None) -> int:

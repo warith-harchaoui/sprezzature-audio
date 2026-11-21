@@ -68,6 +68,7 @@ sys.path.insert(0, str(_PathHelper(__file__).resolve().parent))
 import _vtt  # noqa: E402
 import click
 from _click import run_command, sprezzature_command  # noqa: E402
+from _provenance import vtt_note  # noqa: E402
 
 #: Format of the ``<v ...>`` cue in WebVTT. WebVTT parsers strip the
 #: markup when the reader lacks the voice-cue extension, so the readable
@@ -324,7 +325,8 @@ def _cli(
     ext = "txt" if fmt == "text" else fmt
     out_path = out or Path(str(captions_path.with_suffix("")) + f".speakers.{ext}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(payload, encoding="utf-8")
+    # SubRip and text have no header to carry the mention; only WebVTT does.
+    out_path.write_text(vtt_note(payload) if fmt == "vtt" else payload, encoding="utf-8")
     click.echo(f"→ Wrote {out_path}")
     speakers = sorted({c["speaker"] for c in attributed})
     click.echo(f"→ {len(attributed)} cue(s), {len(speakers)} speaker(s): {', '.join(speakers)}")

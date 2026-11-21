@@ -81,6 +81,7 @@ import _vtt  # noqa: E402
 import click  # noqa: E402
 from _click import run_command, sprezzature_command  # noqa: E402
 from _lang import detect_text_language, extract_body_text, language_name  # noqa: E402
+from _provenance import vtt_note  # noqa: E402
 from caption_diarize import parse_caption_cues  # noqa: E402
 
 # Every LLM/VLM call across sprezzature-* routes through this one function,
@@ -599,7 +600,7 @@ def _cli(
 
     out_path: Path = out or Path(str(captions.with_suffix("")) + f".{resolved_target}.vtt")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(render_vtt(translated_cues) + "\n", encoding="utf-8")
+    out_path.write_text(vtt_note(render_vtt(translated_cues)) + "\n", encoding="utf-8")
     click.echo(f"→ Wrote {out_path}")
 
     # Print the two-track snippet so the user can paste both tracks at once.

@@ -99,6 +99,7 @@ if TYPE_CHECKING:
 sys.path.insert(0, str(Path(__file__).parent))
 import _vtt  # noqa: E402
 from _lang import detect_text_language  # noqa: E402
+from _provenance import vtt_note  # noqa: E402
 from _vocab import resolve_vocab_terms  # noqa: E402
 from _wallet import memoized  # noqa: E402
 
@@ -856,7 +857,9 @@ def _cli(
     ext: str = "txt" if fmt == "text" else fmt
     out_path: Path = out or source.with_suffix(f".{ext}")
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(text, encoding="utf-8")
+    # The transcript is a model's reading of the recording; WebVTT has a NOTE
+    # block for saying so, SubRip and plain text have no place for it.
+    out_path.write_text(vtt_note(text) if fmt == "vtt" else text, encoding="utf-8")
     click.echo(f"→ Wrote {out_path}")
     return 0
 

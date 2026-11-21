@@ -245,6 +245,8 @@ Sans `--install`, la commande ne fait que constater. Avec, une copie existante q
 | Traduction et devinette des noms | `qwen3-vl:8b`, par le serveur Ollama de `--url` | best-engine-ai-helper |
 | Narration | Kokoro, OpenVoice, Chatterbox, choisi à chaque lecture par le routeur | speaker-helper |
 
+Tout fichier produit avec un modèle (transcription, traduction, sous-titres avec locuteurs, narration) le dit dans ses seules métadonnées : un bloc `NOTE` WebVTT avant la première cue, une étiquette de commentaire dans le fichier audio (« généré avec l'aide de l'IA de sprezzature par deraison.ai » et son jumeau anglais) ; le SRT n'a pas d'en-tête et reste intact. Rien d'audible, rien à l'écran.
+
 ## Variables d'environnement
 
 | Variable | Rôle |
